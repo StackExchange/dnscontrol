@@ -682,6 +682,7 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"GCLOUD",
+				"ORACLE",
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
@@ -699,7 +700,8 @@ func makeTests() []*TestGroup {
 				//"HEDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				"HOSTINGDE", // Pages.
-				"ROUTE53",   // Batches up changes in pages.
+				"ORACLE",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("pager1201-rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("pager1201-rec%04d", "1.2.3.5", 1200)...),
@@ -712,6 +714,7 @@ func makeTests() []*TestGroup {
 			only(
 				//"GCLOUD",
 				"HOSTINGDE", // Pages.
+				"ORACLE",
 			),
 			tc("1200 records",
 				manyA("batch-rec%04d", "1.2.3.4", 1200)...),
