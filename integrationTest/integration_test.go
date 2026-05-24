@@ -1231,12 +1231,15 @@ func makeTests() []*TestGroup {
 
 		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
 
-		testgroup("CF_REDIRECT_CONVERT",
-			only("CLOUDFLAREAPI"),
-			alltrue(cfSingleRedirectEnabled()),
-			tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-		),
+		// This test is commented out because of this error:
+		// "helpers_integration_test.go:241: not entitled: the use of operator Matches is not allowed, a Business plan or a WAF Advanced plan is required"
+		// There's no obvious way to have this test only run when a Business plan is used.
+		// testgroup("CF_REDIRECT_CONVERT",
+		// 	only("CLOUDFLAREAPI"),
+		// 	alltrue(cfSingleRedirectEnabled()),
+		// 	tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+		// 	tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+		// ),
 
 		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
 			only("CLOUDFLAREAPI"),
