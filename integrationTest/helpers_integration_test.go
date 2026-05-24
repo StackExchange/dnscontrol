@@ -448,27 +448,27 @@ func bunnyPullZone(name, pullZoneID string) *models.RecordConfig {
 	return makeRec(name, pullZoneID, "BUNNY_DNS_PZ")
 }
 
-func cfRedir(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
-		Type: "CF_REDIRECT",
-		TTL:  1,
-		Args: []any{pattern, target},
-		DCN:  globalDCN,
-	})
-	panicOnErr(err)
-	return rec
-}
+// func cfRedir(pattern, target string) *models.RecordConfig {
+// 	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+// 		Type: "CF_REDIRECT",
+// 		TTL:  1,
+// 		Args: []any{pattern, target},
+// 		DCN:  globalDCN,
+// 	})
+// 	panicOnErr(err)
+// 	return rec
+// }
 
-func cfRedirTemp(pattern, target string) *models.RecordConfig {
-	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
-		Type: "CF_TEMP_REDIRECT",
-		TTL:  1,
-		Args: []any{pattern, target},
-		DCN:  globalDCN,
-	})
-	panicOnErr(err)
-	return rec
-}
+// func cfRedirTemp(pattern, target string) *models.RecordConfig {
+// 	rec, err := rtypecontrol.NewRecordConfigFromRaw(rtypecontrol.FromRawOpts{
+// 		Type: "CF_TEMP_REDIRECT",
+// 		TTL:  1,
+// 		Args: []any{pattern, target},
+// 		DCN:  globalDCN,
+// 	})
+// 	panicOnErr(err)
+// 	return rec
+// }
 
 func aghAPassthrough(pattern, target string) *models.RecordConfig {
 	r := makeRec(pattern, target, "ADGUARDHOME_A_PASSTHROUGH")
