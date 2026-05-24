@@ -259,7 +259,6 @@ jobs:
         run: |
           END=3
           echo "END: Default set to $END"
-          DO_WORKERS=false
 
           # Only for PRs
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -268,7 +267,6 @@ jobs:
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
               echo "END: Pull request + longtest label. END=$END"
-              DO_WORKERS=true
             else
               echo "END: longtest not set. No change."
             fi
@@ -283,7 +281,6 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
             echo "END: github.ref_name is main. END=$END"
-            DO_WORKERS=true
           fi
           # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
           if [[ "${{ matrix.provider }}" == "VERCEL" ]]; then
@@ -292,7 +289,6 @@ jobs:
           fi
           echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
-          echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
         run: |-
@@ -306,8 +302,8 @@ jobs:
                 -timeout 40m -v \
                 -verbose \
                 -profile ${{ matrix.provider }} \
-                -cfworkers=$DO_WORKERS \
-                -cfredirect=false \
+                -cfworkers=true \
+                -cfredirect=true \
                 -cfflatten=false \
                 -cftags=false \
                 -end $END \

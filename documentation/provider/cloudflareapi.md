@@ -2,6 +2,10 @@ This is the provider for [Cloudflare](https://www.cloudflare.com/).
 
 ## Important notes
 
+* The following features are not regularly tested: (free tier accounts don't support these features. Contact the project if you'd like to sponsor a higher tier)
+  * CNAME flattening
+  * Tags
+  * "Single redirects" that use the "Matches" subcommand
 * SPF records are silently converted to RecordType `TXT` as Cloudflare API fails otherwise. See [DNSControl/dnscontrol#446](https://github.com/DNSControl/dnscontrol/issues/446).
 * This provider currently fails if there are more than 1000 corrections on one domain. This only affects "push". This usually when moving a domain with many records to Cloudflare.  Try commenting out most records, then uncomment groups of 999. Typical updates are less than 1000 corrections and will not trigger this bug. See [DNSControl/dnscontrol#1440](https://github.com/DNSControl/dnscontrol/issues/1440).
 * DNS records that Cloudflare injects and maintains are ignored. That includes SOA records, NS records at the domain's apex, and the MX/DKIM records created as part of Cloudflare mail routing.
