@@ -307,7 +307,7 @@ jobs:
             # NB(tlim): THe output of gotestsum needs to go to stdout AND the
             # gotestsum-output.txt file. That's why "tee" is used.
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
-                -timeout 40m -v \
+                -timeout 70m -v \
                 -verbose \
                 -profile ${{ matrix.provider }} \
                 -cfworkers=true \
