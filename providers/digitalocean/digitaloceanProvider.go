@@ -106,6 +106,21 @@ func init() {
 	}
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "DigitalOcean",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/digitalocean",
+		PortalURL:   "https://cloud.digitalocean.com/account/api/tokens",
+		Fields: []providers.CredsField{
+			{
+				Key:      "token",
+				Label:    "API token",
+				Help:     "Your DigitalOcean personal access token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+	})
 }
 
 // EnsureZoneExists creates a zone if it does not exist.

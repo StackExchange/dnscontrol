@@ -113,6 +113,7 @@ jobs:
       MIKROTIK_DOMAIN: ${{ vars.MIKROTIK_DOMAIN }}
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
+      NETBIRD_DOMAIN: ${{ vars.NETBIRD_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
@@ -205,6 +206,8 @@ jobs:
       NAMEDOTCOM_URL: ${{ secrets.NAMEDOTCOM_URL }}
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
       #
+      NETBIRD_TOKEN: ${{ secrets.NETBIRD_TOKEN }}
+      #
       NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
       #
       POWERDNS_APIKEY: ${{ secrets.POWERDNS_APIKEY }}
@@ -227,6 +230,8 @@ jobs:
       #
       VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
       VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
+      TENCENTDNS_SECRET_ID: ${{ secrets.TENCENTDNS_SECRET_ID }}
+      TENCENTDNS_SECRET_KEY: ${{ secrets.TENCENTDNS_SECRET_KEY }}
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.provider }}
@@ -254,7 +259,6 @@ jobs:
         run: |
           END=3
           echo "END: Default set to $END"
-          DO_WORKERS=false
 
           # Only for PRs
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -263,7 +267,6 @@ jobs:
             if [[ " $LABELS " =~ " longtest " ]]; then
               END=999
               echo "END: Pull request + longtest label. END=$END"
-              DO_WORKERS=true
             else
               echo "END: longtest not set. No change."
             fi
@@ -278,7 +281,6 @@ jobs:
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             END=999
             echo "END: github.ref_name is main. END=$END"
-            DO_WORKERS=true
           fi
           # VERCEL it limited to 100 updates per hour. Therefore we never run more than the first few tests.
           if [[ "${{ matrix.provider }}" == "VERCEL" ]]; then
@@ -287,9 +289,9 @@ jobs:
           fi
           echo "END: Final value: END=$END"
           echo "END=$END" >> $GITHUB_ENV
-          echo "DO_WORKERS=$DO_WORKERS" >> $GITHUB_ENV
 
       - name: Run integration tests for ${{ matrix.provider }} provider
+        shell: bash -eo pipefail {0}
         run: |-
           #
           echo "END: Running tests 0 to $END"
@@ -298,11 +300,11 @@ jobs:
             # NB(tlim): THe output of gotestsum needs to go to stdout AND the
             # gotestsum-output.txt file. That's why "tee" is used.
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- \
-                -timeout 40m -v \
+                -timeout 70m -v \
                 -verbose \
                 -profile ${{ matrix.provider }} \
-                -cfworkers=$DO_WORKERS \
-                -cfredirect=false \
+                -cfworkers=true \
+                -cfredirect=true \
                 -cfflatten=false \
                 -cftags=false \
                 -end $END \

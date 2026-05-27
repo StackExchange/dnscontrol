@@ -155,6 +155,8 @@ D("example.com", REG_NONE, DnsProvider(DSP_AZURE_MAIN),
 ## Activation
 DNSControl depends on a standard [Client credentials Authentication](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) with permission to list, create and update hosted zones.
 
+Additional documentation can be found here: https://learn.microsoft.com/en-us/azure/dns/
+
 ## New domains
 If a domain does not exist in your Azure account, DNSControl will *not* automatically add it with the `push` command. You can do that either manually via the control panel, or via the command `dnscontrol create-domains` command.
 
