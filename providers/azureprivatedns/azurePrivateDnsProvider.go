@@ -77,7 +77,7 @@ var features = providers.DocumentationNotes{
 	providers.CanUseSSHFP:            providers.Cannot(),
 	providers.CanUseTLSA:             providers.Cannot(),
 	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
+	providers.DocDualHost:            providers.Cannot("Private zones can not change NS records"),
 	providers.DocOfficiallySupported: providers.Can(),
 }
 
