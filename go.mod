@@ -50,7 +50,7 @@ require (
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
 	github.com/cloudflare/cloudflare-go v0.117.0
-	github.com/digitalocean/godo v1.192.0
+	github.com/digitalocean/godo v1.193.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go/v8 v8.3.0
 	github.com/exoscale/egoscale/v3 v3.1.35
@@ -74,7 +74,7 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.280.0
+	google.golang.org/api v0.282.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
 )
 
@@ -97,11 +97,11 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.22
-	github.com/nicholas-fedor/shoutrrr v0.15.0
+	github.com/nicholas-fedor/shoutrrr v0.15.1
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.115.0
-	github.com/tencentcloud/tencentcloud-sdk-go-intl-en v3.0.1410+incompatible
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.102
+	github.com/oracle/oci-go-sdk/v65 v65.116.0
+	github.com/tencentcloud/tencentcloud-sdk-go-intl-en v3.0.1412+incompatible
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.104
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.3.78
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/domain v1.3.66
 	github.com/urfave/cli/v3 v3.9.0
@@ -146,7 +146,7 @@ require (
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.16 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -190,7 +190,7 @@ require (
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/tools v0.45.0
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260523011958-0a33c5d7ca68 // indirect
 	google.golang.org/grpc v1.81.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
