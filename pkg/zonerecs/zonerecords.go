@@ -13,7 +13,7 @@ func CorrectZoneRecords(driver models.DNSProvider, dc *models.DomainConfig) ([]*
 	if err != nil {
 		return nil, nil, 0, err
 	}
-	rtypecontrol.FixLegacyRecords(&existingRecords) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
+	rtypecontrol.FixLegacyRecords(&existingRecords, dc.Name) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
 
 	// downcase
 	models.Downcase(existingRecords)

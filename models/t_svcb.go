@@ -41,6 +41,7 @@ func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []d
 		return fmt.Errorf("failed to convert SVCB parameters from v1 to v2: %w", err)
 	}
 	rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: target, Value: valuev2}
+	rc.ComparableV3 = rc.RDATA.String()
 
 	return nil
 }

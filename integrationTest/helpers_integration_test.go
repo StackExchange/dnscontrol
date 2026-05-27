@@ -14,6 +14,7 @@ import (
 	"time"
 
 	dnsv2 "codeberg.org/miekg/dns"
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/nameservers"
@@ -577,6 +578,21 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 	}
 	SetLabel(r, name, "**current-domain**.")
 	r.MustSetTarget(target)
+
+	r.FixUp(globalDCN.NameASCII) // Populates .RDATA and .TypeNum if needed.
+	// // Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	// switch typ {
+	// case "CNAME":
+	// 	r.RDATA = &dnsrdatav2.CNAME{Target: r.GetTargetField()}
+	// 	r.ComparableV3 = r.RDATA.String()
+	// case "NS":
+	// 	r.RDATA = &dnsrdatav2.NS{Ns: r.GetTargetField()}
+	// 	r.ComparableV3 = r.RDATA.String()
+	// case "DS":
+	// 	r.RDATA = &dnsrdatav2.DS{KeyTag: r.DsKeyTag, Algorithm: r.DsAlgorithm, DigestType: r.DsDigestType, Digest: r.DsDigest}
+	// 	r.ComparableV3 = r.RDATA.String()
+	// }
+
 	return r
 }
 
@@ -652,6 +668,20 @@ func smimea(name string, usage, selector, matchingtype uint8, target string) *mo
 func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
 	r := makeRec(name, "", "SOA")
 	panicOnErr(r.SetTargetSOA(ns, mbox, serial, refresh, retry, expire, minttl))
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	r.RDATA = &dnsrdatav2.SOA{
+		Ns:      ns,
+		Mbox:    mbox,
+		Serial:  serial,
+		Refresh: refresh,
+		Retry:   retry,
+		Expire:  expire,
+		Minttl:  minttl,
+	}
+	r.TypeNum = dnsv2.TypeSOA
+	r.ComparableV3 = fmt.Sprintf("%s %s %d %d %d %d %d", ns, mbox, serial, refresh, retry, expire, minttl)
+
 	return r
 }
 

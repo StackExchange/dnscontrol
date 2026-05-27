@@ -60,6 +60,7 @@ func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.Re
 	default:
 		panic(fmt.Sprintf("unexpected type for DS.FromStruct: %T", rec.F))
 	}
+	rec.ComparableV3 = rec.RDATA.String()
 
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
 	rec.Comparable = rec.ZonefilePartial

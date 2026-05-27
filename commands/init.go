@@ -322,7 +322,7 @@ func fetchZoneRecordsReal(entry InitCredsEntry, zone string) (models.Records, er
 	if err != nil {
 		return nil, err
 	}
-	rtypecontrol.FixLegacyRecords(&recs)
+	rtypecontrol.FixLegacyRecords(&recs, zone)
 	return recs, nil
 }
 

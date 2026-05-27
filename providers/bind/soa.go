@@ -1,6 +1,7 @@
 package bind
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/DNSControl/dnscontrol/v4/models"
@@ -42,6 +43,9 @@ func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.Recor
 	if err != nil {
 		panic(err) // Should never happen.
 	}
+
+	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	soaRec.ComparableV3 = fmt.Sprintf("%s %s %d %d %d %d %d", soaRec.GetTargetField(), soaRec.SoaMbox, soaRec.SoaSerial, soaRec.SoaRefresh, soaRec.SoaRetry, soaRec.SoaExpire, soaRec.SoaMinttl)
 
 	return &soaRec, generateSerial(soaRec.SoaSerial)
 }

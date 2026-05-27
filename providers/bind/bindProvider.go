@@ -268,6 +268,8 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 			}
 		}
 
+		rec.FixUp(zoneName) // hack
+
 		foundRecords = append(foundRecords, &rec)
 	}
 
