@@ -137,7 +137,7 @@ export UseOIDC=true
 
 ## Test credentials
 
-If you want to create credentials without learning all about Entra ID (formerly AAD).  Here's what I did.  You will create an named API key (in this case, called `dns-api-test`) and specifically give it access to the zones it should access. This is probably best for testing. For production use, you should understand Entra ID and set up proper access.
+If you want to create credentials without learning all about Entra ID (formerly AAD).  Here's what I did.  You will create an named API key (in this case, called `dns-api-test`) and give it access to the specific zones it should access. This is probably best for testing. For production use, you should understand Entra ID and set up proper access.
 
 1. Get a shell
 
