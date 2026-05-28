@@ -88,7 +88,7 @@ func newDSP(m map[string]string, metadata json.RawMessage) (providers.DNSService
 
 	dsp.APIKey = m["apiKey"]
 	if dsp.APIKey == "" {
-		return nil, errors.New("Netnod API Key is required")
+		return nil, errors.New("netnod API key is required")
 	}
 
 	dsp.APIUrl = m["apiUrl"]

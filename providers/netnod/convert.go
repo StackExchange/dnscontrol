@@ -7,7 +7,7 @@ import (
 	netnodPrimaryDNS "github.com/netnod/netnod-primary-dns-client"
 )
 
-// toRecordConfig converts a Netnod DNS Record to a RecordConfig. #rtype_variations
+// toRecordConfig converts a Netnod DNS Record to a RecordConfig. #rtype_variations.
 func toRecordConfig(domain string, r netnodPrimaryDNS.Record, ttl int, name string, rtype string) (*models.RecordConfig, error) {
 	// trimming trailing dot and domain from name
 	name = strings.TrimSuffix(name, domain+".")

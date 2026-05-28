@@ -2,7 +2,7 @@ package netnod
 
 import "strings"
 
-// ListZones returns all the zones in an account
+// ListZones returns all the zones in an account.
 func (dsp *netnodProvider) ListZones() ([]string, error) {
 	zones, err := dsp.client.ListZones()
 	if err != nil {
