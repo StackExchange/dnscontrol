@@ -115,6 +115,7 @@ jobs:
       MYTHICBEASTS_DOMAIN: ${{ vars.MYTHICBEASTS_DOMAIN }}
       NAMEDOTCOM_DOMAIN: ${{ vars.NAMEDOTCOM_DOMAIN }}
       NETBIRD_DOMAIN: ${{ vars.NETBIRD_DOMAIN }}
+      NETNOD_DOMAIN: ${{ vars.NETNOD_DOMAIN }}
       NS1_DOMAIN: ${{ vars.NS1_DOMAIN }}
       POWERDNS_DOMAIN: ${{ vars.POWERDNS_DOMAIN }}
       ROUTE53_DOMAIN: ${{ vars.ROUTE53_DOMAIN }}
@@ -214,6 +215,9 @@ jobs:
       NAMEDOTCOM_USER: ${{ secrets.NAMEDOTCOM_USER }}
       #
       NETBIRD_TOKEN: ${{ secrets.NETBIRD_TOKEN }}
+      #
+      NETNOD_APIKEY: ${{ secrets.NETNOD_APIKEY }}
+      NETNOD_APIURL: ${{ secrets.NETNOD_APIURL }}
       #
       NS1_TOKEN: ${{ secrets.NS1_TOKEN }}
       #

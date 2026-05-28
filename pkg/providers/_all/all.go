@@ -50,6 +50,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v4/providers/netbird"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/netcup"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/netlify"
+	_ "github.com/DNSControl/dnscontrol/v4/providers/netnod"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/ns1"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/opensrs"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/oracle"
