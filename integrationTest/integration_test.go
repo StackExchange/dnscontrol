@@ -694,15 +694,15 @@ func makeTests() []*TestGroup {
 
 		testgroup("pager1201",
 			only(
-				"AKAMAIEDGEDNS",     // No paging done. No need to test.
-				"AZURE_DNS",         // Too slow
-				"AZURE_PRIVATE_DNS", // Too slow
-				"CLOUDFLAREAPI",     // Fails with >1000 corrections. See https://github.com/DNSControl/dnscontrol/issues/1440
-				"CSCGLOBAL",         // Doesn't page. Works fine.  Due to the slow API we skip.
-				"DESEC",             // Skip due to daily update limits.
-				"GANDI_V5",          // Their API is so damn slow. We'll add it back as needed.
+				// "AKAMAIEDGEDNS",     // No paging done. No need to test.
+				// "AZURE_DNS",         // Too slow
+				// "AZURE_PRIVATE_DNS", // Too slow
+				// "CLOUDFLAREAPI",     // Fails with >1000 corrections. See https://github.com/DNSControl/dnscontrol/issues/1440
+				// "CSCGLOBAL", // Doesn't page. Works fine.  Due to the slow API we skip.
+				// "DESEC",     // Skip due to daily update limits.
+				// "GANDI_V5",  // Their API is so damn slow. We'll add it back as needed.
 				"GCLOUD",
-				"HEDNS",     // No paging done. No need to test.
+				// "HEDNS",     // No paging done. No need to test.
 				"HOSTINGDE", // Pages.
 				"ORACLE",
 				"ROUTE53", // Batches up changes in pages.
