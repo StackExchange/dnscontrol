@@ -45,6 +45,7 @@ providers/namecheap @willpower232
 providers/netbird @yzqzss
 providers/netcup @kordianbruck
 providers/netlify @SphericalKat
+providers/netnod @Netnod
 providers/ns1 @costasd
 # providers/opensrs NEEDS VOLUNTEER
 providers/oracle @kallsyms
