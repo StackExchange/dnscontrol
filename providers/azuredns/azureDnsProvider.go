@@ -637,7 +637,7 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 		case "PTR":
 			recordSet.Properties.PtrRecords = append(recordSet.Properties.PtrRecords, &adns.PtrRecord{Ptrdname: new(rec.GetTargetField())})
 		case "TXT":
-			// Empty TXT record needs to have no value set in it's properties
+			// When a TXT record is empty, Azure requires that the .Properties.TxtRecords have no value, not "". Therefore we skip this.
 			if rec.GetTargetTXTSegmentCount() != 1 || rec.GetTargetTXTSegmented()[0] != "" {
 				var txts []*string
 				for _, txt := range rec.GetTargetTXTSegmented() {
