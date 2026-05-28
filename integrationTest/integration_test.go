@@ -430,17 +430,18 @@ func makeTests() []*TestGroup {
 
 		testgroup("NS only APEX",
 			not(
-				"DNSCALE",     // Apex NS records are managed by DNScale.
-				"DNSIMPLE",    // Does not support NS records nor subdomains.
-				"EXOSCALE",    // Not supported.
-				"GANDI_V5",    // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
-				"JOKER",       // Not supported via the Zone API.
-				"NAMEDOTCOM",  // "Ignores @ for NS records"
-				"NETCUP",      // NS records not currently supported.
-				"PORKBUN",     // Record ignored.
-				"SAKURACLOUD", // Silently ignores requests to remove NS at @.
-				"TRANSIP",     // "it is not allowed to have an NS for an @ record"
-				"VERCEL",      // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
+				"AZURE_PRIVATE_DNS", // Apex NS records are managed by Azure.
+				"DNSCALE",           // Apex NS records are managed by DNScale.
+				"DNSIMPLE",          // Does not support NS records nor subdomains.
+				"EXOSCALE",          // Not supported.
+				"GANDI_V5",          // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
+				"JOKER",             // Not supported via the Zone API.
+				"NAMEDOTCOM",        // "Ignores @ for NS records"
+				"NETCUP",            // NS records not currently supported.
+				"PORKBUN",           // Record ignored.
+				"SAKURACLOUD",       // Silently ignores requests to remove NS at @.
+				"TRANSIP",           // "it is not allowed to have an NS for an @ record"
+				"VERCEL",            // "invalid_name - Cannot set NS records at the root level. Only subdomain NS records are supported"
 			),
 			tc("Single NS at apex", ns("@", "ns1.foo.com.")),
 			tc("Dual NS at apex", ns("@", "ns2.foo.com."), ns("@", "ns1.foo.com.")),

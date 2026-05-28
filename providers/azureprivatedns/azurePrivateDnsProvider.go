@@ -67,7 +67,7 @@ var features = providers.DocumentationNotes{
 	// See providers/capabilities.go for the entire list of capabilities.
 	providers.CanGetZones:            providers.Can(),
 	providers.CanConcur:              providers.Unimplemented(),
-	providers.CanUseAlias:            providers.Cannot(),
+	providers.CanUseAlias:            providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
 	providers.CanUseAzureAlias:       providers.Cannot(),
 	providers.CanUseCAA:              providers.Cannot("Azure Private DNS does not support CAA records"),
 	providers.CanUseLOC:              providers.Cannot(),
