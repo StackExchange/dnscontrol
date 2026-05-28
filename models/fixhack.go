@@ -5,7 +5,7 @@ import (
 
 	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
-	"github.com/DNSControl/dnscontrol/v4/pkg/privatetypes"
+	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 	dnsv1 "github.com/miekg/dns"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
 )
@@ -29,7 +29,7 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "A":
 			rc.RDATA = dnsrdatav2.A{Addr: rc.GetTargetIP()}
 		case "ALIAS":
-			rc.RDATA = privatetypes.ALIAS{Target: rc.GetTargetField()}
+			rc.RDATA = privatetypesrdata.ALIAS{Target: rc.GetTargetField()}
 		case "AAAA":
 			rc.RDATA = dnsrdatav2.AAAA{Addr: rc.GetTargetIP()}
 
