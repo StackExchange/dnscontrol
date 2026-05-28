@@ -58,6 +58,15 @@
     "TenantID": "$AZURE_DNS_TENANT_ID",
     "domain": "$AZURE_DNS_DOMAIN"
   },
+  "AZURE_PRIVATE_DNS": {
+    "ClientID": "$AZURE_PRIVATE_DNS_CLIENT_ID",
+    "ClientSecret": "$AZURE_PRIVATE_DNS_CLIENT_SECRET",
+    "ResourceGroup": "$AZURE_PRIVATE_DNS_RESOURCE_GROUP",
+    "SubscriptionID": "$AZURE_PRIVATE_DNS_SUBSCRIPTION_ID",
+    "TYPE": "AZURE_PRIVATE_DNS",
+    "TenantID": "$AZURE_PRIVATE_DNS_TENANT_ID",
+    "domain": "$AZURE_PRIVATE_DNS_DOMAIN"
+  },
   "BIND": {
     "TYPE": "BIND",
     "domain": "$BIND_DOMAIN"
