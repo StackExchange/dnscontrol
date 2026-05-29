@@ -86,7 +86,7 @@ func (dsp *netnodProvider) getDiff2DomainCorrections(dc *models.DomainConfig, ex
 // Values containing + or / (e.g. ECH base64 data) retain their quotes.
 var httpsParamQuoteRe = regexp.MustCompile(`="([^"+/ ]*)"`)
 
-// buildRecordList returns a list of records for the resource record set from a change
+// buildRecordList returns a list of records for the resource record set from a change.
 func buildRecordList(change diff2.Change) (records []netnodPrimaryDNS.Record) {
 	for _, recordContent := range change.New {
 		record := netnodPrimaryDNS.Record{
