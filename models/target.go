@@ -89,6 +89,13 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 	if rc.Type == "NAPTR" && rc.GetTargetField() == "" {
 		rc.MustSetTarget(".")
 	}
+
+	if rc.Type == "HTTPS" || rc.Type == "SVCB" {
+		if rc.RDATA == nil {
+			panic("drat")
+		}
+	}
+
 	rr := rc.ToRR()
 	header := rr.Header().String()
 	full := rr.String()

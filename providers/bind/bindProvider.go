@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/bindserial"
 	"github.com/DNSControl/dnscontrol/v4/pkg/diff2"
@@ -31,7 +32,6 @@ import (
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypeinfo"
-	dnsv1 "github.com/miekg/dns"
 )
 
 // defaultZonesDir is used when the BIND credentials do not specify a
@@ -241,7 +241,8 @@ func (c *bindProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, 
 
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
-	zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	//zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
+	zp := dnsv2.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
 
 	foundRecords := models.Records{}
 	for rr, ok := zp.Next(); ok; rr, ok = zp.Next() {
@@ -249,20 +250,25 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		var prec *models.RecordConfig
 		var err error
 
-		rtype := rr.Header().Rrtype
-		rtypeStr := dnsv1.TypeToString[rtype]
+		// rtype := rr.Header().Rrtype
+		// rtypeStr := dnsv1.TypeToString[rtype]
+
+		// Set rtypeStr to the string version of the type, but if it's a fake type, use the fake type name instead.
+		rtype := dnsv2.RRToType(rr)
+		rtypeStr := dnsv2.TypeToString[rtype]
+
 		if rtypeinfo.IsModernType(rtypeStr) {
 			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().Ttl, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().TTL, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}
 			rec = *prec
-			rec.TTL = rr.Header().Ttl
+			rec.TTL = rr.Header().TTL
 		} else {
 			// Legacy types:
-			rec, err = dnsrr.RRtoRCTxtBug(rr, zoneName)
+			rec, err = dnsrr.RRtoRCV2(rr, zoneName)
 			if err != nil {
 				return nil, err
 			}

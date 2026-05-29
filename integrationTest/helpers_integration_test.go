@@ -519,26 +519,28 @@ func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey stri
 }
 
 func https(name string, priority uint16, target string, params string) *models.RecordConfig {
-	r := makeRec(name, target, "HTTPS")
+	r := makeRecNoFix(name, target, "HTTPS")
 	r.SvcPriority = priority
 	r.SvcParams = params
 
-	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
-	rty := dnsv2.TypeSVCB
-	cp := params
-	if strings.Contains(cp, "ech=IGNORE") {
-		cp = strings.ReplaceAll(cp, "ech=IGNORE", "")
-	}
-	rrv2, err := dnsv2.NewData(rty, fmt.Sprintf("%d %s %s", priority, target, cp))
-	if err != nil {
-		panic(fmt.Sprintf("could not parse SVCB record: %s (%d %s %s)", err, priority, target, cp))
-	}
-	r.RDATA = rrv2
-	old := r.RDATA.String()
-	r.ComparableV3 = r.RDATA.String()
-	if r.ComparableV3 != old {
-		panic("DEBUG CV3")
-	}
+	// // Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
+	// rty := dnsv2.TypeSVCB
+	// cp := params
+	// if strings.Contains(cp, "ech=IGNORE") {
+	// 	cp = strings.ReplaceAll(cp, "ech=IGNORE", "")
+	// }
+	// rrv2, err := dnsv2.NewData(rty, fmt.Sprintf("%d %s %s", priority, target, cp))
+	// if err != nil {
+	// 	panic(fmt.Sprintf("could not parse SVCB record: %s (%d %s %s)", err, priority, target, cp))
+	// }
+	// r.RDATA = rrv2
+	// old := r.RDATA.String()
+	// r.ComparableV3 = r.RDATA.String()
+	// if r.ComparableV3 != old {
+	// 	panic("DEBUG CV3")
+	// }
+
+	r.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
 
 	return r
 }
@@ -572,15 +574,18 @@ func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
 }
 
 func makeRec(name, target, typ string) *models.RecordConfig {
+	r := makeRecNoFix(name, target, typ)
+	r.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
+	return r
+}
+
+func makeRecNoFix(name, target, typ string) *models.RecordConfig {
 	r := &models.RecordConfig{
 		Type: typ,
 		TTL:  300,
 	}
 	SetLabel(r, name, "**current-domain**.")
 	r.MustSetTarget(target)
-
-	r.FixUp(globalDCN.NameASCII) // Populates .RDATA and .TypeNum if needed.
-
 	return r
 }
 
@@ -593,8 +598,9 @@ func manyA(namePattern, target string, n int) []*models.RecordConfig {
 }
 
 func mx(name string, prio uint16, target string) *models.RecordConfig {
-	r := makeRec(name, target, "MX")
+	r := makeRecNoFix(name, target, "MX")
 	r.MxPreference = prio
+	r.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
 	return r
 }
 
@@ -795,8 +801,9 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 }
 
 func txt(name, target string) *models.RecordConfig {
-	r := makeRec(name, "", "TXT")
+	r := makeRecNoFix(name, "", "TXT")
 	panicOnErr(r.SetTargetTXT(target))
+	r.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
 	return r
 }
 

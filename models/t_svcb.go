@@ -5,17 +5,16 @@ import (
 	"strings"
 
 	dnsv2 "codeberg.org/miekg/dns"
-	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	svcbv2 "codeberg.org/miekg/dns/svcb"
 	dnsv1 "github.com/miekg/dns"
 )
 
-func (rc *RecordConfig) targetCombinedSVCBRaw() string {
-	if rc.SvcParams == "" {
-		return fmt.Sprintf("%d %s", rc.SvcPriority, rc.target)
-	}
-	return fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.target, rc.SvcParams)
-}
+// func (rc *RecordConfig) targetCombinedSVCBRaw() string {
+// 	if rc.SvcParams == "" {
+// 		return fmt.Sprintf("%d %s", rc.SvcPriority, rc.target)
+// 	}
+// 	return fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.target, rc.SvcParams)
+// }
 
 // SetTargetSVCB sets the SVCB fields.
 func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []dnsv1.SVCBKeyValue) error {
@@ -25,7 +24,7 @@ func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []d
 	}
 	paramsStr := []string{}
 	for _, kv := range params {
-		paramsStr = append(paramsStr, fmt.Sprintf("%s=%s", kv.Key(), kv.String()))
+		paramsStr = append(paramsStr, fmt.Sprintf("%s=%q", kv.Key(), kv.String()))
 	}
 	rc.SvcParams = strings.Join(paramsStr, " ")
 	if rc.Type == "" {
@@ -36,12 +35,13 @@ func (rc *RecordConfig) SetTargetSVCB(priority uint16, target string, params []d
 	}
 
 	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
-	valuev2, err := convertSVCBv1v2(params)
-	if err != nil {
-		return fmt.Errorf("failed to convert SVCB parameters from v1 to v2: %w", err)
-	}
-	rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: target, Value: valuev2}
-	rc.ComparableV3 = rc.RDATA.String()
+	// valuev2, err := convertSVCBv1v2(params)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to convert SVCB parameters from v1 to v2: %w", err)
+	// }
+	// rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: target, Value: valuev2}
+	// rc.ComparableV3 = rc.RDATA.String() + "Z"
+	rc.FixUp(".")
 
 	return nil
 }
@@ -83,22 +83,34 @@ func (rc *RecordConfig) SetTargetSVCBString(origin, contents string) error {
 
 func convertSVCBv1v2(params []dnsv1.SVCBKeyValue) ([]svcbv2.Pair, error) {
 	var value []svcbv2.Pair
-	for _, kv := range params {
-		k := kv.Key().String()
-		keyCode := svcbv2.StringToKey(k)
-		v := kv.String()
+	for _, kvV1 := range params {
+		kV1 := kvV1.Key().String()
+		keyCodeV2 := svcbv2.StringToKey(kV1)
+		vV1 := kvV1.String()
+		if len(vV1) > 2 && vV1[0] == '"' && vV1[len(vV1)-1] == '"' {
+			panic("V has quotes")
+		}
+		fmt.Printf("DEBUG: convertSVCBv1v2: k=%s keyCode=%d v1=%s\n", kV1, keyCodeV2, vV1)
 
-		pairFn := svcbv2.KeyToPair(keyCode)
+		pairFn := svcbv2.KeyToPair(keyCodeV2)
 		if pairFn == nil {
-			return nil, fmt.Errorf("failed to lookup svc key: %s", k)
+			return nil, fmt.Errorf("failed to lookup svc key: %s", kV1)
 		}
 		pair := pairFn()
-		if svcbv2.PairToKey(pair) != keyCode {
-			return nil, fmt.Errorf("key constant is not in sync: %v", keyCode)
+		if svcbv2.PairToKey(pair) != keyCodeV2 {
+			return nil, fmt.Errorf("key constant is not in sync: %v", keyCodeV2)
 		}
-		err := svcbv2.Parse(pair, v, "")
+		err := svcbv2.Parse(pair, vV1, "")
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse svc pair: %s", k)
+			return nil, fmt.Errorf("failed to parse svc pair: %s", kV1)
+		}
+
+		vV2 := pair.String()
+		if len(vV2) > 2 && vV2[0] == '"' && vV2[len(vV2)-1] == '"' {
+			panic("V2 has quotes")
+		}
+		if vV1 != vV2 {
+			panic(fmt.Sprintf("conversion from v1 to v2 is not stable: key=%s v1=%s v2=%s", kV1, vV1, vV2))
 		}
 
 		value = append(value, pair)

@@ -76,7 +76,7 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "CAA":
 			rc.RDATA = dnsrdatav2.CAA{Flag: rc.CaaFlag, Tag: rc.CaaTag, Value: rc.GetTargetField()}
 		case "CNAME":
-			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin)
+			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin+".")
 			rc.RDATA = dnsrdatav2.CNAME{Target: targ}
 
 		case "CF_WORKER_ROUTE":
@@ -98,7 +98,13 @@ func (rc *RecordConfig) FixUp(origin string) {
 				panic("BUG: Failed to convert SVCB value to v2: " + err.Error())
 			}
 			rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField(), Value: valuev2}
-			rc.ComparableV3 = rc.RDATA.String()
+			x1, x2, x3 := rc.RDATA.String(), rc.String(), rc.GetTargetCombined()
+			if x1 != x2 {
+				panic(fmt.Sprintf("BUG: SVCB String() is not stable: RDATA.String()=%s RecordConfig.String()=%s", x1, x2))
+			}
+			if x1 != x3 {
+				panic(fmt.Sprintf("BUG: SVCB String() is not stable: RDATA.String()=%s GetTargetCombined()=%s", x1, x3))
+			}
 
 		case "LOC":
 			rc.RDATA = dnsrdatav2.LOC{Version: rc.LocVersion, Size: rc.LocSize, HorizPre: rc.LocHorizPre, VertPre: rc.LocVertPre, Latitude: rc.LocLatitude, Longitude: rc.LocLongitude, Altitude: rc.LocAltitude}
@@ -141,7 +147,6 @@ func (rc *RecordConfig) FixUp(origin string) {
 				panic("BUG: Failed to convert SVCB value to v2: " + err.Error())
 			}
 			rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField(), Value: valuev2}
-			rc.ComparableV3 = rc.RDATA.String()
 
 		case "TLSA":
 			rc.RDATA = dnsrdatav2.TLSA{Usage: rc.TlsaUsage, Selector: rc.TlsaSelector, MatchingType: rc.TlsaMatchingType, Certificate: rc.GetTargetField()}
@@ -157,6 +162,8 @@ func (rc *RecordConfig) FixUp(origin string) {
 	// .ComparableV3:
 	if rc.ComparableV3 == "" {
 		rc.ComparableV3 = rc.RDATA.String()
-		//fmt.Printf("DEBUG: COMPARE for %s --- %s\n", rc.Type, rc.ComparableV3)
+		if strings.HasSuffix(rc.ComparableV3, " ") {
+			rc.ComparableV3 += "W"
+		}
 	}
 }
