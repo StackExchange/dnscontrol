@@ -8,6 +8,8 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 	dnsv1 "github.com/miekg/dns"
 	dnsutilv1 "github.com/miekg/dns/dnsutil"
+
+	_ "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes"
 )
 
 // FixUp populates the "V3 Fields": .TypeNum, .RDATA and .ComparableV3.
@@ -32,6 +34,8 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = privatetypesrdata.ALIAS{Target: rc.GetTargetField()}
 		case "AAAA":
 			rc.RDATA = dnsrdatav2.AAAA{Addr: rc.GetTargetIP()}
+		case "AZURE_ALIAS":
+			rc.RDATA = privatetypesrdata.AZURE_ALIAS{Target: rc.GetTargetField(), AliasType: rc.AzureAlias["type"]}
 
 		case "CAA":
 			rc.RDATA = dnsrdatav2.CAA{Flag: rc.CaaFlag, Tag: rc.CaaTag, Value: rc.GetTargetField()}
@@ -74,6 +78,13 @@ func (rc *RecordConfig) FixUp(origin string) {
 
 		case "RP":
 			rc.RDATA = dnsrdatav2.RP{Mbox: rc.F.(dnsv1.RP).Mbox, Txt: rc.F.(dnsv1.RP).Txt}
+		case "R53_ALIAS":
+			rc.RDATA = privatetypesrdata.R53_ALIAS{
+				Target:           rc.GetTargetField(),
+				AliasType:        rc.R53Alias["type"],
+				ZoneID:           rc.R53Alias["zone_id"],
+				EvalTargetHealth: rc.R53Alias["evaluate_target_health"],
+			}
 
 		case "SMIMEA":
 			rc.RDATA = dnsrdatav2.SMIMEA{Usage: rc.SmimeaUsage, Selector: rc.SmimeaSelector, MatchingType: rc.SmimeaMatchingType, Certificate: rc.GetTargetField()}
