@@ -82,6 +82,9 @@ func AddNSRecords(dc *models.DomainConfig) {
 			fmt.Printf("failed AddNSRecords rc.SetTarget(%q): %s\n", t, err)
 		}
 
+		// Hack
+		rc.FixUp(dc.Name)
+
 		dc.Records = append(dc.Records, rc)
 	}
 }
