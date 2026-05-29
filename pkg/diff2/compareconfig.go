@@ -103,12 +103,18 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
+
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
+
+	desired = models.ModifySVCBForComparison(existing, desired)
 	cc.addRecords(desired, false)
+
 	cc.verifyCNAMEAssertions()
+
 	sort.Slice(cc.ldata, func(i, j int) bool {
 		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
 	})
+
 	return cc
 }
 

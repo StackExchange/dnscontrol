@@ -2,7 +2,6 @@ package diff2
 
 import (
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -243,8 +242,6 @@ func humanDiff(a, b targetConfig) string {
 		a.comparableNoTTL)
 }
 
-var echRe = regexp.MustCompile(`ech="?([\w+/=]+)"?`)
-
 // diffTargets is the real workhorse of the diff2 system.  All the setup has been complete,
 // now we can find the differences between two zones.
 func diffTargets(existing, desired []targetConfig) ChangeList {
@@ -253,30 +250,6 @@ func diffTargets(existing, desired []targetConfig) ChangeList {
 	// Nothing to do?
 	if len(existing) == 0 && len(desired) == 0 {
 		return nil
-	}
-
-	echs := make(map[string]string)
-	for _, v := range existing {
-		matches := echRe.FindStringSubmatch(v.rec.SvcParams)
-		if len(matches) == 2 {
-			echs[v.rec.NameFQDN] = matches[1]
-		}
-	}
-	for i, v := range desired {
-		if strings.Contains(v.rec.SvcParams, "ech=IGNORE") {
-			var unquoted, quoted string
-			if _, ok := echs[v.rec.NameFQDN]; ok {
-				unquoted = fmt.Sprintf("ech=%s", echs[v.rec.NameFQDN])
-				quoted = fmt.Sprintf("ech=%s", echs[v.rec.NameFQDN])
-			} else {
-				unquoted = ""
-				quoted = ""
-			}
-			v.rec.SvcParams = echRe.ReplaceAllString(v.rec.SvcParams, unquoted)
-			v.comparableFull = echRe.ReplaceAllString(v.comparableFull, quoted)
-			v.comparableNoTTL = echRe.ReplaceAllString(v.comparableNoTTL, quoted)
-		}
-		desired[i] = v
 	}
 
 	var instructions ChangeList

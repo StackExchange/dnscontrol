@@ -16,7 +16,7 @@ func init() {
 
 // DS RR.
 type DS struct {
-	dnsv1.DS
+	dnsrdatav2.DS
 }
 
 // Name returns the DNS record type as a string.
@@ -45,11 +45,12 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 // FromStruct fills in the RecordConfig from a struct, typically from an API response.
 func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	// Fields is of type "any" thus we must validate the type. It should be the "inner" type of .F, not the outer type, rtype.DS{}.
-	ds, ok := fields.(*dnsv1.DS)
+	ds, ok := fields.(dnsrdatav2.DS)
 	if !ok {
-		return fmt.Errorf("fields is not *dns.DS, got %T", fields)
+		panic(fmt.Sprintf("assertion failed: fields should be *dnsrdatav2.DS, got %T", fields))
+		//return fmt.Errorf("fields is not *dns.DS, got %T", fields)
 	}
-	rec.F = &DS{*ds}
+	rec.F = &DS{ds}
 
 	// Hack to deal with the fact that fixlegacy.go can't import rtype.
 	switch rec.F.(type) {
@@ -79,7 +80,7 @@ func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
 func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
 	// Copy fields:
 	rec.F = &DS{
-		dnsv1.DS{
+		dnsrdatav2.DS{
 			KeyTag:     rec.DsKeyTag,
 			Algorithm:  rec.DsAlgorithm,
 			DigestType: rec.DsDigestType,

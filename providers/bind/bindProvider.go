@@ -260,7 +260,7 @@ func ParseZoneContents(content string, zoneName string, zonefileName string) (mo
 		if rtypeinfo.IsModernType(rtypeStr) {
 			// Modern types:
 			name := rr.Header().Name
-			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().TTL, rtypeStr, rr, domaintags.MakeDomainNameVarieties(zoneName))
+			prec, err = rtypecontrol.NewRecordConfigFromStruct(name, rr.Header().TTL, rtypeStr, rr.Data(), domaintags.MakeDomainNameVarieties(zoneName))
 			if err != nil {
 				return nil, err
 			}

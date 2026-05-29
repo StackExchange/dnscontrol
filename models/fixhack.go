@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
@@ -93,17 +94,18 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = dnsrdatav2.DS{KeyTag: rc.DsKeyTag, Algorithm: rc.DsAlgorithm, DigestType: rc.DsDigestType, Digest: rc.GetTargetField()}
 
 		case "HTTPS":
-			valuev2, err := convertSVCBv1v2(rc.GetSVCBValue())
-			if err != nil {
-				panic("BUG: Failed to convert SVCB value to v2: " + err.Error())
-			}
-			rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField(), Value: valuev2}
-			x1, x2, x3 := rc.RDATA.String(), rc.String(), rc.GetTargetCombined()
-			if x1 != x2 {
-				panic(fmt.Sprintf("BUG: SVCB String() is not stable: RDATA.String()=%s RecordConfig.String()=%s", x1, x2))
-			}
-			if x1 != x3 {
-				panic(fmt.Sprintf("BUG: SVCB String() is not stable: RDATA.String()=%s GetTargetCombined()=%s", x1, x3))
+			if rc.SvcPriority == 0 {
+				rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField()}
+			} else {
+				p := rc.SvcParams
+				p = strings.ReplaceAll(p, `ech=IGNORE`, ``)
+				p = strings.ReplaceAll(p, ` `, ` `) // Collapse 2 spaces into 1
+				p = strings.TrimSpace(p)
+				rd, err := dnsv2.NewData(dnsv2.TypeHTTPS, fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.GetTargetField(), p), origin)
+				if err != nil {
+					panic(fmt.Sprintf("BUG: Failed to create RDATA for HTTPS record: %v", err))
+				}
+				rc.RDATA = rd
 			}
 
 		case "LOC":
@@ -142,11 +144,15 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "SSHFP":
 			rc.RDATA = dnsrdatav2.SSHFP{Algorithm: rc.SshfpAlgorithm, Type: rc.SshfpFingerprint, FingerPrint: rc.GetTargetField()}
 		case "SVCB":
-			valuev2, err := convertSVCBv1v2(rc.GetSVCBValue())
-			if err != nil {
-				panic("BUG: Failed to convert SVCB value to v2: " + err.Error())
+			if rc.SvcPriority == 0 {
+				rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField()}
+			} else {
+				rd, err := dnsv2.NewData(dnsv2.TypeSVCB, fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.GetTargetField(), rc.SvcParams), origin)
+				if err != nil {
+					panic(fmt.Sprintf("BUG: Failed to create RDATA for HTTPS record: %v", err))
+				}
+				rc.RDATA = rd
 			}
-			rc.RDATA = dnsrdatav2.SVCB{Priority: rc.SvcPriority, Target: rc.GetTargetField(), Value: valuev2}
 
 		case "TLSA":
 			rc.RDATA = dnsrdatav2.TLSA{Usage: rc.TlsaUsage, Selector: rc.TlsaSelector, MatchingType: rc.TlsaMatchingType, Certificate: rc.GetTargetField()}

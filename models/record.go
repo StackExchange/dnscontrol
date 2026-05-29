@@ -369,8 +369,8 @@ func (rc *RecordConfig) ToComparableNoTTL() string {
 	case "UNKNOWN":
 		return fmt.Sprintf("rtype=%s rdata=%s", rc.UnknownTypeName, rc.target)
 	case "HTTPS", "SVCB":
-		panic("unused ToComparableNoTTL for SVCB/HTTPS. Should be using .ComparableV3 instead")
-		//return rc.targetCombinedSVCBRaw()
+		//panic("unused ToComparableNoTTL for SVCB/HTTPS. Should be using .ComparableV3 instead")
+		return rc.targetCombinedSVCBRaw()
 
 	}
 	return rc.GetTargetCombined()

@@ -90,10 +90,8 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 		rc.MustSetTarget(".")
 	}
 
-	if rc.Type == "HTTPS" || rc.Type == "SVCB" {
-		if rc.RDATA == nil {
-			panic("drat")
-		}
+	if rc.RDATA != nil {
+		return rc.RDATA.String()
 	}
 
 	rr := rc.ToRR()
