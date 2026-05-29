@@ -45,11 +45,6 @@ func (rr *CFWORKERROUTE) String() string {
 
 // Parser interface.
 func (rr *CFWORKERROUTE) Parse(tokens []string, s string) error {
-	fmt.Printf("DEBUG: CFWORKERROUTE.Parse tokens=%q\n", tokens)
-	fmt.Printf("DEBUG: CFWORKERROUTE.Parse string=%q\n", s)
-	if len(tokens) < 2 { // no rdata
-		return nil
-	}
 	args := TokensToArgs(tokens)
 	if len(args) != 2 {
 		return fmt.Errorf("CFWORKERROUTE requires exactly 2 arguments, got %d", len(args))
