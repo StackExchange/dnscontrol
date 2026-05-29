@@ -1,6 +1,7 @@
 package privatetypes
 
 import (
+	"fmt"
 	"strconv"
 
 	dnsv2 "codeberg.org/miekg/dns"
@@ -38,16 +39,22 @@ func (rr *CFWORKERROUTE) Clone() dnsv2.RR { return &CFWORKERROUTE{rr.Hdr, rr.Whe
 func (rr *CFWORKERROUTE) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tCFWORKERROUTE\t" +
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tCF_WORKER_ROUTE\t" +
 		txtutil.Zoneify([]string{rr.When, rr.Then})
 }
 
 // Parser interface.
-func (rr *CFWORKERROUTE) Parse(tokens []string, _ string) error {
+func (rr *CFWORKERROUTE) Parse(tokens []string, s string) error {
+	fmt.Printf("DEBUG: CFWORKERROUTE.Parse tokens=%q\n", tokens)
+	fmt.Printf("DEBUG: CFWORKERROUTE.Parse string=%q\n", s)
 	if len(tokens) < 2 { // no rdata
 		return nil
 	}
-	rr.When = tokens[0]
-	rr.Then = tokens[1]
+	args := TokensToArgs(tokens)
+	if len(args) != 2 {
+		return fmt.Errorf("CFWORKERROUTE requires exactly 2 arguments, got %d", len(args))
+	}
+	rr.When = args[0]
+	rr.Then = args[1]
 	return nil
 }
