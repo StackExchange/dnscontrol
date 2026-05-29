@@ -89,7 +89,7 @@ DNSControl will retry rate-limited requests (status 429) and respect the adverti
 
 <!-- provider-features-start -->
 - Provider Type
-  - [Official Support](../provider/index#providers-with-official-support): ❌
+  - [Official Support](../provider/index.md#providers-with-official-support): ❌
   - DNS Provider: ✅
   - Registrar: ❌
 - Provider API
