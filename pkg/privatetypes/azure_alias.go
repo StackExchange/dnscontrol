@@ -1,6 +1,7 @@
 package privatetypes
 
 import (
+	"fmt"
 	"strconv"
 
 	dnsv2 "codeberg.org/miekg/dns"
@@ -8,15 +9,13 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 )
 
-const TypeAZURE_ALIAS = 65304
+// AZURE_ALIAS
 
 func init() {
-	dnsv2.TypeToRR[TypeAZURE_ALIAS] = func() dnsv2.RR { return new(AZURE_ALIAS) }
-	dnsv2.TypeToString[TypeAZURE_ALIAS] = "AZURE_ALIAS"
-	dnsv2.StringToType["AZURE_ALIAS"] = TypeAZURE_ALIAS
+	Register(TypeAZURE_ALIAS, "AZURE_ALIAS", func() dnsv2.RR { return new(AZURE_ALIAS) })
 }
 
-// AZURE_ALIAS
+const TypeAZURE_ALIAS = 65304
 
 type AZURE_ALIAS struct {
 	Hdr       dnsv2.Header
@@ -45,9 +44,10 @@ func (rr *AZURE_ALIAS) String() string {
 
 // Parser interface.
 func (rr *AZURE_ALIAS) Parse(tokens []string, _ string) error {
-	if len(tokens) < 1 { // no rdata
-		return nil
+	args := TokensToArgs(tokens)
+	if len(args) != 1 {
+		return fmt.Errorf("%s requires exactly 1 argument, got %d", dnsutilv2.TypeToString(rr.Type()), len(args))
 	}
-	rr.Target = tokens[0]
+	rr.Target = args[0]
 	return nil
 }

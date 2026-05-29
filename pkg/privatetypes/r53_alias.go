@@ -1,6 +1,7 @@
 package privatetypes
 
 import (
+	"fmt"
 	"strconv"
 
 	dnsv2 "codeberg.org/miekg/dns"
@@ -8,21 +9,19 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 )
 
+// R53_ALIAS
+
 func init() {
-	dnsv2.TypeToRR[TypeR53_ALIAS] = func() dnsv2.RR { return new(R53_ALIAS) }
-	dnsv2.TypeToString[TypeR53_ALIAS] = "R53_ALIAS"
-	dnsv2.StringToType["R53_ALIAS"] = TypeR53_ALIAS
+	Register(TypeR53_ALIAS, "R53_ALIAS", func() dnsv2.RR { return new(R53_ALIAS) })
 }
 
-// R53_ALIAS
+const TypeR53_ALIAS = 65306
 
 type R53_ALIAS struct {
 	Hdr dnsv2.Header
 
 	AliasType, Target, EvalTargetHealth string
 }
-
-const TypeR53_ALIAS = 65306
 
 // Typer interface.
 func (rr *R53_ALIAS) Type() uint16 { return TypeR53_ALIAS }
@@ -50,11 +49,12 @@ func (rr *R53_ALIAS) String() string {
 
 // Parser interface.
 func (rr *R53_ALIAS) Parse(tokens []string, s string) error {
-	if len(tokens) < 3 { // no rdata
-		return nil
+	args := TokensToArgs(tokens)
+	if len(args) != 3 {
+		return fmt.Errorf("%s requires exactly 3 arguments, got %d", dnsutilv2.TypeToString(rr.Type()), len(args))
 	}
-	rr.AliasType = tokens[0]
-	rr.Target = tokens[1]
-	rr.EvalTargetHealth = tokens[2]
+	rr.AliasType = args[0]
+	rr.Target = args[1]
+	rr.EvalTargetHealth = args[2]
 	return nil
 }

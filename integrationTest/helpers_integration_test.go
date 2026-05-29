@@ -580,18 +580,6 @@ func makeRec(name, target, typ string) *models.RecordConfig {
 	r.MustSetTarget(target)
 
 	r.FixUp(globalDCN.NameASCII) // Populates .RDATA and .TypeNum if needed.
-	// // Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
-	// switch typ {
-	// case "CNAME":
-	// 	r.RDATA = &dnsrdatav2.CNAME{Target: r.GetTargetField()}
-	// 	r.ComparableV3 = r.RDATA.String()
-	// case "NS":
-	// 	r.RDATA = &dnsrdatav2.NS{Ns: r.GetTargetField()}
-	// 	r.ComparableV3 = r.RDATA.String()
-	// case "DS":
-	// 	r.RDATA = &dnsrdatav2.DS{KeyTag: r.DsKeyTag, Algorithm: r.DsAlgorithm, DigestType: r.DsDigestType, Digest: r.DsDigest}
-	// 	r.ComparableV3 = r.RDATA.String()
-	// }
 
 	return r
 }

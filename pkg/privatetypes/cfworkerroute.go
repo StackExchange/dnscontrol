@@ -10,21 +10,19 @@ import (
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 )
 
+// CFWORKERROUTE
+
 func init() {
-	dnsv2.TypeToRR[TypeCFWORKERROUTE] = func() dnsv2.RR { return new(CFWORKERROUTE) }
-	dnsv2.TypeToString[TypeCFWORKERROUTE] = "CF_WORKER_ROUTE"
-	dnsv2.StringToType["CF_WORKER_ROUTE"] = TypeCFWORKERROUTE
+	Register(TypeCFWORKERROUTE, "CF_WORKER_ROUTE", func() dnsv2.RR { return new(CFWORKERROUTE) })
 }
 
-// CFWORKERROUTE
+const TypeCFWORKERROUTE = 65305
 
 type CFWORKERROUTE struct {
 	Hdr  dnsv2.Header
 	When string
 	Then string
 }
-
-const TypeCFWORKERROUTE = 65305
 
 // Typer interface.
 func (rr *CFWORKERROUTE) Type() uint16 { return TypeCFWORKERROUTE }
@@ -47,7 +45,7 @@ func (rr *CFWORKERROUTE) String() string {
 func (rr *CFWORKERROUTE) Parse(tokens []string, s string) error {
 	args := TokensToArgs(tokens)
 	if len(args) != 2 {
-		return fmt.Errorf("CFWORKERROUTE requires exactly 2 arguments, got %d", len(args))
+		return fmt.Errorf("%s requires exactly 2 arguments, got %d", dnsutilv2.TypeToString(rr.Type()), len(args))
 	}
 	rr.When = args[0]
 	rr.Then = args[1]

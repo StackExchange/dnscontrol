@@ -8,19 +8,17 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 )
 
+// ADGUARDHOME_A_PASSTHROUGH
+
 func init() {
-	dnsv2.TypeToRR[TypeADGUARDHOME_A_PASSTHROUGH] = func() dnsv2.RR { return new(ADGUARDHOME_A_PASSTHROUGH) }
-	dnsv2.TypeToString[TypeADGUARDHOME_A_PASSTHROUGH] = "ADGUARDHOME_A_PASSTHROUGH"
-	dnsv2.StringToType["ADGUARDHOME_A_PASSTHROUGH"] = TypeADGUARDHOME_A_PASSTHROUGH
+	Register(TypeADGUARDHOME_A_PASSTHROUGH, "ADGUARDHOME_A_PASSTHROUGH", func() dnsv2.RR { return new(ADGUARDHOME_A_PASSTHROUGH) })
 }
 
-// ADGUARDHOME_A_PASSTHROUGH
+const TypeADGUARDHOME_A_PASSTHROUGH = 65301
 
 type ADGUARDHOME_A_PASSTHROUGH struct {
 	Hdr dnsv2.Header
 }
-
-const TypeADGUARDHOME_A_PASSTHROUGH = 65301
 
 // Typer interface.
 func (rr *ADGUARDHOME_A_PASSTHROUGH) Type() uint16 { return TypeADGUARDHOME_A_PASSTHROUGH }

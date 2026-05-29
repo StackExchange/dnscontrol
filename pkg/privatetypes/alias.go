@@ -1,6 +1,7 @@
 package privatetypes
 
 import (
+	"fmt"
 	"strconv"
 
 	dnsv2 "codeberg.org/miekg/dns"
@@ -8,13 +9,11 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 )
 
-func init() {
-	dnsv2.TypeToRR[TypeALIAS] = func() dnsv2.RR { return new(ALIAS) }
-	dnsv2.TypeToString[TypeALIAS] = "ALIAS"
-	dnsv2.StringToType["ALIAS"] = TypeALIAS
-}
-
 // ALIAS
+
+func init() {
+	Register(TypeALIAS, "ALIAS", func() dnsv2.RR { return new(ALIAS) })
+}
 
 const TypeALIAS = 65303
 
@@ -40,9 +39,10 @@ func (rr *ALIAS) String() string {
 
 // Parser interface.
 func (rr *ALIAS) Parse(tokens []string, _ string) error {
-	if len(tokens) < 1 { // no rdata
-		return nil
+	args := TokensToArgs(tokens)
+	if len(args) != 1 {
+		return fmt.Errorf("%s requires exactly 1 argument, got %d", dnsutilv2.TypeToString(rr.Type()), len(args))
 	}
-	rr.Target = tokens[0]
+	rr.Target = args[0]
 	return nil
 }
