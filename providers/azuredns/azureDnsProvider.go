@@ -676,13 +676,6 @@ func (a *azurednsProvider) recordToNativeDiff2(recordKey models.RecordKey, recor
 			}
 			recordSet.Properties.CaaRecords = append(recordSet.Properties.CaaRecords, &adns.CaaRecord{Value: new(rec.GetTargetField()), Tag: new(rec.CaaTag), Flags: new(int32(rec.CaaFlag))})
 		case "AZURE_ALIAS_A", "AZURE_ALIAS_AAAA", "AZURE_ALIAS_CNAME":
-			//aatype := rec.AzureAlias["type"]
-			//recordSet.Type = &aatype
-			//aatarg := new(rec.GetTargetField())
-			//aasub := adns.SubResource{ID: aatarg}
-			//recordSet.Properties.TargetResource = &aasub
-
-			//
 			recordSet.Type = new(rec.AzureAlias["type"])
 			recordSet.Properties.TargetResource = new(adns.SubResource{ID: new(rec.GetTargetField())})
 
