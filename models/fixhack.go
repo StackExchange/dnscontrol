@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
@@ -42,6 +43,11 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "CNAME":
 			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin)
 			rc.RDATA = dnsrdatav2.CNAME{Target: targ}
+
+		case "CF_WORKER_ROUTE":
+			part := strings.SplitN(rc.GetTargetField(), ",", 2)
+			rc.RDATA = privatetypesrdata.CFWORKERROUTE{When: part[0], Then: part[1]}
+
 		case "DHCID":
 			rc.RDATA = dnsrdatav2.DHCID{Digest: rc.GetTargetField()}
 		case "DNAME":
@@ -109,7 +115,7 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = dnsrdatav2.TXT{Txt: []string{rc.GetTargetField()}}
 
 		default:
-			panic(fmt.Sprintf("RDATA CONVERSION NOT IMPLEMENTED TYPE=%q", rc.Type))
+			panic(fmt.Sprintf("RDATA FIXUP NOT IMPLEMENTED TYPE=%q", rc.Type))
 		}
 	}
 

@@ -1,0 +1,53 @@
+package privatetypes
+
+import (
+	"strconv"
+
+	dnsv2 "codeberg.org/miekg/dns"
+	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
+	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
+	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
+)
+
+func init() {
+	dnsv2.TypeToRR[TypeCFWORKERROUTE] = func() dnsv2.RR { return new(CFWORKERROUTE) }
+	dnsv2.TypeToString[TypeCFWORKERROUTE] = "CF_WORKER_ROUTE"
+	dnsv2.StringToType["CF_WORKER_ROUTE"] = TypeCFWORKERROUTE
+}
+
+// CFWORKERROUTE
+
+type CFWORKERROUTE struct {
+	Hdr  dnsv2.Header
+	When string
+	Then string
+}
+
+const TypeCFWORKERROUTE = 65304
+
+// Typer interface.
+func (rr *CFWORKERROUTE) Type() uint16 { return TypeCFWORKERROUTE }
+
+// RR interface.
+func (rr *CFWORKERROUTE) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *CFWORKERROUTE) Len() int              { return rr.Hdr.Len() + 1 + len(rr.When) + 1 + len(rr.Then) }
+func (rr *CFWORKERROUTE) Data() dnsv2.RDATA {
+	return &privatetypesrdata.CFWORKERROUTE{When: rr.When, Then: rr.Then}
+}
+func (rr *CFWORKERROUTE) Clone() dnsv2.RR { return &CFWORKERROUTE{rr.Hdr, rr.When, rr.Then} }
+func (rr *CFWORKERROUTE) String() string {
+	return rr.Header().Name + "\t" +
+		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tCFWORKERROUTE\t" +
+		txtutil.Zoneify([]string{rr.When, rr.Then})
+}
+
+// Parser interface.
+func (rr *CFWORKERROUTE) Parse(tokens []string, _ string) error {
+	if len(tokens) < 2 { // no rdata
+		return nil
+	}
+	rr.When = tokens[0]
+	rr.Then = tokens[1]
+	return nil
+}
