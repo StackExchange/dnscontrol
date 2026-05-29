@@ -16,12 +16,12 @@ func init() {
 
 // ALIAS
 
+const TypeALIAS = 65303
+
 type ALIAS struct {
 	Hdr    dnsv2.Header
 	Target string
 }
-
-const TypeALIAS = 65300
 
 // Typer interface.
 func (rr *ALIAS) Type() uint16 { return TypeALIAS }

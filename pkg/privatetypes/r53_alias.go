@@ -22,7 +22,7 @@ type R53_ALIAS struct {
 	AliasType, Target, EvalTargetHealth string
 }
 
-const TypeR53_ALIAS = 65302
+const TypeR53_ALIAS = 65306
 
 // Typer interface.
 func (rr *R53_ALIAS) Type() uint16 { return TypeR53_ALIAS }

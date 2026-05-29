@@ -13,6 +13,6 @@ func TestAlias(t *testing.T) {
 		t.Fatal(err)
 	}
 	if rry.String() != y.String() {
-		t.Fatalf("ALIAS string presentations should be identical: %q %q", rry.String(), y.String())
+		t.Fatalf("ALIAS string presentations should be identical:\n%q\n%q", rry.String(), y.String())
 	}
 }

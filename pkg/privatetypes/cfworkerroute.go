@@ -24,7 +24,7 @@ type CFWORKERROUTE struct {
 	Then string
 }
 
-const TypeCFWORKERROUTE = 65304
+const TypeCFWORKERROUTE = 65305
 
 // Typer interface.
 func (rr *CFWORKERROUTE) Type() uint16 { return TypeCFWORKERROUTE }

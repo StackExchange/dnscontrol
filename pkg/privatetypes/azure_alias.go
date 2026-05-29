@@ -8,7 +8,7 @@ import (
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
 )
 
-const TypeAZURE_ALIAS = 65301
+const TypeAZURE_ALIAS = 65304
 
 func init() {
 	dnsv2.TypeToRR[TypeAZURE_ALIAS] = func() dnsv2.RR { return new(AZURE_ALIAS) }

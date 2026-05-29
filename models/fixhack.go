@@ -35,6 +35,10 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = privatetypesrdata.ALIAS{Target: rc.GetTargetField()}
 		case "AAAA":
 			rc.RDATA = dnsrdatav2.AAAA{Addr: rc.GetTargetIP()}
+		case "ADGUARDHOME_A_PASSTHROUGH":
+			rc.RDATA = privatetypesrdata.ADGUARDHOME_A_PASSTHROUGH{}
+		case "ADGUARDHOME_AAAA_PASSTHROUGH":
+			rc.RDATA = privatetypesrdata.ADGUARDHOME_AAAA_PASSTHROUGH{}
 		case "AZURE_ALIAS":
 			rc.RDATA = privatetypesrdata.AZURE_ALIAS{Target: rc.GetTargetField(), AliasType: rc.AzureAlias["type"]}
 
