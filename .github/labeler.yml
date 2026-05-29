@@ -139,6 +139,9 @@ provider-NETCUP:
 provider-NETLIFY:
   - changed-files:
       - any-glob-to-any-file: providers/netlify/**
+provider-NETNOD:
+  - changed-files:
+      - any-glob-to-any-file: providers/netnod/**
 provider-NS1:
   - changed-files:
       - any-glob-to-any-file: providers/ns1/**
@@ -175,6 +178,9 @@ provider-SAKURACLOUD:
 provider-SOFTLAYER:
   - changed-files:
       - any-glob-to-any-file: providers/softlayer/**
+provider-TENCENTDNS:
+  - changed-files:
+      - any-glob-to-any-file: providers/tencentdns/**
 provider-TRANSIP:
   - changed-files:
       - any-glob-to-any-file: providers/transip/**

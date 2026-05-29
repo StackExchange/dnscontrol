@@ -69,6 +69,7 @@ Jump to a table:
 | [`NETBIRD`](netbird.md) | ❌ | ✅ | ❌ |
 | [`NETCUP`](netcup.md) | ❌ | ✅ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ✅ | ❌ |
+| [`NETNOD`](netnod.md) | ❌ | ✅ | ❌ |
 | [`NS1`](ns1.md) | ❌ | ✅ | ❌ |
 | [`OPENSRS`](opensrs.md) | ❌ | ❌ | ✅ |
 | [`ORACLE`](oracle.md) | ❌ | ✅ | ❌ |
@@ -81,6 +82,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ❌ | ✅ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ✅ | ❌ |
 | [`SOFTLAYER`](softlayer.md) | ❌ | ✅ | ❌ |
+| [`TENCENTDNS`](tencentdns.md) | ❌ | ✅ | ✅ |
 | [`TRANSIP`](transip.md) | ❌ | ✅ | ❌ |
 | [`UNIFI`](unifi.md) | ❌ | ✅ | ❌ |
 | [`VERCEL`](vercel.md) | ❌ | ✅ | ❌ |
@@ -97,7 +99,7 @@ Jump to a table:
 | [`AUTODNS`](autodns.md) | ✅ | ❌ | ❌ | ✅ |
 | [`AXFRDDNS`](axfrddns.md) | ✅ | ❌ | ❌ | ❌ |
 | [`AZURE_DNS`](azuredns.md) | ✅ | ✅ | ✅ | ✅ |
-| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❔ | ✅ | ✅ | ✅ |
+| [`AZURE_PRIVATE_DNS`](azureprivatedns.md) | ❔ | ❌ | ✅ | ✅ |
 | [`BIND`](bind.md) | ✅ | ✅ | ✅ | ✅ |
 | [`BUNNY_DNS`](bunnydns.md) | ❔ | ❌ | ✅ | ✅ |
 | [`CLOUDFLAREAPI`](cloudflareapi.md) | ✅ | ❌ | ✅ | ✅ |
@@ -137,6 +139,7 @@ Jump to a table:
 | [`NETBIRD`](netbird.md) | ✅ | ❌ | ✅ | ✅ |
 | [`NETCUP`](netcup.md) | ❔ | ❌ | ❌ | ❌ |
 | [`NETLIFY`](netlify.md) | ✅ | ❌ | ❌ | ✅ |
+| [`NETNOD`](netnod.md) | ❔ | ✅ | ✅ | ✅ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
 | [`OPENSRS`](opensrs.md) | ❔ | ❔ | ❌ | ❔ |
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ✅ |
@@ -149,6 +152,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ❔ | ❌ | ❌ | ✅ |
 | [`SAKURACLOUD`](sakuracloud.md) | ❔ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ |
+| [`TENCENTDNS`](tencentdns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ✅ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❌ | ❌ |
 | [`VERCEL`](vercel.md) | ❔ | ❌ | ❌ | ❌ |
@@ -201,6 +205,7 @@ Jump to a table:
 | [`NETBIRD`](netbird.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`NETCUP`](netcup.md) | ❔ | ❔ | ❌ | ❌ | ❔ |
 | [`NETLIFY`](netlify.md) | ✅ | ❔ | ❌ | ❌ | ❔ |
+| [`NETNOD`](netnod.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ❌ | ✅ | ❔ |
 | [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`OVH`](ovh.md) | ❌ | ❔ | ❔ | ❌ | ❔ |
@@ -212,6 +217,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ❌ | ❔ | ❌ | ✅ | ❔ |
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
+| [`TENCENTDNS`](tencentdns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❌ | ❌ | ❔ |
 | [`VERCEL`](vercel.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -263,6 +269,7 @@ Jump to a table:
 | [`NETBIRD`](netbird.md) | ❌ | ❌ | ❌ | ❌ |
 | [`NETCUP`](netcup.md) | ❔ | ❔ | ✅ | ❔ |
 | [`NETLIFY`](netlify.md) | ❔ | ❌ | ✅ | ❔ |
+| [`NETNOD`](netnod.md) | ❌ | ✅ | ✅ | ✅ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ✅ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ✅ | ✅ | ❔ |
 | [`OVH`](ovh.md) | ❔ | ❔ | ✅ | ❔ |
@@ -274,6 +281,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ❔ | ❌ | ✅ | ❔ |
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ✅ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ✅ | ❔ |
+| [`TENCENTDNS`](tencentdns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`TRANSIP`](transip.md) | ❌ | ✅ | ✅ | ❌ |
 | [`UNIFI`](unifi.md) | ❔ | ❔ | ✅ | ❔ |
 | [`VERCEL`](vercel.md) | ❌ | ❌ | ✅ | ❌ |
@@ -324,6 +332,7 @@ Jump to a table:
 | [`NETBIRD`](netbird.md) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`NETCUP`](netcup.md) | ✅ | ❔ | ❔ | ❔ | ✅ |
 | [`NETLIFY`](netlify.md) | ✅ | ❔ | ❔ | ❌ | ❌ |
+| [`NETNOD`](netnod.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`NS1`](ns1.md) | ✅ | ✅ | ❔ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
 | [`OVH`](ovh.md) | ✅ | ❔ | ❔ | ✅ | ✅ |
@@ -333,6 +342,7 @@ Jump to a table:
 | [`ROUTE53`](route53.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
 | [`RWTH`](rwth.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
+| [`TENCENTDNS`](tencentdns.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
 | [`VERCEL`](vercel.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
@@ -372,6 +382,7 @@ Jump to a table:
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❔ | ❌ |
 | [`NETBIRD`](netbird.md) | ❌ | ❌ | ❌ |
 | [`NETLIFY`](netlify.md) | ❌ | ❔ | ❌ |
+| [`NETNOD`](netnod.md) | ❌ | ❌ | ❌ |
 | [`NS1`](ns1.md) | ✅ | ❔ | ✅ |
 | [`ORACLE`](oracle.md) | ❔ | ❔ | ❌ |
 | [`PORKBUN`](porkbun.md) | ❌ | ❔ | ❌ |
@@ -458,6 +469,7 @@ Providers in this category and their maintainers are:
 |[`NAMECHEAP`](namecheap.md)|@willpower232|
 |[`NETCUP`](netcup.md)|@kordianbruck|
 |[`NETLIFY`](netlify.md)|@SphericalKat|
+|[`NETNOD`](netnod.md)|@Netnod|
 |[`NS1`](ns1.md)|@costasd|
 |[`OPENSRS`](opensrs.md)|@philhug|
 |[`ORACLE`](oracle.md)|@kallsyms|
@@ -467,9 +479,10 @@ Providers in this category and their maintainers are:
 |[`REALTIMEREGISTER`](realtimeregister.md)|@PJEilers|
 |[`ROUTE53`](route53.md)|@tresni|
 |[`RWTH`](rwth.md)|@MisterErwin|
-|[`SAKURACLOUD`](sakuracloud.md)|@ttkzw|
-|[`SOFTLAYER`](softlayer.md)|@jamielennox|
-|[`TRANSIP`](transip.md)|@blackshadev|
+| [`SAKURACLOUD`](sakuracloud.md) | @ttkzw |
+| [`SOFTLAYER`](softlayer.md) | @jamielennox |
+| [`TENCENTDNS`](tencentdns.md) | @cylonchau |
+| [`TRANSIP`](transip.md) | @blackshadev |
 |[`VERCEL`](vercel.md)|@SukkaW|
 |[`VULTR`](vultr.md)|@pgaskin|
 

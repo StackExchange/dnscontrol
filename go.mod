@@ -5,7 +5,7 @@ go 1.26
 retract v4.8.0
 
 require (
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.24 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.25 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/eclipse/paho.golang v0.23.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
@@ -32,7 +32,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-require golang.org/x/net v0.54.0
+require golang.org/x/net v0.55.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
@@ -42,15 +42,15 @@ require (
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/TomOnTime/utfutil v1.0.0
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
-	github.com/aws/aws-sdk-go-v2 v1.41.7
-	github.com/aws/aws-sdk-go-v2/config v1.32.17
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.16
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.7
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.35.0
+	github.com/aws/aws-sdk-go-v2 v1.41.8
+	github.com/aws/aws-sdk-go-v2/config v1.32.19
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.18
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.8
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.35.1
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
 	github.com/billputer/go-namecheap v0.0.0-20210108011502-994a912fb7f9
-	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/digitalocean/godo v1.191.0
+	github.com/cloudflare/cloudflare-go v0.117.0
+	github.com/digitalocean/godo v1.193.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go/v8 v8.3.0
 	github.com/exoscale/egoscale/v3 v3.1.35
@@ -74,17 +74,17 @@ require (
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419
 	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.279.0
+	google.golang.org/api v0.282.0
 	gopkg.in/ns1/ns1-go.v2 v2.17.2
 )
 
 require (
-	codeberg.org/miekg/dns v0.6.76
+	codeberg.org/miekg/dns v0.6.79
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.21.1
 	github.com/G-Core/gcore-dns-sdk-go v0.3.3
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
-	github.com/aws/aws-sdk-go-v2/service/sts v1.42.1
+	github.com/aws/aws-sdk-go-v2/service/sts v1.42.2
 	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.18
 	github.com/dustin/go-humanize v1.0.1
 	github.com/failsafe-go/failsafe-go v0.9.6
@@ -92,14 +92,19 @@ require (
 	github.com/fbiville/markdown-table-formatter v0.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/hetznercloud/hcloud-go/v2 v2.40.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.195
+	github.com/hetznercloud/hcloud-go/v2 v2.41.2
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.198
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.22
-	github.com/nicholas-fedor/shoutrrr v0.15.0
+	github.com/netnod/netnod-primary-dns-client v1.0.0
+	github.com/nicholas-fedor/shoutrrr v0.15.1
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
-	github.com/oracle/oci-go-sdk/v65 v65.114.2
+	github.com/oracle/oci-go-sdk/v65 v65.116.0
+	github.com/tencentcloud/tencentcloud-sdk-go-intl-en v3.0.1414+incompatible
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.106
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.3.78
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/domain v1.3.66
 	github.com/urfave/cli/v3 v3.9.0
 	github.com/vercel/terraform-provider-vercel v1.14.1
 	github.com/vultr/govultr/v2 v2.17.2
@@ -116,14 +121,14 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 // indirect
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v12 v12.3.0
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.23 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.23 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.23 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.24 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.24 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.24 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.9 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.23 // indirect
-	github.com/aws/aws-sdk-go-v2/service/signin v1.0.11 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.30.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.21 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.24 // indirect
+	github.com/aws/aws-sdk-go-v2/service/signin v1.1.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.30.18 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.1 // indirect
 	github.com/aws/smithy-go v1.25.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
@@ -142,7 +147,7 @@ require (
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.15 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.16 // indirect
 	github.com/googleapis/gax-go/v2 v2.22.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -182,12 +187,12 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/mod v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/tools v0.45.0
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260427160629-7cedc36a6bc4 // indirect
-	google.golang.org/grpc v1.80.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260523011958-0a33c5d7ca68 // indirect
+	google.golang.org/grpc v1.81.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	moul.io/http2curl v1.0.0 // indirect
