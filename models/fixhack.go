@@ -29,6 +29,37 @@ func (rc *RecordConfig) FixUp(origin string) {
 	if rc.RDATA == nil {
 
 		switch rc.Type {
+
+		// Incomplete
+		case "MIKROTIK_FWD":
+			rc.RDATA = privatetypesrdata.MIKROTIK_FWD{}
+		case "MIKROTIK_NXDOMAIN":
+			rc.RDATA = privatetypesrdata.MIKROTIK_NXDOMAIN{}
+		case "PORKBUN_URLFWD":
+			rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
+		case "URL":
+			rc.RDATA = privatetypesrdata.URL{}
+		case "URL301":
+			rc.RDATA = privatetypesrdata.URL301{}
+		case "FRAME":
+			rc.RDATA = privatetypesrdata.FRAME{}
+		case "BUNNY_DNS_PZ":
+			rc.RDATA = privatetypesrdata.BUNNY_DNS_PZ{}
+		case "LUA":
+			rc.RDATA = privatetypesrdata.LUA{}
+		case "CLOUDNS_WR":
+			rc.RDATA = privatetypesrdata.CLOUDNS_WR{}
+		case "NETLIFY":
+			rc.RDATA = privatetypesrdata.NETLIFY{}
+		case "NETLIFYV6":
+			rc.RDATA = privatetypesrdata.NETLIFYV6{}
+		case "AKAMAICDN":
+			rc.RDATA = privatetypesrdata.AKAMAICDN{}
+		case "AKAMAITLC":
+			rc.RDATA = privatetypesrdata.AKAMAITLC{}
+		case "BUNNY_DNS_RDR":
+			rc.RDATA = privatetypesrdata.BUNNY_DNS_RDR{}
+
 		case "A":
 			rc.RDATA = dnsrdatav2.A{Addr: rc.GetTargetIP()}
 		case "ALIAS":

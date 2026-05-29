@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 SRC="Adguardhome_AAAA_Passthrough"
 SRC_UC=$( echo "${SRC}" | tr a-z A-Z )
@@ -13,8 +13,15 @@ sed -e 's@'${SRC_UC}'@'${DEST_UC}'@g'  				   < "${SRC_LC}.go"       > "${DEST_L
 sed -e 's@'${SRC_UC}'@'${DEST_UC}'@g' -e 's@'${SRC}'@'${DEST}'@g'  < "${SRC_LC}_test.go"  > "${DEST_LC}_test.go"
 sed -e 's@'${SRC_UC}'@'${DEST_UC}'@g'   			   < "rdata/${SRC_LC}.go" > "rdata/${DEST_LC}.go"
 
-echo 'Remember to fix:'
-echo 'models/fixhack.go'
-echo 'integrationTest/integration_test.go'
 num=$(echo 1 + $(grep -h  'const Type' *.go | awk '{ print $NF }'  |sort | tail -1) | bc)
-echo "const Type"${DEST_UC}" = $num"
+echo "Codepoint: $num"
+sed -i.bak -e 's/const Type'"${DEST_UC}"'.*/const Type'"${DEST_UC}"' = '"$num"'/g' "${DEST_LC}.go"
+rm "${DEST_LC}.go.bak"
+grep -E "^const Type${DEST_UC}" "${DEST_LC}.go"
+
+echo '                case "'"${DEST_UC}"'":
+                        rc.RDATA = privatetypesrdata.'"${DEST_UC}"'{}' | pbcopy
+vi +/Incomplete ../../models/fixhack.go
+
+echo "vi ../../models/fixhack.go"
+echo '../../integrationTest/integration_test.go'
