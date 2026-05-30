@@ -15,11 +15,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 300
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."
@@ -43,11 +43,11 @@
           "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 300
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user2.example.com.",
             "Txt": "mytxt.example.com."
@@ -71,11 +71,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "aaa300.example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 300
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."
@@ -99,11 +99,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "bbb1.example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 1111
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."
@@ -127,11 +127,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "ccc2.example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 2222
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."
@@ -155,11 +155,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "ddd1.example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 1111
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."
@@ -183,11 +183,11 @@
           "comparablev3": "user.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "eee3.example.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 3333
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user.example.com.",
             "Txt": "mytxt.example.com."

@@ -15,11 +15,11 @@
           "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "bar.com.bar.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 300
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user2.example.com.",
             "Txt": "mytxt.example.com."
@@ -46,11 +46,11 @@
           "comparablev3": "user2.example.com. mytxt.example.com.",
           "fields": {
             "Hdr": {
-              "Class": 1,
-              "Name": "foo.bar.com.bar.com.",
+              "Class": 0,
+              "Name": "",
               "Rdlength": 0,
-              "Rrtype": 17,
-              "Ttl": 300
+              "Rrtype": 0,
+              "Ttl": 0
             },
             "Mbox": "user2.example.com.",
             "Txt": "mytxt.example.com."

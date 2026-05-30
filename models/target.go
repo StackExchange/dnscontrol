@@ -5,6 +5,7 @@ import (
 	"net/netip"
 	"strings"
 
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 	dnsv1 "github.com/miekg/dns"
 )
@@ -92,6 +93,21 @@ func (rc *RecordConfig) zoneFileQuoted() string {
 
 	if rc.RDATA != nil {
 		return rc.RDATA.String()
+	}
+	// if rc.Type == "SVCV" || rc.Type == "HTTPS" {
+	// 	if rc.SvcPriority == 0 {
+	// 		return fmt.Sprintf("%d %s", rc.SvcPriority, rc.GetTargetField())
+	// 	} else {
+	// 		return fmt.Sprintf("%d %s %s", rc.SvcPriority, rc.GetTargetField(), rc.SvcParams)
+	// 	}
+	// }
+	if rc.Type == "RP" {
+		switch rc.F.(type) {
+		case *dnsrdatav2.RP:
+			return fmt.Sprintf("%s %s", rc.F.(*dnsrdatav2.RP).Mbox, rc.F.(*dnsrdatav2.RP).Txt)
+		default:
+			panic(fmt.Sprintf("unexpected type for RP.zoneFileQuoted: %T", rc.F))
+		}
 	}
 
 	rr := rc.ToRR()

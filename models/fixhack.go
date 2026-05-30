@@ -76,6 +76,9 @@ func (rc *RecordConfig) FixUp(origin string) {
 
 		case "CAA":
 			rc.RDATA = dnsrdatav2.CAA{Flag: rc.CaaFlag, Tag: rc.CaaTag, Value: rc.GetTargetField()}
+			if rc.CaaTag == "" {
+				fmt.Println("What???")
+			}
 		case "CNAME":
 			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin+".")
 			rc.RDATA = dnsrdatav2.CNAME{Target: targ}

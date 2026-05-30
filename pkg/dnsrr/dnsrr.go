@@ -27,18 +27,18 @@ func helperRRtoRC(rr dnsv1.RR, origin string, fixBug bool) (models.RecordConfig,
 	// Convert's dns.RR into DNSControl's models.RecordConfig struct.
 
 	header := rr.Header()
-	ty := dnsv1.TypeToString[header.Rrtype]
+	ty := dnsv2.TypeToString[header.Rrtype]
 
 	if rtypeinfo.IsModernType(ty) {
 		switch v := rr.(type) {
 		default:
-			rec, err := rtypecontrol.NewRecordConfigFromStruct(strings.TrimSuffix(header.Name, origin), header.Ttl, dnsv1.TypeToString[header.Rrtype], v, domaintags.MakeDomainNameVarieties(origin))
+			rec, err := rtypecontrol.NewRecordConfigFromStruct(strings.TrimSuffix(header.Name, origin), header.Ttl, dnsv2.TypeToString[header.Rrtype], v, domaintags.MakeDomainNameVarieties(origin))
 			return *rec, err
 		}
 	}
 
 	rc := new(models.RecordConfig)
-	rc.Type = dnsv1.TypeToString[header.Rrtype]
+	rc.Type = dnsv2.TypeToString[header.Rrtype]
 	rc.TTL = header.Ttl
 	rc.Original = rr
 	rc.SetLabelFromFQDN(strings.TrimSuffix(header.Name, "."), origin)
@@ -111,7 +111,6 @@ func RRtoRCV2(rr dnsv2.RR, origin string) (models.RecordConfig, error) {
 	// Convert's dns.RR into DNSControl's models.RecordConfig struct.
 
 	header := rr.Header()
-	//ty := dnsv1.TypeToString[header.Rrtype]
 	ty := dnsv2.TypeToString[dnsv2.RRToType(rr)]
 
 	if rtypeinfo.IsModernType(ty) {

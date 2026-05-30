@@ -189,7 +189,7 @@ func (rc *RecordConfig) GetSVCBEchConfig() (*svcbv2.ECHCONFIG, bool) {
 		panic("assertion failed: SVCB/HTTPS record does not have RDATA set")
 	}
 
-	for _, param := range rc.RDATA.(*dnsrdatav2.SVCB).Value {
+	for _, param := range rc.RDATA.(dnsrdatav2.SVCB).Value {
 		key := svcbv2.PairToKey(param)
 		if key == svcbv2.KeyEchConfig {
 			p := param.(*svcbv2.ECHCONFIG)
@@ -221,10 +221,11 @@ func replaceSvcbIgnores(records Records, echs map[string]*svcbv2.ECHCONFIG) (Rec
 		}
 		if nEch, ok := echs[rec.NameFQDN]; ok {
 			// This record has an ECH value, so we replace "ech=IGNORE" with the actual value in the comparables.
-			nRec.RDATA = SVCBReplaceEch(nRec.RDATA.(*dnsrdatav2.SVCB), nEch)
+			nRec.RDATA = SVCBReplaceEch(nRec.RDATA.(dnsrdatav2.SVCB), nEch)
 		} else {
 			// This record doesn't have an ECH value, so we delete "ech=IGNORE" from the comparables.
-			nRec.RDATA = SVCBDeleteEch(nRec.RDATA.(*dnsrdatav2.SVCB))
+			t := nRec.RDATA.(dnsrdatav2.SVCB)
+			nRec.RDATA = SVCBDeleteEch(t)
 		}
 
 		// Clear the ComparableV3 so it will be regenerated with the new RDATA.
@@ -239,11 +240,11 @@ func replaceSvcbIgnores(records Records, echs map[string]*svcbv2.ECHCONFIG) (Rec
 	return records, edits
 }
 
-func SVCBReplaceEch(rr *dnsrdatav2.SVCB, echConfig *svcbv2.ECHCONFIG) *dnsrdatav2.SVCB {
+func SVCBReplaceEch(rr dnsrdatav2.SVCB, echConfig *svcbv2.ECHCONFIG) dnsrdatav2.SVCB {
 	// This is a bit of a hack, but dnsrdatav2.SVCB doesn't have a Clone method.
 	// We need to clone it to avoid mutating the original.
 	// We replace "ech=" as we clone it.
-	return &dnsrdatav2.SVCB{
+	return dnsrdatav2.SVCB{
 		Priority: rr.Priority,
 		Target:   rr.Target,
 		Value: func() []svcb.Pair {
@@ -265,11 +266,11 @@ func SVCBReplaceEch(rr *dnsrdatav2.SVCB, echConfig *svcbv2.ECHCONFIG) *dnsrdatav
 	}
 }
 
-func SVCBDeleteEch(rr *dnsrdatav2.SVCB) *dnsrdatav2.SVCB {
+func SVCBDeleteEch(rr dnsrdatav2.SVCB) dnsrdatav2.SVCB {
 	// This is a bit of a hack, but dnsrdatav2.SVCB doesn't have a Clone method.
 	// We need to clone it to avoid mutating the original.
 	// We deelte "ech=" as we clone it.
-	return &dnsrdatav2.SVCB{
+	return dnsrdatav2.SVCB{
 		Priority: rr.Priority,
 		Target:   rr.Target,
 		Value: func() []svcb.Pair {

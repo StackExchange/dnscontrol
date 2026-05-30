@@ -48,21 +48,24 @@ func (handle *RP) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 func (handle *RP) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	rec.F = fields
 
-	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
-	rec.Comparable = rec.ZonefilePartial
-
 	// Hack to deal with the fact that fixlegacy.go can't import rtype.
 	switch rec.F.(type) {
 	case *RP:
 		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(*RP).Mbox, Txt: rec.F.(*RP).Txt}
 	case *dnsv1.RP:
 		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(*dnsv1.RP).Mbox, Txt: rec.F.(*dnsv1.RP).Txt}
+	case *dnsrdatav2.RP:
+		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(*dnsrdatav2.RP).Mbox, Txt: rec.F.(*dnsrdatav2.RP).Txt}
+	case dnsrdatav2.RP:
+		rec.RDATA = dnsrdatav2.RP{Mbox: rec.F.(dnsrdatav2.RP).Mbox, Txt: rec.F.(dnsrdatav2.RP).Txt}
 	default:
 		panic(fmt.Sprintf("unexpected type for RP.FromStruct: %T", rec.F))
 	}
 
 	rec.TypeNum = dnsv2.TypeRP
 	rec.ComparableV3 = rec.RDATA.(dnsrdatav2.RP).String()
+	rec.ZonefilePartial = rec.ComparableV3
+	rec.Comparable = rec.ZonefilePartial
 
 	handle.CopyToLegacyFields(rec)
 	return nil

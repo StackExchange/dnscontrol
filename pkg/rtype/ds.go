@@ -3,6 +3,7 @@ package rtype
 import (
 	"fmt"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
@@ -32,7 +33,7 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 			rec.Name, rtypecontrol.StringifyQuoted(args[1:]),
 			err)
 	}
-	fields := &dnsv1.DS{
+	fields := &dnsrdatav2.DS{
 		KeyTag:     args[1].(uint16),
 		Algorithm:  args[2].(uint8),
 		DigestType: args[3].(uint8),
@@ -45,12 +46,34 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 // FromStruct fills in the RecordConfig from a struct, typically from an API response.
 func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	// Fields is of type "any" thus we must validate the type. It should be the "inner" type of .F, not the outer type, rtype.DS{}.
-	ds, ok := fields.(dnsrdatav2.DS)
-	if !ok {
-		panic(fmt.Sprintf("assertion failed: fields should be *dnsrdatav2.DS, got %T", fields))
+
+	// This is a temporary hack to deal with the fact that the code is in transition from dnsv1 to dnsv2.
+	if ds, ok := fields.(dnsrdatav2.DS); ok {
+		rec.F = &DS{ds}
+	} else if ds, ok := fields.(*dnsrdatav2.DS); ok {
+		rec.F = &DS{*ds}
+	} else if ds, ok1 := fields.(*dnsv1.DS); ok1 {
+		rec.F = &DS{
+			dnsrdatav2.DS{
+				KeyTag:     ds.KeyTag,
+				Algorithm:  ds.Algorithm,
+				DigestType: ds.DigestType,
+				Digest:     ds.Digest,
+			},
+		}
+	} else if ds, ok2 := fields.(*dnsv2.DS); ok2 {
+		rec.F = &DS{
+			dnsrdatav2.DS{
+				KeyTag:     ds.KeyTag,
+				Algorithm:  ds.Algorithm,
+				DigestType: ds.DigestType,
+				Digest:     ds.Digest,
+			},
+		}
+	} else {
+		panic(fmt.Sprintf("assertion failed: fields not rdatav2, dns1 or dns2 .DS, got %T", fields))
 		//return fmt.Errorf("fields is not *dns.DS, got %T", fields)
 	}
-	rec.F = &DS{ds}
 
 	// Hack to deal with the fact that fixlegacy.go can't import rtype.
 	switch rec.F.(type) {
