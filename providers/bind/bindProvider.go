@@ -365,19 +365,8 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		),
 	)
 
-	// // We only change the serial number if there is a change.
-	// fmt.Printf("DEBUG: nextSerial is %d\n", nextSerial)
-	// // We know there were changes, so let's update the serial number.
-	// desiredSoaRC.SoaSerial = nextSerial
-
 	// We know there are changes. Update the SOA record's serial number.
 	updateSerialNumber(dc.Name, result.DesiredPlus, uint32(bindserial.ForcedValue&0xFFFF))
-
-	// // If the --bindserial flag is used, force the serial to that value
-	// if bindserial.ForcedValue != 0 {
-	// 	desiredSoaRC.SoaSerial = uint32(bindserial.ForcedValue & 0xFFFF)
-	// }
-	// }
 
 	corrections = append(corrections,
 		&models.Correction{
