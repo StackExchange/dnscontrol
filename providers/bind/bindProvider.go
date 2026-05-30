@@ -150,7 +150,8 @@ type SoaDefaults struct {
 	Retry   uint32 `json:"retry"`
 	Expire  uint32 `json:"expire"`
 	Minttl  uint32 `json:"minttl"`
-	TTL     uint32 `json:"ttl,omitempty"`
+	// TTL isn't part of the SOA RDATA.  It is a default applied to the SOA record's TTL itself.
+	TTL uint32 `json:"ttl,omitempty"`
 }
 
 func (s SoaDefaults) String() string {
@@ -239,6 +240,34 @@ func (c *bindProvider) GetZoneRecords(dc *models.DomainConfig) (models.Records, 
 	return ParseZoneContents(string(content), domain, zonefile)
 }
 
+func findSoaRecord(recs models.Records) *models.RecordConfig {
+	for _, rec := range recs {
+		if rec.Type == "SOA" {
+			return rec
+		}
+	}
+	return nil
+}
+
+func updateSerialNumber(origin string, recs models.Records, forcedSerial uint32) {
+
+	recToUpdate := findSoaRecord(recs)
+	if recToUpdate == nil {
+		return
+	}
+
+	fmt.Printf("DEBUG: updateSerialNumber: current serial: %d\n", recToUpdate.SoaSerial)
+	if forcedSerial != 0 {
+		recToUpdate.SoaSerial = forcedSerial
+	} else {
+		recToUpdate.SoaSerial = generateSerial(recToUpdate.SoaSerial)
+	}
+	fmt.Printf("DEBUG: updateSerialNumber: updated serial: %d\n", recToUpdate.SoaSerial)
+
+	recToUpdate.RDATA = nil
+	recToUpdate.FixUp(origin)
+}
+
 // ParseZoneContents parses a string as a BIND zone and returns the records.
 func ParseZoneContents(content string, zoneName string, zonefileName string) (models.Records, error) {
 	//zp := dnsv1.NewZoneParser(strings.NewReader(content), zoneName, zonefileName)
@@ -297,28 +326,7 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 	changes := false
 	var msg string
 
-	// Find the SOA records; use them to make or update the desired SOA.
-	var foundSoa *models.RecordConfig
-	for _, r := range foundRecords {
-		if r.Type == "SOA" && r.Name == "@" {
-			foundSoa = r
-			break
-		}
-	}
-	var desiredSoa *models.RecordConfig
-	for _, r := range dc.Records {
-		if r.Type == "SOA" && r.Name == "@" {
-			desiredSoa = r
-			break
-		}
-	}
-	soaRec, nextSerial := makeSoa(dc.Name, &c.DefaultSoa, foundSoa, desiredSoa)
-	if desiredSoa == nil {
-		dc.Records = append(dc.Records, soaRec)
-		desiredSoa = dc.Records[len(dc.Records)-1]
-	} else {
-		*desiredSoa = *soaRec
-	}
+	AddSoaIfMissing(dc, c.DefaultSoa)
 
 	var msgs []string
 	var actualChangeCount int
@@ -357,13 +365,19 @@ func (c *bindProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, foundR
 		),
 	)
 
-	// We only change the serial number if there is a change.
-	desiredSoa.SoaSerial = nextSerial
+	// // We only change the serial number if there is a change.
+	// fmt.Printf("DEBUG: nextSerial is %d\n", nextSerial)
+	// // We know there were changes, so let's update the serial number.
+	// desiredSoaRC.SoaSerial = nextSerial
 
-	// If the --bindserial flag is used, force the serial to that value
-	if bindserial.ForcedValue != 0 {
-		desiredSoa.SoaSerial = uint32(bindserial.ForcedValue & 0xFFFF)
-	}
+	// We know there are changes. Update the SOA record's serial number.
+	updateSerialNumber(dc.Name, result.DesiredPlus, uint32(bindserial.ForcedValue&0xFFFF))
+
+	// // If the --bindserial flag is used, force the serial to that value
+	// if bindserial.ForcedValue != 0 {
+	// 	desiredSoaRC.SoaSerial = uint32(bindserial.ForcedValue & 0xFFFF)
+	// }
+	// }
 
 	corrections = append(corrections,
 		&models.Correction{

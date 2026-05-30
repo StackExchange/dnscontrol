@@ -17,11 +17,16 @@ import (
 // FixUp populates the "V3 Fields": .TypeNum, .RDATA and .ComparableV3.
 func (rc *RecordConfig) FixUp(origin string) {
 
+	switch rc.Type {
+	case "IGNORE":
+		return
+	}
+
 	// TypeNum:
 	if rc.TypeNum == 0 && rc.Type != "ALIAS" {
 		tn, err := dnsutilv2.StringToType(rc.Type)
 		if err != nil {
-			panic(fmt.Sprintf("BUG: Unknown type %s", rc.Type))
+			panic(fmt.Sprintf("BUG: FixUp: Unknown type %s", rc.Type))
 		}
 		rc.TypeNum = tn
 	}
@@ -170,9 +175,19 @@ func (rc *RecordConfig) FixUp(origin string) {
 
 	// .ComparableV3:
 	if rc.ComparableV3 == "" {
-		rc.ComparableV3 = rc.RDATA.String()
+		switch rc.Type {
+		case "SOA":
+			// The comparable string for SOA intentionally excludes the serial
+			// number, because the serial number changes on every update and
+			// would prevent correct diffing. List it as "X" so-as it stands out
+			// in debug output that the serial is intentionally excluded.
+			rc.ComparableV3 = fmt.Sprintf("%s %s X %d %d %d %d", rc.GetTargetField(), rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
+		default:
+			rc.ComparableV3 = rc.RDATA.String()
+		}
+
 		if strings.HasSuffix(rc.ComparableV3, " ") {
-			rc.ComparableV3 += "W"
+			rc.ComparableV3 = rc.ComparableV3 + "W"
 		}
 	}
 }

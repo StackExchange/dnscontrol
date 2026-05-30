@@ -158,6 +158,18 @@ func testPermitted(p string, f TestGroup) error {
 	return nil
 }
 
+func findDomainSerialNumber(recs models.Records) (*models.RecordConfig, uint32) {
+	for _, rec := range recs {
+		if rec.Type == "SOA" {
+			return rec, rec.SoaSerial
+		}
+	}
+	// Make a fake entry.
+	defaultSoaRec := &models.RecordConfig{Type: "SOA"}
+	defaultSoaRec.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
+	return defaultSoaRec, 0
+}
+
 // makeChanges runs one set of DNS record tests. Returns true on success.
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, domainMeta map[string]string) bool {
 	domainName := dc.Name
@@ -218,6 +230,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		//fmt.Printf("DEBUG: Running test %q: Names %q %q %q\n", desc, dom.Name, dom.NameRaw, dom.NameUnicode)
 
 		// get and run corrections for first time
+
 		_, corrections, actualChangeCount, err := zonerecs.CorrectZoneRecords(prv, dom)
 		if err != nil {
 			t.Fatal(fmt.Errorf("runTests: %w", err))
@@ -251,6 +264,7 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 		}
 
 		// run a second time and expect zero corrections
+
 		_, corrections, actualChangeCount, err = zonerecs.CorrectZoneRecords(prv, dom2)
 		if err != nil {
 			t.Fatal(err)
@@ -665,10 +679,8 @@ func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl ui
 		Expire:  expire,
 		Minttl:  minttl,
 	}
-	r.TypeNum = dnsv2.TypeSOA
-	r.ComparableV3 = fmt.Sprintf("%s %s %d %d %d %d %d", ns, mbox, serial, refresh, retry, expire, minttl)
-
 	r.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
+
 	return r
 }
 

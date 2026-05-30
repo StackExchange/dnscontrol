@@ -1,53 +1,45 @@
 package bind
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/soautil"
 )
 
-func makeSoa(origin string, defSoa *SoaDefaults, existing, desired *models.RecordConfig) (*models.RecordConfig, uint32) {
-	// Create a SOA record.  Take data from desired, existing, default,
-	// or hardcoded defaults.
-	soaRec := models.RecordConfig{}
-	soaRec.SetLabel("@", origin)
-
-	if defSoa == nil {
-		defSoa = &SoaDefaults{}
-	}
-	if existing == nil {
-		existing = &models.RecordConfig{}
+func AddSoaIfMissing(dc *models.DomainConfig, defaultSoaValues SoaDefaults) {
+	// Exit if SOA already exists.
+	for _, rec := range dc.Records {
+		if rec.Type == "SOA" {
+			return
+		}
 	}
 
-	if desired == nil {
-		desired = &models.RecordConfig{}
-	}
-
-	soaMail := firstNonNull(desired.SoaMbox, existing.SoaMbox, defSoa.Mbox, "DEFAULT_NOT_SET.")
+	soaMail := firstNonNull(defaultSoaValues.Mbox, "DEFAULT_NOT_SET.")
 	if strings.Contains(soaMail, "@") {
 		soaMail = soautil.RFC5322MailToBind(soaMail)
 	}
 
-	soaRec.TTL = firstNonZero(desired.TTL, defSoa.TTL, existing.TTL, models.DefaultTTL)
+	soaRec := models.RecordConfig{
+		Type: "SOA",
+		TTL:  firstNonZero(defaultSoaValues.TTL, models.DefaultTTL),
+	}
 	err := soaRec.SetTargetSOA(
-		firstNonNull(desired.GetTargetField(), existing.GetTargetField(), defSoa.Ns, "DEFAULT_NOT_SET."),
+		firstNonNull(defaultSoaValues.Ns, "DEFAULT_NOT_SET."),
 		soaMail,
-		firstNonZero(desired.SoaSerial, existing.SoaSerial, defSoa.Serial, 1),
-		firstNonZero(desired.SoaRefresh, existing.SoaRefresh, defSoa.Refresh, 3600),
-		firstNonZero(desired.SoaRetry, existing.SoaRetry, defSoa.Retry, 600),
-		firstNonZero(desired.SoaExpire, existing.SoaExpire, defSoa.Expire, 604800),
-		firstNonZero(desired.SoaMinttl, existing.SoaMinttl, defSoa.Minttl, 1440),
+		firstNonZero(defaultSoaValues.Serial, 1),
+		firstNonZero(defaultSoaValues.Refresh, 3600),
+		firstNonZero(defaultSoaValues.Retry, 600),
+		firstNonZero(defaultSoaValues.Expire, 604800),
+		firstNonZero(defaultSoaValues.Minttl, 1440),
 	)
 	if err != nil {
 		panic(err) // Should never happen.
 	}
+	soaRec.SetLabel("@", dc.Name)
+	soaRec.FixUp(dc.Name)
 
-	// Hack to set .RDATA without importing miekg/dns in pkg/rtypecontrol/fixlegacy.go
-	soaRec.ComparableV3 = fmt.Sprintf("%s %s %d %d %d %d %d", soaRec.GetTargetField(), soaRec.SoaMbox, soaRec.SoaSerial, soaRec.SoaRefresh, soaRec.SoaRetry, soaRec.SoaExpire, soaRec.SoaMinttl)
-
-	return &soaRec, generateSerial(soaRec.SoaSerial)
+	dc.Records = append(dc.Records, &soaRec)
 }
 
 func firstNonNull(items ...string) string {
