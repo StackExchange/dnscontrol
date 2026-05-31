@@ -58,6 +58,15 @@
     "TenantID": "$AZURE_DNS_TENANT_ID",
     "domain": "$AZURE_DNS_DOMAIN"
   },
+  "AZURE_PRIVATE_DNS": {
+    "ClientID": "$AZURE_PRIVATE_DNS_CLIENT_ID",
+    "ClientSecret": "$AZURE_PRIVATE_DNS_CLIENT_SECRET",
+    "ResourceGroup": "$AZURE_PRIVATE_DNS_RESOURCE_GROUP",
+    "SubscriptionID": "$AZURE_PRIVATE_DNS_SUBSCRIPTION_ID",
+    "TYPE": "AZURE_PRIVATE_DNS",
+    "TenantID": "$AZURE_PRIVATE_DNS_TENANT_ID",
+    "domain": "$AZURE_PRIVATE_DNS_DOMAIN"
+  },
   "BIND": {
     "TYPE": "BIND",
     "domain": "$BIND_DOMAIN"
@@ -272,6 +281,11 @@
     "apiuser": "$NAMEDOTCOM_USER",
     "domain": "$NAMEDOTCOM_DOMAIN"
   },
+  "NETBIRD": {
+    "TYPE": "NETBIRD",
+    "domain": "$NETBIRD_DOMAIN",
+    "token": "$NETBIRD_TOKEN"
+  },
   "NETCUP": {
     "TYPE": "NETCUP",
     "api-key": "$NETCUP_KEY",
@@ -284,6 +298,12 @@
     "domain": "$NETLIFY_DOMAIN",
     "slug": "$NETLIFY_ACCOUNT_SLUG",
     "token": "$NETLIFY_TOKEN"
+  },
+  "NETNOD": {
+    "TYPE": "NETNOD",
+    "apiKey": "$NETNOD_APIKEY",
+    "apiUrl": "$NETNOD_APIURL",
+    "domain": "$NETNOD_DOMAIN"
   },
   "NS1": {
     "TYPE": "NS1",
@@ -352,6 +372,13 @@
     "api_key": "$SL_API_KEY",
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME"
+  },
+  "TENCENTDNS": {
+    "TYPE": "TENCENTDNS",
+    "domain": "$TENCENTDNS_DOMAIN",
+    "secret_id": "$TENCENTDNS_SECRET_ID",
+    "secret_key": "$TENCENTDNS_SECRET_KEY",
+    "site": "$TENCENTDNS_SITE"
   },
   "TRANSIP": {
     "AccessToken": "$TRANSIP_ACCESS_TOKEN",

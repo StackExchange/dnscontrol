@@ -58,6 +58,21 @@ Example:
 ```
 {% endcode %}
 
+You can also select a named profile on a per-provider basis using the `Profile` field. This reads from `~/.aws/config` and supports AWS IAM Identity Center (SSO) profiles — run `aws sso login` first so a valid SSO session is cached. `Profile` is mutually exclusive with `KeyId`/`SecretKey` (setting both will return an error), but composes with `RoleArn`: the profile provides the source credentials and `RoleArn` is then assumed on top. This lets a single `dnscontrol push` target multiple AWS accounts in one run.
+
+Example:
+
+{% code title="creds.json" %}
+```json
+{
+  "r53_main": {
+    "TYPE": "ROUTE53",
+    "Profile": "my-aws-profile"
+  }
+}
+```
+{% endcode %}
+
 Alternatively, this provider also supports `RoleArn` with an optional `ExternalId`
 
 Example:

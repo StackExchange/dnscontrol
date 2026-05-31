@@ -682,6 +682,7 @@ func makeTests() []*TestGroup {
 				//"DESEC",         // Skip due to daily update limits.
 				//"GANDI_V5",      // Their API is so damn slow. We'll add it back as needed.
 				//"GCLOUD",
+				"ORACLE",
 				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("601 records", manyA("pager601-rec%04d", "1.2.3.4", 600)...),
@@ -699,7 +700,8 @@ func makeTests() []*TestGroup {
 				//"HEDNS",         // No paging done. No need to test.
 				//"GCLOUD",
 				"HOSTINGDE", // Pages.
-				"ROUTE53",   // Batches up changes in pages.
+				"ORACLE",
+				"ROUTE53", // Batches up changes in pages.
 			),
 			tc("1200 records", manyA("pager1201-rec%04d", "1.2.3.4", 1200)...),
 			tc("Update 1200 records", manyA("pager1201-rec%04d", "1.2.3.5", 1200)...),
@@ -712,6 +714,7 @@ func makeTests() []*TestGroup {
 			only(
 				//"GCLOUD",
 				"HOSTINGDE", // Pages.
+				"ORACLE",
 			),
 			tc("1200 records",
 				manyA("batch-rec%04d", "1.2.3.4", 1200)...),
@@ -1228,12 +1231,15 @@ func makeTests() []*TestGroup {
 
 		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
 
-		testgroup("CF_REDIRECT_CONVERT",
-			only("CLOUDFLAREAPI"),
-			alltrue(cfSingleRedirectEnabled()),
-			tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-			tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
-		),
+		// This test is commented out because of this error:
+		// "helpers_integration_test.go:241: not entitled: the use of operator Matches is not allowed, a Business plan or a WAF Advanced plan is required"
+		// There's no obvious way to have this test only run when a Business plan is used.
+		// testgroup("CF_REDIRECT_CONVERT",
+		// 	only("CLOUDFLAREAPI"),
+		// 	alltrue(cfSingleRedirectEnabled()),
+		// 	tc("start301", cfRedir("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+		// 	tc("convert302", cfRedirTemp("cnn.**current-domain**/*", "https://www.cnn.com/$1")),
+		// ),
 
 		testgroup("CLOUDFLAREAPI_SINGLE_REDIRECT",
 			only("CLOUDFLAREAPI"),
@@ -1440,6 +1446,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("foo", "1.2.3.4"),
 				a("foo", "2.3.4.5"),
@@ -1587,6 +1594,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("@", "1.2.3.4"),
 				a("@", "2.3.4.5"),
@@ -1767,6 +1775,7 @@ func makeTests() []*TestGroup {
 			// Vercel has a very strict rate limit, let's just skip IGNORE* tests for Vercel
 			not("VERCEL"),
 
+			not("NETBIRD"), // MX/TXT records not supported
 			tc("Create some records",
 				a("foo.bat", "1.2.3.4"),
 				a("foo.bat", "2.3.4.5"),
