@@ -11,7 +11,7 @@ import (
 // NETLIFY
 
 func init() {
-	Register(TypeNETLIFY, "NETLIFY", func() dnsv2.RR { return new(NETLIFY) })
+	Register(TypeNETLIFY, "NETLIFY", func() dnsv2.RR { return new(NETLIFY) }, privtatetypesrdata.MakeNETLIFY)
 }
 
 const TypeNETLIFY = 65316
@@ -35,7 +35,7 @@ func (rr *NETLIFY) Clone() dnsv2.RR {
 func (rr *NETLIFY) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tNETLIFY"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tNETLIFY" // RDATA is empty.
 }
 
 // Parser interface.

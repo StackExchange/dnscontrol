@@ -11,7 +11,7 @@ import (
 // BUNNY_DNS_RDR
 
 func init() {
-	Register(TypeBUNNY_DNS_RDR, "BUNNY_DNS_RDR", func() dnsv2.RR { return new(BUNNY_DNS_RDR) })
+	Register(TypeBUNNY_DNS_RDR, "BUNNY_DNS_RDR", func() dnsv2.RR { return new(BUNNY_DNS_RDR) }, privatetypesrdata.MakeBUNNY_DNS_RDR)
 }
 
 const TypeBUNNY_DNS_RDR = 65320
@@ -35,7 +35,7 @@ func (rr *BUNNY_DNS_RDR) Clone() dnsv2.RR {
 func (rr *BUNNY_DNS_RDR) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tBUNNY_DNS_RDR"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tBUNNY_DNS_RDR\t" + rr.Data().String()
 }
 
 // Parser interface.

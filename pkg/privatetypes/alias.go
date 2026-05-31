@@ -12,13 +12,14 @@ import (
 // ALIAS
 
 func init() {
-	Register(TypeALIAS, "ALIAS", func() dnsv2.RR { return new(ALIAS) })
+	Register(TypeALIAS, "ALIAS", func() dnsv2.RR { return new(ALIAS) }, privatetypesrdata.MakeALIAS)
 }
 
 const TypeALIAS = 65303
 
 type ALIAS struct {
-	Hdr    dnsv2.Header
+	Hdr dnsv2.Header
+
 	Target string
 }
 
@@ -33,8 +34,7 @@ func (rr *ALIAS) Clone() dnsv2.RR       { return &ALIAS{rr.Hdr, rr.Target} }
 func (rr *ALIAS) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tALIAS\t" +
-		rr.Target
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tALIAS\t" + rr.Data().String()
 }
 
 // Parser interface.

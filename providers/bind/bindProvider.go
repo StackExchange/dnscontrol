@@ -256,13 +256,11 @@ func updateSerialNumber(origin string, recs models.Records, forcedSerial uint32)
 		return
 	}
 
-	fmt.Printf("DEBUG: updateSerialNumber: current serial: %d\n", recToUpdate.SoaSerial)
 	if forcedSerial != 0 {
 		recToUpdate.SoaSerial = forcedSerial
 	} else {
 		recToUpdate.SoaSerial = generateSerial(recToUpdate.SoaSerial)
 	}
-	fmt.Printf("DEBUG: updateSerialNumber: updated serial: %d\n", recToUpdate.SoaSerial)
 
 	recToUpdate.RDATA = nil
 	recToUpdate.FixUp(origin)

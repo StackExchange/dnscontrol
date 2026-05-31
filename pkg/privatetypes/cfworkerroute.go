@@ -7,13 +7,12 @@ import (
 	dnsv2 "codeberg.org/miekg/dns"
 	dnsutilv2 "codeberg.org/miekg/dns/dnsutil"
 	privatetypesrdata "github.com/DNSControl/dnscontrol/v4/pkg/privatetypes/rdata"
-	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 )
 
 // CFWORKERROUTE
 
 func init() {
-	Register(TypeCFWORKERROUTE, "CF_WORKER_ROUTE", func() dnsv2.RR { return new(CFWORKERROUTE) })
+	Register(TypeCFWORKERROUTE, "CF_WORKER_ROUTE", func() dnsv2.RR { return new(CFWORKERROUTE) }, privatetypesrdata.MakeCFWORKERROUTE)
 }
 
 const TypeCFWORKERROUTE = 65305
@@ -37,8 +36,7 @@ func (rr *CFWORKERROUTE) Clone() dnsv2.RR { return &CFWORKERROUTE{rr.Hdr, rr.Whe
 func (rr *CFWORKERROUTE) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tCF_WORKER_ROUTE\t" +
-		txtutil.Zoneify([]string{rr.When, rr.Then})
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tCF_WORKER_ROUTE\t" + rr.Data().String()
 }
 
 // Parser interface.

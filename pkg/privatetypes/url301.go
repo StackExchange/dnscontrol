@@ -11,7 +11,7 @@ import (
 // URL301
 
 func init() {
-	Register(TypeURL301, "URL301", func() dnsv2.RR { return new(URL301) })
+	Register(TypeURL301, "URL301", func() dnsv2.RR { return new(URL301) }, privatetypesrdata.MakeURL301)
 }
 
 const TypeURL301 = 65311
@@ -35,7 +35,7 @@ func (rr *URL301) Clone() dnsv2.RR {
 func (rr *URL301) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tURL301"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tURL301\t" + rr.Data().String()
 }
 
 // Parser interface.

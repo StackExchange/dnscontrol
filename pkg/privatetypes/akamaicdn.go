@@ -11,7 +11,9 @@ import (
 // AKAMAICDN
 
 func init() {
-	Register(TypeAKAMAICDN, "AKAMAICDN", func() dnsv2.RR { return new(AKAMAICDN) })
+	Register(TypeAKAMAICDN, "AKAMAICDN",
+		func() dnsv2.RR { return new(AKAMAICDN) },
+		privatetypesrdata.MakeAKAMAICDN)
 }
 
 const TypeAKAMAICDN = 65318
@@ -35,7 +37,7 @@ func (rr *AKAMAICDN) Clone() dnsv2.RR {
 func (rr *AKAMAICDN) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tAKAMAICDN"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tAKAMAICDN\t" + rr.Data().String()
 }
 
 // Parser interface.

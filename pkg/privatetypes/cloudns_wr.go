@@ -11,7 +11,7 @@ import (
 // CLOUDNS_WR
 
 func init() {
-	Register(TypeCLOUDNS_WR, "CLOUDNS_WR", func() dnsv2.RR { return new(CLOUDNS_WR) })
+	Register(TypeCLOUDNS_WR, "CLOUDNS_WR", func() dnsv2.RR { return new(CLOUDNS_WR) }, privatetypesrdata.MakeCLOUDNS_WR)
 }
 
 const TypeCLOUDNS_WR = 65315
@@ -35,7 +35,7 @@ func (rr *CLOUDNS_WR) Clone() dnsv2.RR {
 func (rr *CLOUDNS_WR) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tCLOUDNS_WR"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tCLOUDNS_WR\t" + rr.Data().String()
 }
 
 // Parser interface.

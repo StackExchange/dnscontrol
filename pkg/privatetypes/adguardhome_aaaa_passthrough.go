@@ -11,7 +11,7 @@ import (
 // ADGUARDHOME_AAAA_PASSTHROUGH
 
 func init() {
-	Register(TypeADGUARDHOME_AAAA_PASSTHROUGH, "ADGUARDHOME_AAAA_PASSTHROUGH", func() dnsv2.RR { return new(ADGUARDHOME_AAAA_PASSTHROUGH) })
+	Register(TypeADGUARDHOME_AAAA_PASSTHROUGH, "ADGUARDHOME_AAAA_PASSTHROUGH", func() dnsv2.RR { return new(ADGUARDHOME_AAAA_PASSTHROUGH) }, privatetypesrdata.MakeADGUARDHOME_AAAA_PASSTHROUGH)
 }
 
 const TypeADGUARDHOME_AAAA_PASSTHROUGH = 65302
@@ -35,7 +35,7 @@ func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Clone() dnsv2.RR {
 func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tADGUARDHOME_AAAA_PASSTHROUGH"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tADGUARDHOME_AAAA_PASSTHROUGH\t" + rr.Data().String()
 }
 
 // Parser interface.

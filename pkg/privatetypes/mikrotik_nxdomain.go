@@ -11,7 +11,7 @@ import (
 // MIKROTIK_NXDOMAIN
 
 func init() {
-	Register(TypeMIKROTIK_NXDOMAIN, "MIKROTIK_NXDOMAIN", func() dnsv2.RR { return new(MIKROTIK_NXDOMAIN) })
+	Register(TypeMIKROTIK_NXDOMAIN, "MIKROTIK_NXDOMAIN", func() dnsv2.RR { return new(MIKROTIK_NXDOMAIN) }, privatetypesrdata.MakeMIKROTIK_NXDOMAIN)
 }
 
 const TypeMIKROTIK_NXDOMAIN = 65308
@@ -35,7 +35,7 @@ func (rr *MIKROTIK_NXDOMAIN) Clone() dnsv2.RR {
 func (rr *MIKROTIK_NXDOMAIN) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tMIKROTIK_NXDOMAIN"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tMIKROTIK_NXDOMAIN" // RDATA is empty.
 }
 
 // Parser interface.

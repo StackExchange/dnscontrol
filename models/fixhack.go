@@ -37,18 +37,8 @@ func (rc *RecordConfig) FixUp(origin string) {
 		switch rc.Type {
 
 		// Incomplete
-		case "MIKROTIK_FWD":
-			rc.RDATA = privatetypesrdata.MIKROTIK_FWD{}
-		case "MIKROTIK_NXDOMAIN":
-			rc.RDATA = privatetypesrdata.MIKROTIK_NXDOMAIN{}
-		case "PORKBUN_URLFWD":
-			rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
-		case "URL":
-			rc.RDATA = privatetypesrdata.URL{}
-		case "URL301":
-			rc.RDATA = privatetypesrdata.URL301{}
-		case "FRAME":
-			rc.RDATA = privatetypesrdata.FRAME{}
+		// case "PORKBUN_URLFWD":
+		// 	rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
 		case "BUNNY_DNS_PZ":
 			rc.RDATA = privatetypesrdata.BUNNY_DNS_PZ{}
 		case "LUA":
@@ -95,11 +85,15 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "DHCID":
 			rc.RDATA = dnsrdatav2.DHCID{Digest: rc.GetTargetField()}
 		case "DNAME":
-			rc.RDATA = dnsrdatav2.DNAME{Target: rc.GetTargetField()}
+			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin+".")
+			rc.RDATA = dnsrdatav2.DNAME{Target: targ}
 		case "DNSKEY":
-			rc.RDATA = dnsrdatav2.DNSKEY{Flags: rc.DnskeyFlags, Protocol: rc.DnskeyProtocol, Algorithm: rc.DnskeyAlgorithm, PublicKey: rc.GetTargetField()}
+			rc.RDATA = dnsrdatav2.DNSKEY{Flags: rc.DnskeyFlags, Protocol: rc.DnskeyProtocol, Algorithm: rc.DnskeyAlgorithm, PublicKey: rc.DnskeyPublicKey}
 		case "DS":
 			rc.RDATA = dnsrdatav2.DS{KeyTag: rc.DsKeyTag, Algorithm: rc.DsAlgorithm, DigestType: rc.DsDigestType, Digest: rc.GetTargetField()}
+
+		case "FRAME":
+			rc.RDATA = privatetypesrdata.FRAME{Target: rc.GetTargetField()}
 
 		case "HTTPS":
 			if rc.SvcPriority == 0 {
@@ -119,6 +113,10 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "LOC":
 			rc.RDATA = dnsrdatav2.LOC{Version: rc.LocVersion, Size: rc.LocSize, HorizPre: rc.LocHorizPre, VertPre: rc.LocVertPre, Latitude: rc.LocLatitude, Longitude: rc.LocLongitude, Altitude: rc.LocAltitude}
 
+		case "MIKROTIK_FWD":
+			rc.RDATA = privatetypesrdata.MIKROTIK_FWD{ForwardTo: rc.GetTargetField()}
+		case "MIKROTIK_NXDOMAIN":
+			rc.RDATA = privatetypesrdata.MIKROTIK_NXDOMAIN{}
 		case "MX":
 			rc.RDATA = dnsrdatav2.MX{Preference: rc.MxPreference, Mx: rc.GetTargetField()}
 
@@ -130,6 +128,8 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "OPENPGPKEY":
 			rc.RDATA = dnsrdatav2.OPENPGPKEY{PublicKey: rc.GetTargetField()}
 
+		case "PORKBUN_URLFWD":
+			rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
 		case "PTR":
 			rc.RDATA = dnsrdatav2.PTR{Ptr: rc.GetTargetField()}
 
@@ -137,8 +137,8 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = dnsrdatav2.RP{Mbox: rc.F.(dnsv1.RP).Mbox, Txt: rc.F.(dnsv1.RP).Txt}
 		case "R53_ALIAS":
 			rc.RDATA = privatetypesrdata.R53_ALIAS{
-				Target:           rc.GetTargetField(),
 				AliasType:        rc.R53Alias["type"],
+				Target:           rc.GetTargetField(),
 				ZoneID:           rc.R53Alias["zone_id"],
 				EvalTargetHealth: rc.R53Alias["evaluate_target_health"],
 			}
@@ -168,6 +168,11 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "TXT":
 			rc.RDATA = dnsrdatav2.TXT{Txt: []string{rc.GetTargetField()}}
 
+		case "URL":
+			rc.RDATA = privatetypesrdata.URL{Location: rc.GetTargetField()}
+		case "URL301":
+			rc.RDATA = privatetypesrdata.URL{Location: rc.GetTargetField()}
+
 		default:
 			panic(fmt.Sprintf("RDATA FIXUP NOT IMPLEMENTED TYPE=%q", rc.Type))
 		}
@@ -183,11 +188,12 @@ func (rc *RecordConfig) FixUp(origin string) {
 			// in debug output that the serial is intentionally excluded.
 			rc.ComparableV3 = fmt.Sprintf("%s %s X %d %d %d %d", rc.GetTargetField(), rc.SoaMbox, rc.SoaRefresh, rc.SoaRetry, rc.SoaExpire, rc.SoaMinttl)
 		default:
-			rc.ComparableV3 = rc.RDATA.String()
+			rc.ComparableV3 = strings.TrimSpace(rc.RDATA.String())
 		}
 
-		if strings.HasSuffix(rc.ComparableV3, " ") {
-			rc.ComparableV3 = rc.ComparableV3 + "W"
-		}
+		// Note to self: RDATA.String() sometimes leaves a trailing space.  File a bug.
+		// if strings.HasSuffix(rc.ComparableV3, " ") {
+		// 	rc.ComparableV3 = rc.ComparableV3 + "W"
+		// }
 	}
 }

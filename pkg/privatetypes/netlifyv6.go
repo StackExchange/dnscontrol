@@ -11,7 +11,7 @@ import (
 // NETLIFYV6
 
 func init() {
-	Register(TypeNETLIFYV6, "NETLIFYV6", func() dnsv2.RR { return new(NETLIFYV6) })
+	Register(TypeNETLIFYV6, "NETLIFYV6", func() dnsv2.RR { return new(NETLIFYV6) }, privatetypesrdata.MakeNETLIFYV6)
 }
 
 const TypeNETLIFYV6 = 65317
@@ -35,7 +35,7 @@ func (rr *NETLIFYV6) Clone() dnsv2.RR {
 func (rr *NETLIFYV6) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tNETLIFYV6"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tNETLIFYV6\t" + rr.Data().String()
 }
 
 // Parser interface.

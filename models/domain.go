@@ -71,6 +71,17 @@ type DomainConfig struct {
 	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
+func NewDomainConfig(name string) *DomainConfig {
+	// Create DomainConfig.
+	// TODO(Convert to Unicode and ASCII)
+	dc := &DomainConfig{
+		Name:        name,
+		NameRaw:     name,
+		NameUnicode: name,
+	}
+	return dc
+}
+
 // PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
 // It is called by dns.go's PostProcess() function.
 func (dc *DomainConfig) PostProcess() {

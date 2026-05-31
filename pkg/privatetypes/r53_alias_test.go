@@ -12,12 +12,13 @@ func TestR53Alias(t *testing.T) {
 		AliasType:        "A",
 		Target:           "kyle.example.com.",
 		EvalTargetHealth: "false",
+		ZoneID:           "Z1234567890",
 	}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if rry.String() != y.String() {
-		t.Fatalf("R53_ALIAS string presentations should be identical:\n%q\n%q", rry.String(), y.String())
+		t.Fatalf("R53_ALIAS string presentations should be identical:\n%s\n%s", rry.String(), y.String())
 	}
 }

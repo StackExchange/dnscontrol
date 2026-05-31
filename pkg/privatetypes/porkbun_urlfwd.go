@@ -11,10 +11,10 @@ import (
 // PORKBUN_URLFWD
 
 func init() {
-	Register(TypePORKBUN_URLFWD, "PORKBUN_URLFWD", func() dnsv2.RR { return new(PORKBUN_URLFWD) })
+	Register(TypePORKBUN_URLFWD, "PORKBUN_URLFWD", func() dnsv2.RR { return new(PORKBUN_URLFWD) }, privatetypesrdata.MakePORKBUN_URLFWD)
 }
 
-const TypePORKBUN_URLFWD = 65309
+const TypePORKBUN_URLFWD = 65321
 
 type PORKBUN_URLFWD struct {
 	Hdr dnsv2.Header
@@ -35,7 +35,7 @@ func (rr *PORKBUN_URLFWD) Clone() dnsv2.RR {
 func (rr *PORKBUN_URLFWD) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tPORKBUN_URLFWD"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tPORKBUN_URLFWD\t" + rr.Data().String()
 }
 
 // Parser interface.

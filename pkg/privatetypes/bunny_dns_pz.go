@@ -11,7 +11,7 @@ import (
 // BUNNY_DNS_PZ
 
 func init() {
-	Register(TypeBUNNY_DNS_PZ, "BUNNY_DNS_PZ", func() dnsv2.RR { return new(BUNNY_DNS_PZ) })
+	Register(TypeBUNNY_DNS_PZ, "BUNNY_DNS_PZ", func() dnsv2.RR { return new(BUNNY_DNS_PZ) }, privatetypesrdata.MakeBUNNY_DNS_PZ)
 }
 
 const TypeBUNNY_DNS_PZ = 65313

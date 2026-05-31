@@ -12,7 +12,7 @@ import (
 // AZURE_ALIAS
 
 func init() {
-	Register(TypeAZURE_ALIAS, "AZURE_ALIAS", func() dnsv2.RR { return new(AZURE_ALIAS) })
+	Register(TypeAZURE_ALIAS, "AZURE_ALIAS", func() dnsv2.RR { return new(AZURE_ALIAS) }, privatetypesrdata.MakeAZURE_ALIAS)
 }
 
 const TypeAZURE_ALIAS = 65304
@@ -38,8 +38,7 @@ func (rr *AZURE_ALIAS) Clone() dnsv2.RR {
 func (rr *AZURE_ALIAS) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tAZURE_ALIAS\t" +
-		rr.Data().String()
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tAZURE_ALIAS\t" + rr.Data().String()
 }
 
 // Parser interface.

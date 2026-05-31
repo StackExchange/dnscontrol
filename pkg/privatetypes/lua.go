@@ -11,7 +11,7 @@ import (
 // LUA
 
 func init() {
-	Register(TypeLUA, "LUA", func() dnsv2.RR { return new(LUA) })
+	Register(TypeLUA, "LUA", func() dnsv2.RR { return new(LUA) }, privatetypesrdata.MakeLUA)
 }
 
 const TypeLUA = 65314
@@ -35,7 +35,7 @@ func (rr *LUA) Clone() dnsv2.RR {
 func (rr *LUA) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tLUA"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tLUA\t" + rr.Data().String()
 }
 
 // Parser interface.

@@ -11,7 +11,7 @@ import (
 // AKAMAITLC
 
 func init() {
-	Register(TypeAKAMAITLC, "AKAMAITLC", func() dnsv2.RR { return new(AKAMAITLC) })
+	Register(TypeAKAMAITLC, "AKAMAITLC", func() dnsv2.RR { return new(AKAMAITLC) }, privatetypesrdata.MakeAKAMAITLC)
 }
 
 const TypeAKAMAITLC = 65319
@@ -35,7 +35,7 @@ func (rr *AKAMAITLC) Clone() dnsv2.RR {
 func (rr *AKAMAITLC) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tAKAMAITLC"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tAKAMAITLC\t" + rr.Data().String()
 }
 
 // Parser interface.

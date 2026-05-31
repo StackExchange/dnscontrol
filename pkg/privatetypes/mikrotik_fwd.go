@@ -11,7 +11,7 @@ import (
 // MIKROTIK_FWD
 
 func init() {
-	Register(TypeMIKROTIK_FWD, "MIKROTIK_FWD", func() dnsv2.RR { return new(MIKROTIK_FWD) })
+	Register(TypeMIKROTIK_FWD, "MIKROTIK_FWD", func() dnsv2.RR { return new(MIKROTIK_FWD) }, privatetypesrdata.MakeMIKROTIK_FWD())
 }
 
 const TypeMIKROTIK_FWD = 65307
@@ -35,7 +35,7 @@ func (rr *MIKROTIK_FWD) Clone() dnsv2.RR {
 func (rr *MIKROTIK_FWD) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
-		dnsutilv2.ClassToString(rr.Header().Class) + "\tMIKROTIK_FWD"
+		dnsutilv2.ClassToString(rr.Header().Class) + "\tMIKROTIK_FWD\t" + rr.Data().String()
 }
 
 // Parser interface.
