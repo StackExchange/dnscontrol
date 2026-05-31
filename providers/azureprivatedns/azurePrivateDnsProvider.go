@@ -95,7 +95,7 @@ func init() {
 		DisplayName: "Azure Private DNS",
 		Kind:        providers.KindDNS,
 		DocsURL:     "https://docs.dnscontrol.org/provider/azureprivatedns",
-		PortalURL:   "https://portal.azure.com/", // TODO: Verify
+		PortalURL:   "https://portal.azure.com/",
 		Fields: []providers.CredsField{
 			{
 				Key:      "SubscriptionID",
