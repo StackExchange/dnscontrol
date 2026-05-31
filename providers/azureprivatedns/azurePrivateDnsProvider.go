@@ -91,6 +91,45 @@ func init() {
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterCustomRecordType("AZURE_ALIAS", providerName, "")
 	providers.RegisterMaintainer(providerName, providerMaintainer)
+	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
+		DisplayName: "Azure Private DNS",
+		Kind:        providers.KindDNS,
+		DocsURL:     "https://docs.dnscontrol.org/provider/azureprivatedns",
+		PortalURL:   "https://portal.azure.com/",
+		Fields: []providers.CredsField{
+			{
+				Key:      "SubscriptionID",
+				Label:    "Subscription ID",
+				Help:     "Azure subscription ID that contains the private DNS zones.",
+				Required: true,
+			},
+			{
+				Key:      "ResourceGroup",
+				Label:    "Resource group",
+				Help:     "Azure resource group that contains the private DNS zones.",
+				Required: true,
+			},
+			{
+				Key:      "TenantID",
+				Label:    "Tenant ID",
+				Help:     "Azure AD tenant ID for the service principal.",
+				Required: true,
+			},
+			{
+				Key:      "ClientID",
+				Label:    "Client ID",
+				Help:     "Service principal client (application) ID.",
+				Required: true,
+			},
+			{
+				Key:      "ClientSecret",
+				Label:    "Client secret",
+				Help:     "Service principal client secret.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+	})
 }
 
 func (a *azurednsProvider) getExistingZones() ([]*adns.PrivateZone, error) {
