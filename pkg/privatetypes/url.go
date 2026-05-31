@@ -21,9 +21,11 @@ type URL struct {
 }
 
 // Typer interface.
+
 func (rr *URL) Type() uint16 { return TypeURL }
 
 // RR interface.
+
 func (rr *URL) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *URL) Len() int              { return rr.Hdr.Len() }
 func (rr *URL) Data() dnsv2.RDATA {
@@ -38,7 +40,7 @@ func (rr *URL) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tURL\t" + rr.Data().String()
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *URL) Parse(tokens []string, _ string) error {
 	return nil
 }

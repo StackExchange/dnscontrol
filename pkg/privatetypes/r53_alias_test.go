@@ -7,7 +7,7 @@ import (
 )
 
 func TestR53Alias(t *testing.T) {
-	y := &R53_ALIAS{
+	y := &R53ALIAS{
 		Hdr:              dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET},
 		AliasType:        "A",
 		Target:           "kyle.example.com.",

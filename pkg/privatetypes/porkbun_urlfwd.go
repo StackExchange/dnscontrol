@@ -11,34 +11,36 @@ import (
 // PORKBUN_URLFWD
 
 func init() {
-	Register(TypePORKBUN_URLFWD, "PORKBUN_URLFWD", func() dnsv2.RR { return new(PORKBUN_URLFWD) }, privatetypesrdata.MakePORKBUN_URLFWD)
+	Register(TypePORKBUNURLFWD, "PORKBUN_URLFWD", func() dnsv2.RR { return new(PORKBUNURLFWD) }, privatetypesrdata.MakePORKBUNURLFWD)
 }
 
-const TypePORKBUN_URLFWD = 65321
+const TypePORKBUNURLFWD = 65321
 
-type PORKBUN_URLFWD struct {
+type PORKBUNURLFWD struct {
 	Hdr dnsv2.Header
 }
 
 // Typer interface.
-func (rr *PORKBUN_URLFWD) Type() uint16 { return TypePORKBUN_URLFWD }
+
+func (rr *PORKBUNURLFWD) Type() uint16 { return TypePORKBUNURLFWD }
 
 // RR interface.
-func (rr *PORKBUN_URLFWD) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *PORKBUN_URLFWD) Len() int              { return rr.Hdr.Len() }
-func (rr *PORKBUN_URLFWD) Data() dnsv2.RDATA {
-	return &privatetypesrdata.PORKBUN_URLFWD{}
+
+func (rr *PORKBUNURLFWD) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *PORKBUNURLFWD) Len() int              { return rr.Hdr.Len() }
+func (rr *PORKBUNURLFWD) Data() dnsv2.RDATA {
+	return &privatetypesrdata.PORKBUNURLFWD{}
 }
-func (rr *PORKBUN_URLFWD) Clone() dnsv2.RR {
-	return &PORKBUN_URLFWD{rr.Hdr}
+func (rr *PORKBUNURLFWD) Clone() dnsv2.RR {
+	return &PORKBUNURLFWD{rr.Hdr}
 }
-func (rr *PORKBUN_URLFWD) String() string {
+func (rr *PORKBUNURLFWD) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tPORKBUN_URLFWD\t" + rr.Data().String()
 }
 
-// Parser interface.
-func (rr *PORKBUN_URLFWD) Parse(tokens []string, _ string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *PORKBUNURLFWD) Parse(tokens []string, _ string) error {
 	return nil
 }

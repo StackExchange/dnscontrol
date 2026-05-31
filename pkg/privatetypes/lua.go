@@ -21,9 +21,11 @@ type LUA struct {
 }
 
 // Typer interface.
+
 func (rr *LUA) Type() uint16 { return TypeLUA }
 
 // RR interface.
+
 func (rr *LUA) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *LUA) Len() int              { return rr.Hdr.Len() }
 func (rr *LUA) Data() dnsv2.RDATA {
@@ -38,7 +40,7 @@ func (rr *LUA) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tLUA\t" + rr.Data().String()
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *LUA) Parse(tokens []string, _ string) error {
 	return nil
 }

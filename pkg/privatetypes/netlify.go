@@ -21,9 +21,11 @@ type NETLIFY struct {
 }
 
 // Typer interface.
+
 func (rr *NETLIFY) Type() uint16 { return TypeNETLIFY }
 
 // RR interface.
+
 func (rr *NETLIFY) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *NETLIFY) Len() int              { return rr.Hdr.Len() }
 func (rr *NETLIFY) Data() dnsv2.RDATA {
@@ -38,7 +40,7 @@ func (rr *NETLIFY) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tNETLIFY" // RDATA is empty.
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *NETLIFY) Parse(tokens []string, _ string) error {
 	return nil
 }

@@ -44,8 +44,8 @@ func makeRDATA(origin string, rtyp uint16, args ...any) dnsv2.RDATA {
 	case dnsv2.TypeTXT:
 		return dnsrdatav2.TXT{Txt: mustbe.Txts(args)}
 
-	case privatetypes.TypePORKBUN_URLFWD:
-		return privatetypesrdata.PORKBUN_URLFWD{}
+	case privatetypes.TypePORKBUNURLFWD:
+		return privatetypesrdata.PORKBUNURLFWD{}
 	}
 	panic("makeRDATA: unhandled type " + dnsutilv2.TypeToString(rtyp))
 
@@ -61,11 +61,11 @@ func correctNumberOfArgs(rtyp uint16, n int) (bool, int) {
 		// -1 == 1 or more
 		// -2 == 0 or more
 		// 0, 1, 2, ... == exact number of args
-		dnsv2.TypeA:                     1,
-		dnsv2.TypeAAAA:                  1,
-		dnsv2.TypeCNAME:                 1,
-		dnsv2.TypeTXT:                   -2,
-		privatetypes.TypePORKBUN_URLFWD: 0,
+		dnsv2.TypeA:                    1,
+		dnsv2.TypeAAAA:                 1,
+		dnsv2.TypeCNAME:                1,
+		dnsv2.TypeTXT:                  -2,
+		privatetypes.TypePORKBUNURLFWD: 0,
 	}
 
 	needed, ok := argsNeeded[rtyp]

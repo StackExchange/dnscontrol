@@ -7,7 +7,7 @@ import (
 )
 
 func TestAzureAlias(t *testing.T) {
-	y := &AZURE_ALIAS{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}, Target: "example.com."}
+	y := &AZUREALIAS{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}, Target: "example.com."}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)

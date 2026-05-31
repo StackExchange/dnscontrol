@@ -12,12 +12,12 @@ import (
 // R53_ALIAS
 
 func init() {
-	Register(TypeR53_ALIAS, "R53_ALIAS", func() dnsv2.RR { return new(R53_ALIAS) }, privatetypesrdata.MakeR53_ALIAS)
+	Register(TypeR53ALIAS, "R53_ALIAS", func() dnsv2.RR { return new(R53ALIAS) }, privatetypesrdata.MakeR53ALIAS)
 }
 
-const TypeR53_ALIAS = 65306
+const TypeR53ALIAS = 65306
 
-type R53_ALIAS struct {
+type R53ALIAS struct {
 	Hdr dnsv2.Header
 
 	AliasType        string
@@ -27,31 +27,33 @@ type R53_ALIAS struct {
 }
 
 // Typer interface.
-func (rr *R53_ALIAS) Type() uint16 { return TypeR53_ALIAS }
+
+func (rr *R53ALIAS) Type() uint16 { return TypeR53ALIAS }
 
 // RR interface.
-func (rr *R53_ALIAS) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *R53_ALIAS) Len() int {
+
+func (rr *R53ALIAS) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *R53ALIAS) Len() int {
 	return rr.Hdr.Len() +
 		1 + len(rr.AliasType) +
 		1 + len(rr.Target) +
 		1 + len(rr.EvalTargetHealth) +
 		1 + len(rr.ZoneID)
 }
-func (rr *R53_ALIAS) Data() dnsv2.RDATA {
-	return &privatetypesrdata.R53_ALIAS{AliasType: rr.AliasType, Target: rr.Target, EvalTargetHealth: rr.EvalTargetHealth, ZoneID: rr.ZoneID}
+func (rr *R53ALIAS) Data() dnsv2.RDATA {
+	return &privatetypesrdata.R53ALIAS{AliasType: rr.AliasType, Target: rr.Target, EvalTargetHealth: rr.EvalTargetHealth, ZoneID: rr.ZoneID}
 }
-func (rr *R53_ALIAS) Clone() dnsv2.RR {
-	return &R53_ALIAS{rr.Hdr, rr.AliasType, rr.Target, rr.EvalTargetHealth, rr.ZoneID}
+func (rr *R53ALIAS) Clone() dnsv2.RR {
+	return &R53ALIAS{rr.Hdr, rr.AliasType, rr.Target, rr.EvalTargetHealth, rr.ZoneID}
 }
-func (rr *R53_ALIAS) String() string {
+func (rr *R53ALIAS) String() string {
 	return (rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tR53_ALIAS\t" + rr.Data().String())
 }
 
-// Parser interface.
-func (rr *R53_ALIAS) Parse(tokens []string, s string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *R53ALIAS) Parse(tokens []string, s string) error {
 	args := TokensToArgs(tokens)
 	if len(args) != 4 {
 		return fmt.Errorf("%s requires exactly 4 arguments, got %d: %v", dnsutilv2.TypeToString(rr.Type()), len(args), args)

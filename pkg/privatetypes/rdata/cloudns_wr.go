@@ -8,21 +8,21 @@ import (
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 )
 
-type CLOUDNS_WR struct {
+type CLOUDNSWR struct {
 	Target string
 }
 
-func (rd CLOUDNS_WR) Len() int {
+func (rd CLOUDNSWR) Len() int {
 	return 0
 }
 
-func (rd CLOUDNS_WR) String() string {
+func (rd CLOUDNSWR) String() string {
 	return txtutil.ZoneifyString(rd.Target)
 }
 
-func MakeCLOUDNS_WR(origin string, args ...any) (dnsv2.RDATA, error) {
+func MakeCLOUDNSWR(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 1 {
-		return CLOUDNS_WR{}, fmt.Errorf("CLOUDNS_WR requires exactly 1 argument, got %d: %+v", len(args), args)
+		return CLOUDNSWR{}, fmt.Errorf("CLOUDNS_WR requires exactly 1 argument, got %d: %+v", len(args), args)
 	}
-	return CLOUDNS_WR{Target: mustbe.RawString(args[0])}, nil
+	return CLOUDNSWR{Target: mustbe.RawString(args[0])}, nil
 }

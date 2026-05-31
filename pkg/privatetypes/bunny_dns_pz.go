@@ -11,34 +11,36 @@ import (
 // BUNNY_DNS_PZ
 
 func init() {
-	Register(TypeBUNNY_DNS_PZ, "BUNNY_DNS_PZ", func() dnsv2.RR { return new(BUNNY_DNS_PZ) }, privatetypesrdata.MakeBUNNY_DNS_PZ)
+	Register(TypeBUNNYDNSPZ, "BUNNY_DNS_PZ", func() dnsv2.RR { return new(BUNNYDNSPZ) }, privatetypesrdata.MakeBUNNYDNSPZ)
 }
 
-const TypeBUNNY_DNS_PZ = 65313
+const TypeBUNNYDNSPZ = 65313
 
-type BUNNY_DNS_PZ struct {
+type BUNNYDNSPZ struct {
 	Hdr dnsv2.Header
 }
 
 // Typer interface.
-func (rr *BUNNY_DNS_PZ) Type() uint16 { return TypeBUNNY_DNS_PZ }
+
+func (rr *BUNNYDNSPZ) Type() uint16 { return TypeBUNNYDNSPZ }
 
 // RR interface.
-func (rr *BUNNY_DNS_PZ) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *BUNNY_DNS_PZ) Len() int              { return rr.Hdr.Len() }
-func (rr *BUNNY_DNS_PZ) Data() dnsv2.RDATA {
-	return &privatetypesrdata.BUNNY_DNS_PZ{}
+
+func (rr *BUNNYDNSPZ) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *BUNNYDNSPZ) Len() int              { return rr.Hdr.Len() }
+func (rr *BUNNYDNSPZ) Data() dnsv2.RDATA {
+	return &privatetypesrdata.BUNNYDNSPZ{}
 }
-func (rr *BUNNY_DNS_PZ) Clone() dnsv2.RR {
-	return &BUNNY_DNS_PZ{rr.Hdr}
+func (rr *BUNNYDNSPZ) Clone() dnsv2.RR {
+	return &BUNNYDNSPZ{rr.Hdr}
 }
-func (rr *BUNNY_DNS_PZ) String() string {
+func (rr *BUNNYDNSPZ) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tBUNNY_DNS_PZ"
 }
 
-// Parser interface.
-func (rr *BUNNY_DNS_PZ) Parse(tokens []string, _ string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *BUNNYDNSPZ) Parse(tokens []string, _ string) error {
 	return nil
 }

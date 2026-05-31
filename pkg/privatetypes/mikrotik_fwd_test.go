@@ -7,7 +7,7 @@ import (
 )
 
 func TestMikrotik_Fwd(t *testing.T) {
-	y := &MIKROTIK_FWD{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
+	y := &MIKROTIKFWD{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)

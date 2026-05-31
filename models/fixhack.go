@@ -40,11 +40,11 @@ func (rc *RecordConfig) FixUp(origin string) {
 		// case "PORKBUN_URLFWD":
 		// 	rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
 		case "BUNNY_DNS_PZ":
-			rc.RDATA = privatetypesrdata.BUNNY_DNS_PZ{}
+			rc.RDATA = privatetypesrdata.BUNNYDNSPZ{}
 		case "LUA":
 			rc.RDATA = privatetypesrdata.LUA{}
 		case "CLOUDNS_WR":
-			rc.RDATA = privatetypesrdata.CLOUDNS_WR{}
+			rc.RDATA = privatetypesrdata.CLOUDNSWR{}
 		case "NETLIFY":
 			rc.RDATA = privatetypesrdata.NETLIFY{}
 		case "NETLIFYV6":
@@ -54,7 +54,7 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "AKAMAITLC":
 			rc.RDATA = privatetypesrdata.AKAMAITLC{}
 		case "BUNNY_DNS_RDR":
-			rc.RDATA = privatetypesrdata.BUNNY_DNS_RDR{}
+			rc.RDATA = privatetypesrdata.BUNNYDNSRDR{}
 
 		case "A":
 			rc.RDATA = dnsrdatav2.A{Addr: rc.GetTargetIP()}
@@ -63,11 +63,11 @@ func (rc *RecordConfig) FixUp(origin string) {
 		case "AAAA":
 			rc.RDATA = dnsrdatav2.AAAA{Addr: rc.GetTargetIP()}
 		case "ADGUARDHOME_A_PASSTHROUGH":
-			rc.RDATA = privatetypesrdata.ADGUARDHOME_A_PASSTHROUGH{}
+			rc.RDATA = privatetypesrdata.ADGUARDHOMEAPASSTHROUGH{}
 		case "ADGUARDHOME_AAAA_PASSTHROUGH":
-			rc.RDATA = privatetypesrdata.ADGUARDHOME_AAAA_PASSTHROUGH{}
+			rc.RDATA = privatetypesrdata.ADGUARDHOMEAAAAPASSTHROUGH{}
 		case "AZURE_ALIAS":
-			rc.RDATA = privatetypesrdata.AZURE_ALIAS{Target: rc.GetTargetField(), AliasType: rc.AzureAlias["type"]}
+			rc.RDATA = privatetypesrdata.AZUREALIAS{Target: rc.GetTargetField(), AliasType: rc.AzureAlias["type"]}
 
 		case "CAA":
 			rc.RDATA = dnsrdatav2.CAA{Flag: rc.CaaFlag, Tag: rc.CaaTag, Value: rc.GetTargetField()}
@@ -114,9 +114,9 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = dnsrdatav2.LOC{Version: rc.LocVersion, Size: rc.LocSize, HorizPre: rc.LocHorizPre, VertPre: rc.LocVertPre, Latitude: rc.LocLatitude, Longitude: rc.LocLongitude, Altitude: rc.LocAltitude}
 
 		case "MIKROTIK_FWD":
-			rc.RDATA = privatetypesrdata.MIKROTIK_FWD{ForwardTo: rc.GetTargetField()}
+			rc.RDATA = privatetypesrdata.MIKROTIKFWD{ForwardTo: rc.GetTargetField()}
 		case "MIKROTIK_NXDOMAIN":
-			rc.RDATA = privatetypesrdata.MIKROTIK_NXDOMAIN{}
+			rc.RDATA = privatetypesrdata.MIKROTIKNXDOMAIN{}
 		case "MX":
 			rc.RDATA = dnsrdatav2.MX{Preference: rc.MxPreference, Mx: rc.GetTargetField()}
 
@@ -129,14 +129,14 @@ func (rc *RecordConfig) FixUp(origin string) {
 			rc.RDATA = dnsrdatav2.OPENPGPKEY{PublicKey: rc.GetTargetField()}
 
 		case "PORKBUN_URLFWD":
-			rc.RDATA = privatetypesrdata.PORKBUN_URLFWD{}
+			rc.RDATA = privatetypesrdata.PORKBUNURLFWD{}
 		case "PTR":
 			rc.RDATA = dnsrdatav2.PTR{Ptr: rc.GetTargetField()}
 
 		case "RP":
 			rc.RDATA = dnsrdatav2.RP{Mbox: rc.F.(dnsv1.RP).Mbox, Txt: rc.F.(dnsv1.RP).Txt}
 		case "R53_ALIAS":
-			rc.RDATA = privatetypesrdata.R53_ALIAS{
+			rc.RDATA = privatetypesrdata.R53ALIAS{
 				AliasType:        rc.R53Alias["type"],
 				Target:           rc.GetTargetField(),
 				ZoneID:           rc.R53Alias["zone_id"],

@@ -22,9 +22,11 @@ type FRAME struct {
 }
 
 // Typer interface.
+
 func (rr *FRAME) Type() uint16 { return TypeFRAME }
 
 // RR interface.
+
 func (rr *FRAME) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *FRAME) Len() int              { return rr.Hdr.Len() }
 func (rr *FRAME) Data() dnsv2.RDATA {
@@ -39,7 +41,7 @@ func (rr *FRAME) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tFRAME\t" + rr.Data().String()
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *FRAME) Parse(tokens []string, _ string) error {
 	return nil
 }

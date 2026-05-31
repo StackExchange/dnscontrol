@@ -11,34 +11,36 @@ import (
 // MIKROTIK_NXDOMAIN
 
 func init() {
-	Register(TypeMIKROTIK_NXDOMAIN, "MIKROTIK_NXDOMAIN", func() dnsv2.RR { return new(MIKROTIK_NXDOMAIN) }, privatetypesrdata.MakeMIKROTIK_NXDOMAIN)
+	Register(TypeMIKROTIKNXDOMAIN, "MIKROTIK_NXDOMAIN", func() dnsv2.RR { return new(MIKROTIKNXDOMAIN) }, privatetypesrdata.MakeMIKROTIKNXDOMAIN)
 }
 
-const TypeMIKROTIK_NXDOMAIN = 65308
+const TypeMIKROTIKNXDOMAIN = 65308
 
-type MIKROTIK_NXDOMAIN struct {
+type MIKROTIKNXDOMAIN struct {
 	Hdr dnsv2.Header
 }
 
 // Typer interface.
-func (rr *MIKROTIK_NXDOMAIN) Type() uint16 { return TypeMIKROTIK_NXDOMAIN }
+
+func (rr *MIKROTIKNXDOMAIN) Type() uint16 { return TypeMIKROTIKNXDOMAIN }
 
 // RR interface.
-func (rr *MIKROTIK_NXDOMAIN) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *MIKROTIK_NXDOMAIN) Len() int              { return rr.Hdr.Len() }
-func (rr *MIKROTIK_NXDOMAIN) Data() dnsv2.RDATA {
-	return &privatetypesrdata.MIKROTIK_NXDOMAIN{}
+
+func (rr *MIKROTIKNXDOMAIN) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *MIKROTIKNXDOMAIN) Len() int              { return rr.Hdr.Len() }
+func (rr *MIKROTIKNXDOMAIN) Data() dnsv2.RDATA {
+	return &privatetypesrdata.MIKROTIKNXDOMAIN{}
 }
-func (rr *MIKROTIK_NXDOMAIN) Clone() dnsv2.RR {
-	return &MIKROTIK_NXDOMAIN{rr.Hdr}
+func (rr *MIKROTIKNXDOMAIN) Clone() dnsv2.RR {
+	return &MIKROTIKNXDOMAIN{rr.Hdr}
 }
-func (rr *MIKROTIK_NXDOMAIN) String() string {
+func (rr *MIKROTIKNXDOMAIN) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tMIKROTIK_NXDOMAIN" // RDATA is empty.
 }
 
-// Parser interface.
-func (rr *MIKROTIK_NXDOMAIN) Parse(tokens []string, _ string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *MIKROTIKNXDOMAIN) Parse(tokens []string, _ string) error {
 	return nil
 }

@@ -11,34 +11,36 @@ import (
 // ADGUARDHOME_AAAA_PASSTHROUGH
 
 func init() {
-	Register(TypeADGUARDHOME_AAAA_PASSTHROUGH, "ADGUARDHOME_AAAA_PASSTHROUGH", func() dnsv2.RR { return new(ADGUARDHOME_AAAA_PASSTHROUGH) }, privatetypesrdata.MakeADGUARDHOME_AAAA_PASSTHROUGH)
+	Register(TypeADGUARDHOMEAAAAPASSTHROUGH, "ADGUARDHOME_AAAA_PASSTHROUGH", func() dnsv2.RR { return new(ADGUARDHOMEAAAAPASSTHROUGH) }, privatetypesrdata.MakeADGUARDHOMEAAAAPASSTHROUGH)
 }
 
-const TypeADGUARDHOME_AAAA_PASSTHROUGH = 65302
+const TypeADGUARDHOMEAAAAPASSTHROUGH = 65302
 
-type ADGUARDHOME_AAAA_PASSTHROUGH struct {
+type ADGUARDHOMEAAAAPASSTHROUGH struct {
 	Hdr dnsv2.Header
 }
 
 // Typer interface.
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Type() uint16 { return TypeADGUARDHOME_AAAA_PASSTHROUGH }
+
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Type() uint16 { return TypeADGUARDHOMEAAAAPASSTHROUGH }
 
 // RR interface.
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Len() int              { return rr.Hdr.Len() }
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Data() dnsv2.RDATA {
-	return &privatetypesrdata.ADGUARDHOME_AAAA_PASSTHROUGH{}
+
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Len() int              { return rr.Hdr.Len() }
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Data() dnsv2.RDATA {
+	return &privatetypesrdata.ADGUARDHOMEAAAAPASSTHROUGH{}
 }
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Clone() dnsv2.RR {
-	return &ADGUARDHOME_AAAA_PASSTHROUGH{rr.Hdr}
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Clone() dnsv2.RR {
+	return &ADGUARDHOMEAAAAPASSTHROUGH{rr.Hdr}
 }
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) String() string {
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tADGUARDHOME_AAAA_PASSTHROUGH\t" + rr.Data().String()
 }
 
-// Parser interface.
-func (rr *ADGUARDHOME_AAAA_PASSTHROUGH) Parse(tokens []string, _ string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *ADGUARDHOMEAAAAPASSTHROUGH) Parse(tokens []string, _ string) error {
 	return nil
 }

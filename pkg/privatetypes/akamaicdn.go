@@ -23,9 +23,11 @@ type AKAMAICDN struct {
 }
 
 // Typer interface.
+
 func (rr *AKAMAICDN) Type() uint16 { return TypeAKAMAICDN }
 
 // RR interface.
+
 func (rr *AKAMAICDN) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *AKAMAICDN) Len() int              { return rr.Hdr.Len() }
 func (rr *AKAMAICDN) Data() dnsv2.RDATA {
@@ -40,7 +42,7 @@ func (rr *AKAMAICDN) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tAKAMAICDN\t" + rr.Data().String()
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *AKAMAICDN) Parse(tokens []string, _ string) error {
 	return nil
 }

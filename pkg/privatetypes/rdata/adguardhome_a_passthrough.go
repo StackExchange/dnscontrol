@@ -6,20 +6,20 @@ import (
 	dnsv2 "codeberg.org/miekg/dns"
 )
 
-type ADGUARDHOME_A_PASSTHROUGH struct {
+type ADGUARDHOMEAPASSTHROUGH struct {
 }
 
-func (rd ADGUARDHOME_A_PASSTHROUGH) Len() int {
+func (rd ADGUARDHOMEAPASSTHROUGH) Len() int {
 	return 0
 }
 
-func (rd ADGUARDHOME_A_PASSTHROUGH) String() string {
+func (rd ADGUARDHOMEAPASSTHROUGH) String() string {
 	return ""
 }
 
-func MakeADGUARDHOME_A_PASSTHROUGH(origin string, args ...any) (dnsv2.RDATA, error) {
+func MakeADGUARDHOMEAPASSTHROUGH(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 0 {
-		return ADGUARDHOME_A_PASSTHROUGH{}, fmt.Errorf("ADGUARDHOME_A_PASSTHROUGH expects 0 arguments, got %d: %+v", len(args), args)
+		return ADGUARDHOMEAPASSTHROUGH{}, fmt.Errorf("ADGUARDHOME_A_PASSTHROUGH expects 0 arguments, got %d: %+v", len(args), args)
 	}
-	return ADGUARDHOME_A_PASSTHROUGH{}, nil
+	return ADGUARDHOMEAPASSTHROUGH{}, nil
 }

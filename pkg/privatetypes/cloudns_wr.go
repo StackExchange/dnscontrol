@@ -11,34 +11,36 @@ import (
 // CLOUDNS_WR
 
 func init() {
-	Register(TypeCLOUDNS_WR, "CLOUDNS_WR", func() dnsv2.RR { return new(CLOUDNS_WR) }, privatetypesrdata.MakeCLOUDNS_WR)
+	Register(TypeCLOUDNSWR, "CLOUDNS_WR", func() dnsv2.RR { return new(CLOUDNSWR) }, privatetypesrdata.MakeCLOUDNSWR)
 }
 
-const TypeCLOUDNS_WR = 65315
+const TypeCLOUDNSWR = 65315
 
-type CLOUDNS_WR struct {
+type CLOUDNSWR struct {
 	Hdr dnsv2.Header
 }
 
 // Typer interface.
-func (rr *CLOUDNS_WR) Type() uint16 { return TypeCLOUDNS_WR }
+
+func (rr *CLOUDNSWR) Type() uint16 { return TypeCLOUDNSWR }
 
 // RR interface.
-func (rr *CLOUDNS_WR) Header() *dnsv2.Header { return &rr.Hdr }
-func (rr *CLOUDNS_WR) Len() int              { return rr.Hdr.Len() }
-func (rr *CLOUDNS_WR) Data() dnsv2.RDATA {
-	return &privatetypesrdata.CLOUDNS_WR{}
+
+func (rr *CLOUDNSWR) Header() *dnsv2.Header { return &rr.Hdr }
+func (rr *CLOUDNSWR) Len() int              { return rr.Hdr.Len() }
+func (rr *CLOUDNSWR) Data() dnsv2.RDATA {
+	return &privatetypesrdata.CLOUDNSWR{}
 }
-func (rr *CLOUDNS_WR) Clone() dnsv2.RR {
-	return &CLOUDNS_WR{rr.Hdr}
+func (rr *CLOUDNSWR) Clone() dnsv2.RR {
+	return &CLOUDNSWR{rr.Hdr}
 }
-func (rr *CLOUDNS_WR) String() string {
+func (rr *CLOUDNSWR) String() string {
 	return rr.Header().Name + "\t" +
 		strconv.FormatInt(int64(rr.Header().TTL), 10) + "\t" +
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tCLOUDNS_WR\t" + rr.Data().String()
 }
 
-// Parser interface.
-func (rr *CLOUDNS_WR) Parse(tokens []string, _ string) error {
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
+func (rr *CLOUDNSWR) Parse(tokens []string, _ string) error {
 	return nil
 }

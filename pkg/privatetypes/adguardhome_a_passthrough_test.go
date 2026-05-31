@@ -7,7 +7,7 @@ import (
 )
 
 func TestAdguardhome_A_Passthrough(t *testing.T) {
-	y := &ADGUARDHOME_A_PASSTHROUGH{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
+	y := &ADGUARDHOMEAPASSTHROUGH{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)

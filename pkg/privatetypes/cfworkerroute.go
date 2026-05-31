@@ -24,9 +24,11 @@ type CFWORKERROUTE struct {
 }
 
 // Typer interface.
+
 func (rr *CFWORKERROUTE) Type() uint16 { return TypeCFWORKERROUTE }
 
 // RR interface.
+
 func (rr *CFWORKERROUTE) Header() *dnsv2.Header { return &rr.Hdr }
 func (rr *CFWORKERROUTE) Len() int              { return rr.Hdr.Len() + 1 + len(rr.When) + 1 + len(rr.Then) }
 func (rr *CFWORKERROUTE) Data() dnsv2.RDATA {
@@ -39,7 +41,7 @@ func (rr *CFWORKERROUTE) String() string {
 		dnsutilv2.ClassToString(rr.Header().Class) + "\tCF_WORKER_ROUTE\t" + rr.Data().String()
 }
 
-// Parser interface.
+// Parse makes an RDATA for this type using the tokens from dnsv2's parser.
 func (rr *CFWORKERROUTE) Parse(tokens []string, s string) error {
 	args := TokensToArgs(tokens)
 	if len(args) != 2 {

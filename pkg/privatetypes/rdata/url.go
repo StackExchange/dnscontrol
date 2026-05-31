@@ -12,8 +12,8 @@ type URL struct {
 	Location string
 
 	// Pornbun-specific fields:
-	Porkbun_IncludePath bool
-	Porkbun_WildCard    bool
+	PorkbunIncludePath bool
+	PorkbunWildCard    bool
 }
 
 func (rd URL) Len() int {
@@ -21,9 +21,10 @@ func (rd URL) Len() int {
 }
 
 func (rd URL) String() string {
-	return fmt.Sprintf("%s %t %t", txtutil.ZoneifyString(rd.Location), rd.Porkbun_IncludePath, rd.Porkbun_WildCard)
+	return fmt.Sprintf("%s %t %t", txtutil.ZoneifyString(rd.Location), rd.PorkbunIncludePath, rd.PorkbunWildCard)
 }
 
+// MakeURL creates an RDATA from args.
 func MakeURL(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 3 {
 		return URL{}, fmt.Errorf("URL expects 3 arguments, got %d: %+v", len(args), args)

@@ -7,7 +7,7 @@ import (
 )
 
 func TestBunny_DNS_Pz(t *testing.T) {
-	y := &BUNNY_DNS_PZ{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
+	y := &BUNNYDNSPZ{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)

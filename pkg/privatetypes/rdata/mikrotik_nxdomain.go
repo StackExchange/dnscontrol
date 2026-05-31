@@ -6,21 +6,22 @@ import (
 	dnsv2 "codeberg.org/miekg/dns"
 )
 
-type MIKROTIK_NXDOMAIN struct {
+type MIKROTIKNXDOMAIN struct {
 	// NXDOMAIN has no data fields — only the .Name matters
 }
 
-func (rd MIKROTIK_NXDOMAIN) Len() int {
+func (rd MIKROTIKNXDOMAIN) Len() int {
 	return 0
 }
 
-func (rd MIKROTIK_NXDOMAIN) String() string {
+func (rd MIKROTIKNXDOMAIN) String() string {
 	return ""
 }
 
-func MakeMIKROTIK_NXDOMAIN(origin string, args ...any) (dnsv2.RDATA, error) {
+// MakeMIKROTIKNXDOMAIN creates an RDATA from args.
+func MakeMIKROTIKNXDOMAIN(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 0 {
-		return MIKROTIK_NXDOMAIN{}, fmt.Errorf("MIKROTIK_NXDOMAIN takes no arguments, got %d: %+v", len(args), args)
+		return MIKROTIKNXDOMAIN{}, fmt.Errorf("MIKROTIK_NXDOMAIN takes no arguments, got %d: %+v", len(args), args)
 	}
-	return MIKROTIK_NXDOMAIN{}, nil
+	return MIKROTIKNXDOMAIN{}, nil
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func TestPorkbun_UrlFwd(t *testing.T) {
-	y := &PORKBUN_URLFWD{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
+	y := &PORKBUNURLFWD{Hdr: dnsv2.Header{Name: "example.org.", Class: dnsv2.ClassINET}}
 	rry, err := dnsv2.New(y.String())
 	if err != nil {
 		t.Fatal(err)
