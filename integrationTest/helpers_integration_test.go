@@ -190,16 +190,24 @@ func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.Doma
 
 			if strings.Contains(rc.GetTargetField(), "**current-domain**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**current-domain**", domainName, 1))
+				rc.RDATA = nil
+				rc.ComparableV3 = ""
 			}
 			if strings.Contains(rc.GetLabelFQDN(), "**current-domain**") {
 				rc.SetLabelFromFQDN(strings.Replace(rc.GetLabelFQDN(), "**current-domain**", domainName, 1), domainName)
+				rc.RDATA = nil
+				rc.ComparableV3 = ""
 			}
 
 			if strings.Contains(rc.GetTargetField(), "**subscription-id**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**subscription-id**", origConfig["SubscriptionID"], 1))
+				rc.RDATA = nil
+				rc.ComparableV3 = ""
 			}
 			if strings.Contains(rc.GetTargetField(), "**resource-group**") {
 				_ = rc.SetTarget(strings.Replace(rc.GetTargetField(), "**resource-group**", origConfig["ResourceGroup"], 1))
+				rc.RDATA = nil
+				rc.ComparableV3 = ""
 			}
 
 			dom.Records = append(dom.Records, &rc)
