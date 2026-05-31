@@ -11,7 +11,7 @@ import (
 // MIKROTIK_FWD
 
 func init() {
-	Register(TypeMIKROTIK_FWD, "MIKROTIK_FWD", func() dnsv2.RR { return new(MIKROTIK_FWD) }, privatetypesrdata.MakeMIKROTIK_FWD())
+	Register(TypeMIKROTIK_FWD, "MIKROTIK_FWD", func() dnsv2.RR { return new(MIKROTIK_FWD) }, privatetypesrdata.MakeMIKROTIK_FWD)
 }
 
 const TypeMIKROTIK_FWD = 65307

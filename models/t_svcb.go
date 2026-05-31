@@ -7,7 +7,6 @@ import (
 
 	dnsv2 "codeberg.org/miekg/dns"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
-	"codeberg.org/miekg/dns/svcb"
 	svcbv2 "codeberg.org/miekg/dns/svcb"
 	dnsv1 "github.com/miekg/dns"
 )
@@ -247,8 +246,8 @@ func SVCBReplaceEch(rr dnsrdatav2.SVCB, echConfig *svcbv2.ECHCONFIG) dnsrdatav2.
 	return dnsrdatav2.SVCB{
 		Priority: rr.Priority,
 		Target:   rr.Target,
-		Value: func() []svcb.Pair {
-			pairs := make([]svcb.Pair, len(rr.Value))
+		Value: func() []svcbv2.Pair {
+			pairs := make([]svcbv2.Pair, len(rr.Value))
 			found := false
 			for i, p := range rr.Value {
 				if svcbv2.PairToKey(p) == svcbv2.KeyEchConfig {
@@ -273,8 +272,8 @@ func SVCBDeleteEch(rr dnsrdatav2.SVCB) dnsrdatav2.SVCB {
 	return dnsrdatav2.SVCB{
 		Priority: rr.Priority,
 		Target:   rr.Target,
-		Value: func() []svcb.Pair {
-			pairs := make([]svcb.Pair, len(rr.Value))
+		Value: func() []svcbv2.Pair {
+			pairs := make([]svcbv2.Pair, len(rr.Value))
 			for i, p := range rr.Value {
 				if svcbv2.PairToKey(p) != svcbv2.KeyEchConfig {
 					pairs[i] = p.Clone()

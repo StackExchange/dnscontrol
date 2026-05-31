@@ -158,17 +158,17 @@ func testPermitted(p string, f TestGroup) error {
 	return nil
 }
 
-func findDomainSerialNumber(recs models.Records) (*models.RecordConfig, uint32) {
-	for _, rec := range recs {
-		if rec.Type == "SOA" {
-			return rec, rec.SoaSerial
-		}
-	}
-	// Make a fake entry.
-	defaultSoaRec := &models.RecordConfig{Type: "SOA"}
-	defaultSoaRec.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
-	return defaultSoaRec, 0
-}
+// func findDomainSerialNumber(recs models.Records) (*models.RecordConfig, uint32) {
+// 	for _, rec := range recs {
+// 		if rec.Type == "SOA" {
+// 			return rec, rec.SoaSerial
+// 		}
+// 	}
+// 	// Make a fake entry.
+// 	defaultSoaRec := &models.RecordConfig{Type: "SOA"}
+// 	defaultSoaRec.FixUp(globalDCN.NameASCII) // Hack. Populates .RDATA and .TypeNum if needed.
+// 	return defaultSoaRec, 0
+// }
 
 // makeChanges runs one set of DNS record tests. Returns true on success.
 func makeChanges(t *testing.T, prv providers.DNSServiceProvider, dc *models.DomainConfig, tst *TestCase, desc string, expectChanges bool, origConfig map[string]string, domainMeta map[string]string) bool {

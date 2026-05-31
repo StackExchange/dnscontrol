@@ -15,7 +15,7 @@ import (
 var TypeToMakeRDATA = make(map[uint16]func(origin string, args ...any) (dnsv2.RDATA, error))
 
 // Register registers a new private RR type. It panics if the code point or name is already in use.
-func Register(codepoint uint16, name string, newFn func() dnsv2.RR, makeFn func(origin string, args ...any) (dnsv2.RDATA, error)) {
+func Register(codepoint uint16, typeName string, newFn func() dnsv2.RR, makeFn func(origin string, args ...any) (dnsv2.RDATA, error)) {
 
 	/*
 		# Private Resource Records
@@ -42,17 +42,17 @@ func Register(codepoint uint16, name string, newFn func() dnsv2.RR, makeFn func(
 	if dnsv2.TypeToString[codepoint] != "" {
 		panic(fmt.Sprintf("TypeToString[%d] already in use by %s", codepoint, dnsv2.TypeToString[codepoint]))
 	}
-	dnsv2.TypeToString[codepoint] = name
+	dnsv2.TypeToString[codepoint] = typeName
 
 	// typename -> typenum
-	if s, exists := dnsv2.StringToType[name]; exists {
-		panic(fmt.Sprintf("StringToType[%s] already in use by %d", name, s))
+	if s, exists := dnsv2.StringToType[typeName]; exists {
+		panic(fmt.Sprintf("StringToType[%s] already in use by %d", typeName, s))
 	}
-	dnsv2.StringToType[name] = codepoint
+	dnsv2.StringToType[typeName] = codepoint
 
 	// typenum -> func(args ...any) (RDATA, error) i.e. a function that creates an RDATA struct for the given code point, with fields filled from the given args.
 	if s, exists := TypeToMakeRDATA[codepoint]; exists {
-		panic(fmt.Sprintf("TypeToMakeRDATA[%s] already in use by %d", name, s))
+		panic(fmt.Sprintf("TypeToMakeRDATA[%d] a.k.a. %s already in use by %T", codepoint, typeName, s))
 	}
 	TypeToMakeRDATA[codepoint] = makeFn
 }

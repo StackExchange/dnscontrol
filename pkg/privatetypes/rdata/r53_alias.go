@@ -3,6 +3,7 @@ package privatetypesrdata
 import (
 	"fmt"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v4/pkg/mustbe"
 	"github.com/DNSControl/dnscontrol/v4/pkg/txtutil"
 )
@@ -25,7 +26,7 @@ func (rd R53_ALIAS) String() string {
 	return txtutil.Zoneify([]string{rd.AliasType, rd.Target, rd.EvalTargetHealth, rd.ZoneID})
 }
 
-func MakeR53_ALIAS(origin string, args []string) (R53_ALIAS, error) {
+func MakeR53_ALIAS(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 4 {
 		return R53_ALIAS{}, fmt.Errorf("R53_ALIAS expects 4 arguments, got %d: %+v", len(args), args)
 	}

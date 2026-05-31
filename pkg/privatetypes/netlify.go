@@ -11,7 +11,7 @@ import (
 // NETLIFY
 
 func init() {
-	Register(TypeNETLIFY, "NETLIFY", func() dnsv2.RR { return new(NETLIFY) }, privtatetypesrdata.MakeNETLIFY)
+	Register(TypeNETLIFY, "NETLIFY", func() dnsv2.RR { return new(NETLIFY) }, privatetypesrdata.MakeNETLIFY)
 }
 
 const TypeNETLIFY = 65316

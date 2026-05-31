@@ -15,7 +15,7 @@ func Txts(args ...any) []string {
 	// Use a string builder. For each args if it's a string, add it to the builder. If it is anything else, convert it to a string and add it to the builder.
 	var sb bytes.Buffer
 	for _, a := range args {
-		sb.WriteString(fmt.Sprintf("%s", a))
+		fmt.Fprintf(&sb, "%s", a)
 	}
 	return []string{sb.String()}
 }
