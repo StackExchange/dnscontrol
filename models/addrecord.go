@@ -40,7 +40,7 @@ func makeRDATA(origin string, rtyp uint16, args ...any) dnsv2.RDATA {
 	case dnsv2.TypeAAAA:
 		return dnsrdatav2.AAAA{Addr: mustbe.IPv6(args[0])}
 	case dnsv2.TypeCNAME:
-		return dnsrdatav2.CNAME{Target: mustbe.Host(origin, args[0])}
+		return dnsrdatav2.CNAME{Target: mustbe.TargetHost(origin, args[0])}
 	case dnsv2.TypeTXT:
 		return dnsrdatav2.TXT{Txt: mustbe.Txts(args)}
 

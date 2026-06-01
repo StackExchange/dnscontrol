@@ -23,5 +23,5 @@ func MakeALIAS(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 1 {
 		return ALIAS{}, fmt.Errorf("ALIAS requires 1 argument, got %d: %+v", len(args), args)
 	}
-	return ALIAS{mustbe.Host(origin, args[0])}, nil
+	return ALIAS{mustbe.TargetHost(origin, args[0])}, nil
 }

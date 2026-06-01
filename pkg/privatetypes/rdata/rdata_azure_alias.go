@@ -24,5 +24,5 @@ func MakeAZUREALIAS(origin string, args ...any) (dnsv2.RDATA, error) {
 	if len(args) != 2 {
 		return AZUREALIAS{}, fmt.Errorf("AZURE_ALIAS requires no arguments, got %d: %+v", len(args), args)
 	}
-	return AZUREALIAS{mustbe.RawString(args[0]), mustbe.Host(origin, args[1])}, nil
+	return AZUREALIAS{mustbe.RawString(args[0]), mustbe.TargetHost(origin, args[1])}, nil
 }

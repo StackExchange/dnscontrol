@@ -75,8 +75,7 @@ func (rc *RecordConfig) FixUp(origin string) {
 				fmt.Println("What???")
 			}
 		case "CNAME":
-			targ := dnsutilv1.AddOrigin(rc.GetTargetField(), origin+".")
-			rc.RDATA = dnsrdatav2.CNAME{Target: targ}
+			rc.RDATA, _ = MakeCNAME(origin, rc.GetTargetField())
 
 		case "CF_WORKER_ROUTE":
 			part := strings.SplitN(rc.GetTargetField(), ",", 2)
