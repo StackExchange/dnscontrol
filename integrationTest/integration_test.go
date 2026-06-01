@@ -1234,7 +1234,7 @@ func makeTests() []*TestGroup {
 
 		// CLOUDFLAREAPI: Redirects:
 
-		// go test -v -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
+		// go test -v -args -verbose -profile CLOUDFLAREAPI -cfredirect=true  // Convert: Test Single Redirects
 
 		// This test is commented out because of this error:
 		// "helpers_integration_test.go:241: not entitled: the use of operator Matches is not allowed, a Business plan or a WAF Advanced plan is required"
