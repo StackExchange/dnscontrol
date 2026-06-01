@@ -13,7 +13,6 @@ import (
 
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
-	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
@@ -309,20 +308,15 @@ func fetchZoneRecordsReal(entry InitCredsEntry, zone string) (models.Records, er
 	if err != nil {
 		return nil, err
 	}
-	ff := domaintags.MakeDomainNameVarieties(zone)
-	recs, err := provider.GetZoneRecords(
-		&models.DomainConfig{
-			Name: ff.NameASCII,
-			Metadata: map[string]string{
-				models.DomainUniqueName:  ff.UniqueName,
-				models.DomainNameRaw:     ff.NameRaw,
-				models.DomainNameUnicode: ff.NameUnicode,
-			},
-		})
+	dc, err := models.NewDomainConfig(zone)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetchZoneRecordsReal NewDC: %w", err)
+	}
+	recs, err := provider.GetZoneRecords(dc)
 	if err != nil {
 		return nil, err
 	}
-	rtypecontrol.FixLegacyRecords(&recs)
+	rtypecontrol.FixLegacyRecords(&recs, zone)
 	return recs, nil
 }
 

@@ -317,6 +317,7 @@ func makeTests() []*TestGroup {
 				//
 				// Let's just ignore ECH test for Vercel for now.
 				"VERCEL",
+				"HEDNS", // BUG: https://github.com/DNSControl/dnscontrol/issues/4328
 			),
 			tc("Create a HTTPS record", https("@", 1, "example.com.", "alpn=h2,h3")),
 			tc("Add an ECH key", https("@", 1, "example.com.", "alpn=h2,h3 ech=some+base64+encoded+value///")),

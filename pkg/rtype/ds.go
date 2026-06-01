@@ -3,6 +3,8 @@ package rtype
 import (
 	"fmt"
 
+	dnsv2 "codeberg.org/miekg/dns"
+	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
@@ -15,7 +17,7 @@ func init() {
 
 // DS RR.
 type DS struct {
-	dnsv1.DS
+	dnsrdatav2.DS
 }
 
 // Name returns the DNS record type as a string.
@@ -31,7 +33,7 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 			rec.Name, rtypecontrol.StringifyQuoted(args[1:]),
 			err)
 	}
-	fields := &dnsv1.DS{
+	fields := &dnsrdatav2.DS{
 		KeyTag:     args[1].(uint16),
 		Algorithm:  args[2].(uint8),
 		DigestType: args[3].(uint8),
@@ -44,11 +46,45 @@ func (handle *DS) FromArgs(dcn *domaintags.DomainNameVarieties, rec *models.Reco
 // FromStruct fills in the RecordConfig from a struct, typically from an API response.
 func (handle *DS) FromStruct(dcn *domaintags.DomainNameVarieties, rec *models.RecordConfig, name string, fields any) error {
 	// Fields is of type "any" thus we must validate the type. It should be the "inner" type of .F, not the outer type, rtype.DS{}.
-	ds, ok := fields.(*dnsv1.DS)
-	if !ok {
-		return fmt.Errorf("fields is not *dns.DS, got %T", fields)
+
+	// This is a temporary hack to deal with the fact that the code is in transition from dnsv1 to dnsv2.
+	if ds, ok := fields.(dnsrdatav2.DS); ok {
+		rec.F = &DS{ds}
+	} else if ds, ok := fields.(*dnsrdatav2.DS); ok {
+		rec.F = &DS{*ds}
+	} else if ds, ok1 := fields.(*dnsv1.DS); ok1 {
+		rec.F = &DS{
+			dnsrdatav2.DS{
+				KeyTag:     ds.KeyTag,
+				Algorithm:  ds.Algorithm,
+				DigestType: ds.DigestType,
+				Digest:     ds.Digest,
+			},
+		}
+	} else if ds, ok2 := fields.(*dnsv2.DS); ok2 {
+		rec.F = &DS{
+			dnsrdatav2.DS{
+				KeyTag:     ds.KeyTag,
+				Algorithm:  ds.Algorithm,
+				DigestType: ds.DigestType,
+				Digest:     ds.Digest,
+			},
+		}
+	} else {
+		panic(fmt.Sprintf("assertion failed: fields not rdatav2, dns1 or dns2 .DS, got %T", fields))
+		//return fmt.Errorf("fields is not *dns.DS, got %T", fields)
 	}
-	rec.F = &DS{*ds}
+
+	// Hack to deal with the fact that fixlegacy.go can't import rtype.
+	switch rec.F.(type) {
+	case *DS:
+		rec.RDATA = dnsrdatav2.DS{KeyTag: rec.F.(*DS).KeyTag, Algorithm: rec.F.(*DS).Algorithm, DigestType: rec.F.(*DS).DigestType, Digest: rec.F.(*DS).Digest}
+	case *dnsv1.DS:
+		rec.RDATA = dnsrdatav2.DS{KeyTag: rec.F.(*dnsv1.DS).KeyTag, Algorithm: rec.F.(*dnsv1.DS).Algorithm, DigestType: rec.F.(*dnsv1.DS).DigestType, Digest: rec.F.(*dnsv1.DS).Digest}
+	default:
+		panic(fmt.Sprintf("unexpected type for DS.FromStruct: %T", rec.F))
+	}
+	rec.ComparableV3 = rec.RDATA.String()
 
 	rec.ZonefilePartial = rec.GetTargetRFC1035Quoted()
 	rec.Comparable = rec.ZonefilePartial
@@ -67,7 +103,7 @@ func (handle *DS) CopyToLegacyFields(rec *models.RecordConfig) {
 func (handle *DS) CopyFromLegacyFields(rec *models.RecordConfig) {
 	// Copy fields:
 	rec.F = &DS{
-		dnsv1.DS{
+		dnsrdatav2.DS{
 			KeyTag:     rec.DsKeyTag,
 			Algorithm:  rec.DsAlgorithm,
 			DigestType: rec.DsDigestType,

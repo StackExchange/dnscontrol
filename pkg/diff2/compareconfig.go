@@ -103,12 +103,18 @@ func NewCompareConfig(origin string, existing, desired models.Records, compFn Co
 		labelMap: map[string]bool{},
 		keyMap:   map[models.RecordKey]bool{},
 	}
+
 	cc.addRecords(existing, true) // Must be called first so that CNAME manipulations happen in the correct order.
+
+	desired = models.ModifySVCBForComparison(existing, desired)
 	cc.addRecords(desired, false)
+
 	cc.verifyCNAMEAssertions()
+
 	sort.Slice(cc.ldata, func(i, j int) bool {
 		return prettyzone.LabelLess(cc.ldata[i].label, cc.ldata[j].label)
 	})
+
 	return cc
 }
 
@@ -170,8 +176,12 @@ func (cc *CompareConfig) verifyCNAMEAssertions() {
 // Generate a string that can be used to compare this record to others
 // for equality.
 func mkCompareBlobs(rc *models.RecordConfig, f func(*models.RecordConfig) string) (string, string) {
-	// Start with the comparable string
-	comp := rc.ToComparableNoTTL()
+	// // Start with the comparable string
+	// comp := rc.ToComparableNoTTL()
+	comp := rc.ComparableV3
+	if comp == "" {
+		panic(fmt.Sprintf("mkCompareBlobs: record %s IN %s %s has empty ComparableV3", rc.NameFQDN, rc.Type, rc))
+	}
 
 	// If the custom function exists, add its output
 	if f != nil {

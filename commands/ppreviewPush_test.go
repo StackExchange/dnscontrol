@@ -9,11 +9,11 @@ import (
 
 func Test_whichZonesToProcess(t *testing.T) {
 
-	dcNoTag := &models.DomainConfig{Name: "example.com"}
-	dcNoTag2 := &models.DomainConfig{Name: "example.net"}
-	dcTaggedEmpty := &models.DomainConfig{Name: "example.com!"}
-	dcTaggedGeorge := &models.DomainConfig{Name: "example.com!george"}
-	dcTaggedJohn := &models.DomainConfig{Name: "example.com!john"}
+	dcNoTag, _ := models.NewDomainConfig("example.com")
+	dcNoTag2, _ := models.NewDomainConfig("example.net")
+	dcTaggedEmpty, _ := models.NewDomainConfig("example.com!")
+	dcTaggedGeorge, _ := models.NewDomainConfig("example.com!george")
+	dcTaggedJohn, _ := models.NewDomainConfig("example.com!john")
 
 	allDC := []*models.DomainConfig{
 		dcNoTag,

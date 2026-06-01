@@ -12,6 +12,7 @@
       "records": [
         {
           "comparable": "1 1 1 FFFF",
+          "comparablev3": "1 1 1 FFFF",
           "dsalgorithm": 1,
           "dsdigest": "FFFF",
           "dsdigesttype": 1,
@@ -20,19 +21,18 @@
             "Algorithm": 1,
             "Digest": "FFFF",
             "DigestType": 1,
-            "Hdr": {
-              "Class": 1,
-              "Name": "foo.com.",
-              "Rdlength": 0,
-              "Rrtype": 43,
-              "Ttl": 300
-            },
             "KeyTag": 1
           },
           "filepos": "[line:3:5]",
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Algorithm": 1,
+            "Digest": "FFFF",
+            "DigestType": 1,
+            "KeyTag": 1
+          },
           "target": "",
           "ttl": 300,
           "type": "DS",
@@ -40,6 +40,7 @@
         },
         {
           "comparable": "1000 13 2 AABBCCDDEEFF",
+          "comparablev3": "1000 13 2 AABBCCDDEEFF",
           "dsalgorithm": 13,
           "dsdigest": "AABBCCDDEEFF",
           "dsdigesttype": 2,
@@ -48,19 +49,18 @@
             "Algorithm": 13,
             "Digest": "AABBCCDDEEFF",
             "DigestType": 2,
-            "Hdr": {
-              "Class": 1,
-              "Name": "foo.com.",
-              "Rdlength": 0,
-              "Rrtype": 43,
-              "Ttl": 300
-            },
             "KeyTag": 1000
           },
           "filepos": "[line:2:5]",
           "name": "@",
           "name_raw": "@",
           "name_unicode": "@",
+          "rdata": {
+            "Algorithm": 13,
+            "Digest": "AABBCCDDEEFF",
+            "DigestType": 2,
+            "KeyTag": 1000
+          },
           "target": "",
           "ttl": 300,
           "type": "DS",

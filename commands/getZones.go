@@ -9,7 +9,6 @@ import (
 
 	"github.com/DNSControl/dnscontrol/v4/models"
 	"github.com/DNSControl/dnscontrol/v4/pkg/credsfile"
-	"github.com/DNSControl/dnscontrol/v4/pkg/domaintags"
 	"github.com/DNSControl/dnscontrol/v4/pkg/prettyzone"
 	"github.com/DNSControl/dnscontrol/v4/pkg/providers"
 	"github.com/DNSControl/dnscontrol/v4/pkg/rtypecontrol"
@@ -207,20 +206,15 @@ func GetZone(args GetZoneArgs) error {
 	// fetch all of the records
 	zoneRecs := make([]models.Records, len(zones))
 	for i, zone := range zones {
-		ff := domaintags.MakeDomainNameVarieties(zone)
-		recs, err := provider.GetZoneRecords(
-			&models.DomainConfig{
-				Name: ff.NameASCII,
-				Metadata: map[string]string{
-					models.DomainUniqueName:  ff.UniqueName,
-					models.DomainNameRaw:     ff.NameRaw,
-					models.DomainNameUnicode: ff.NameUnicode,
-				},
-			})
+		dc, err := models.NewDomainConfig(zone)
+		if err != nil {
+			return fmt.Errorf("failed GetZone NewDC: %w", err)
+		}
+		recs, err := provider.GetZoneRecords(dc)
 		if err != nil {
 			return fmt.Errorf("failed GetZone gzr: %w", err)
 		}
-		rtypecontrol.FixLegacyRecords(&recs) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
+		rtypecontrol.FixLegacyRecords(&recs, zone) // Call this after GetZoneRecords() to fix providers that haven't been updated for RecordConfigV2.
 		zoneRecs[i] = recs
 	}
 

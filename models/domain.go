@@ -24,6 +24,7 @@ const (
 )
 
 // DomainConfig describes a DNS domain (technically a DNS zone).
+// Do not create your own `&models.DomainConfig{}`.  Use `models.NewDomainConfig(name)`.
 type DomainConfig struct {
 	NameRaw     string `json:"-"`    // name as entered by user in dnsconfig.js
 	Name        string `json:"name"` // NO trailing "."   Converted to IDN (punycode) early in the pipeline.
@@ -71,6 +72,27 @@ type DomainConfig struct {
 	pendingPopulateCorrections map[string][]*Correction // Corrections for zone creations at each provider
 }
 
+func NewDomainConfig(name string) (*DomainConfig, error) {
+	dcn := domaintags.MakeDomainNameVarieties(name) // TODO(tlim): Create a version of MakeDomainNameVarieties that returns an error on failure.
+	dc := &DomainConfig{
+		NameRaw:     dcn.NameRaw,
+		Name:        dcn.NameASCII,
+		NameUnicode: dcn.NameUnicode,
+		Tag:         dcn.Tag,
+		UniqueName:  dcn.UniqueName,
+		DisplayName: dcn.DisplayName,
+
+		// TODO(tlim): Eliminate the need for this Metedata. It was a hack to avoid changing legacy code but should be easier to eliminate now.
+		Metadata: map[string]string{
+			DomainUniqueName:  dcn.UniqueName,
+			DomainNameRaw:     dcn.NameRaw,
+			DomainNameUnicode: dcn.NameUnicode,
+		},
+	}
+
+	return dc, nil
+}
+
 // PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
 // It is called by dns.go's PostProcess() function.
 func (dc *DomainConfig) PostProcess() {
@@ -79,9 +101,24 @@ func (dc *DomainConfig) PostProcess() {
 		dc.Metadata = map[string]string{}
 	}
 
-	// Turn the user-supplied name into the fixed forms.
+	//  HACK: Fill in names (This means models.NewDomainConfig() was not used.  We can eliminate this when legacy code is removed.
 	ff := domaintags.MakeDomainNameVarieties(dc.Name)
-	dc.Tag, dc.NameRaw, dc.Name, dc.NameUnicode, dc.UniqueName, dc.DisplayName = ff.Tag, ff.NameRaw, ff.NameASCII, ff.NameUnicode, ff.UniqueName, ff.DisplayName
+	if dc.Tag == "" {
+		dc.Tag = ff.Tag
+	}
+	if dc.NameRaw == "" {
+		dc.NameRaw = ff.NameRaw
+	}
+	dc.Name = ff.NameASCII // We always overwrite this. It's a hack, but it works. Good enough until legacy code is removed.
+	if dc.NameUnicode == "" {
+		dc.NameUnicode = ff.NameUnicode
+	}
+	if dc.UniqueName == "" {
+		dc.UniqueName = ff.UniqueName
+	}
+	if dc.DisplayName == "" {
+		dc.DisplayName = ff.DisplayName
+	}
 
 	// Store the FixForms is Metadata so we don't have to change the signature of every function that might need them.
 	// This is a bit ugly but avoids a huge refactor. Please avoid using these to make the future refactor easier.
