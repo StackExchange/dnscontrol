@@ -285,10 +285,9 @@ func TestTransforms(t *testing.T) {
 	}
 	const transform = "0.0.0.0~1.0.0.0~2.0.0.0~;   3.0.0.0~4.0.0.0~~5.5.5.5; 7.0.0.0~8.0.0.0~~9.9.9.9,10.10.10.10"
 	for i, test := range tests {
-		dc := &models.DomainConfig{
-			Records: []*models.RecordConfig{
-				makeRC("f", "example.tld", test.givenIP, models.RecordConfig{Type: "A", Metadata: map[string]string{"transform": transform}}),
-			},
+		dc, _ := models.NewDomainConfig("example.tld")
+		dc.Records = []*models.RecordConfig{
+			makeRC("f", "example.tld", test.givenIP, models.RecordConfig{Type: "A", Metadata: map[string]string{"transform": transform}}),
 		}
 		err := applyRecordTransforms(dc)
 		if err != nil {
@@ -327,10 +326,8 @@ func TestCNAMEMutex(t *testing.T) {
 			recB := &models.RecordConfig{Type: tst.rType}
 			recB.SetLabel(tst.name, "example.com")
 			recB.MustSetTarget("example2.com.")
-			dc := &models.DomainConfig{
-				Name:    "example.com",
-				Records: []*models.RecordConfig{recA, recB},
-			}
+			dc, _ := models.NewDomainConfig("example.com")
+			dc.Records = []*models.RecordConfig{recA, recB}
 			errs := checkCNAMEs(dc)
 			if errs != nil && !tst.fail {
 				t.Error("Got error but expected none")
@@ -353,10 +350,8 @@ func TestCNAMECloudflareProxied(t *testing.T) {
 	recMX := &models.RecordConfig{Type: "MX"}
 	recMX.SetLabel("mail", "mail.example.com")
 	recMX.MustSetTarget("smtp.example.com.")
-	dc := &models.DomainConfig{
-		Name:    "example.com",
-		Records: []*models.RecordConfig{recCNAME, recMX},
-	}
+	dc, _ := models.NewDomainConfig("example.com")
+	dc.Records = []*models.RecordConfig{recCNAME, recMX}
 	errs := checkCNAMEs(dc)
 	if len(errs) != 0 {
 		t.Errorf("Expected no errors for proxied CNAME + MX, got: %v", errs)
@@ -366,10 +361,8 @@ func TestCNAMECloudflareProxied(t *testing.T) {
 	recCNAME2 := &models.RecordConfig{Type: "CNAME"}
 	recCNAME2.SetLabel("mail", "mail.example.com")
 	recCNAME2.MustSetTarget("example.com.")
-	dc2 := &models.DomainConfig{
-		Name:    "example.com",
-		Records: []*models.RecordConfig{recCNAME2, recMX},
-	}
+	dc2, _ := models.NewDomainConfig("example.com")
+	dc2.Records = []*models.RecordConfig{recCNAME2, recMX}
 	errs2 := checkCNAMEs(dc2)
 	if len(errs2) == 0 {
 		t.Error("Expected error for non-proxied CNAME + MX, got none")

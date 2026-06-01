@@ -95,9 +95,7 @@ func CfFlattenOn() *TestCase {
 }
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
-	dc := &models.DomainConfig{
-		Name: domainName,
-	}
+	dc, _ := models.NewDomainConfig(domainName)
 	dc.PostProcess()
 	rtypecontrol.FixLegacyDC(dc)
 
