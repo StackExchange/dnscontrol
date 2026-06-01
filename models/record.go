@@ -429,7 +429,10 @@ func (rc *RecordConfig) ToRR() dnsv1.RR {
 	case dnsv1.TypeDNAME:
 		rr.(*dnsv1.DNAME).Target = rc.GetTargetField()
 	case dnsv1.TypeDS:
-		panic("DS should have been handled as modern type")
+		rr.(*dnsv1.DS).KeyTag = rc.DsKeyTag
+		rr.(*dnsv1.DS).Algorithm = rc.DsAlgorithm
+		rr.(*dnsv1.DS).DigestType = rc.DsDigestType
+		rr.(*dnsv1.DS).Digest = rc.DsDigest
 	case dnsv1.TypeDNSKEY:
 		rr.(*dnsv1.DNSKEY).Flags = rc.DnskeyFlags
 		rr.(*dnsv1.DNSKEY).Protocol = rc.DnskeyProtocol
