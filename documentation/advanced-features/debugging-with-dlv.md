@@ -34,14 +34,14 @@ If you are using VSCode, the equivalent configuration is:
                 "-verbose",
                 "-profile",
                 "BIND",
-                "-start",
-                "7",
-                "-end",
-                "7"
+                "-start", "7",
+                "-end", "7"
             ],
             "buildFlags": "",
             "env": {},
-            "showLog": true
+            "showLog": false,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
 
     ]
