@@ -42,6 +42,14 @@ var globalCfg map[string]string
 // Default TTL used in integration tests.
 var defaultTTL = uint32(300)
 
+// Helper function to create a test RecordConfig fixture.
+func tr(label string, rtype any, zoneline string) *models.RecordConfig {
+	r, err := globalDC.NewRecordConfigParse(label, defaultTTL, rtype, zoneline)
+	panicOnErr(err)
+
+	return r
+}
+
 // Helper functions to perform substitutions
 
 func fillTemplate(s string) string {

@@ -2483,6 +2483,22 @@ func makeTests() []*TestGroup {
 			),
 		),
 
+		testgroup("CSYNC",
+			only("NETNOD"),
+			tc("Create",
+				tr("lab", "CSYNC", "66 3 A NS AAAA"),
+			),
+			tc("mod serial",
+				tr("lab", "CSYNC", "67 3 A NS AAAA"),
+			),
+			tc("mod flags",
+				tr("lab", "CSYNC", "67 1 A NS AAAA"),
+			),
+			tc("mod bitmap",
+				tr("lab", "CSYNC", "67 1 NS AAAA"),
+			),
+		),
+
 		// Clear everything out.
 		testgroup("CLEAR"), //tc("Create A", a("testa", "1.1.1.1")),
 

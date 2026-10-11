@@ -1,46 +1,34 @@
 # Creating new DNS Resource Types (rtypes)
 
-- [How to add a CUSTOM record type (rtype)](#how-to-add-a-custom-record-type-rtype)
-  - [Step 1: Pick a unique id](#step-1-pick-a-unique-id)
-  - [Step 2: Describe the custom type in YAML](#step-2-describe-the-custom-type-in-yaml)
-  - [Step 3: Generate the code](#step-3-generate-the-code)
-  - [Step 4: Test](#step-4-test)
-  - [Step 5: Write the remaining functions](#step-5-write-the-remaining-functions)
-- [How to add a new record type (rtype)](#how-to-add-a-new-record-type-rtype)
-  - [Step 1: Update `pkg/js/helpers.js`](#step-1-update-pkg-js-helpers.js)
-  - [Step 2: Update `models/makers.go` (NOT NEEDED FOR CUSTOM TYPES)](#step-2-update-models-makers.go-not-needed-for-custom-types)
-  - [Step 3: Add a `CanUseTYPENAME`](#step-3-add-a-canusetypename)
-  - [Step 4: Document it](#step-4-document-it)
-  - [Step 5: Update the matrix](#step-5-update-the-matrix)
-  - [Step 6: Add a `parse_tests` test case](#step-6-add-a-parse_tests-test-case)
-  - [Step 7: Test it out with BIND](#step-7-test-it-out-with-bind)
-  - [Step 8: Add an integration test helper](#step-8-add-an-integration-test-helper)
-  - [Step 9: Add Integration tests](#step-9-add-integration-tests)
-  - [Step 10: Support more providers](#step-10-support-more-providers)
-  - [Step 11: Write documentation](#step-11-write-documentation)
-  - [Step 12: "go generate"](#step-12-go-generate)
-- [How to enable an rtype in a provider](#how-to-enable-an-rtype-in-a-provider)
-- [How to add a "builder"](#how-to-add-a-builder)
+- [Creating new DNS Resource Types (rtypes)](#creating-new-dns-resource-types-rtypes)
+  - [How to add a CUSTOM record type (rtype)](#how-to-add-a-custom-record-type-rtype)
+    - [Step 1: Pick a unique id](#step-1-pick-a-unique-id)
+    - [Step 2: Describe the custom type in YAML](#step-2-describe-the-custom-type-in-yaml)
+    - [Step 3: Generate the code](#step-3-generate-the-code)
+    - [Step 4: Test](#step-4-test)
+    - [Step 5: Write the remaining functions](#step-5-write-the-remaining-functions)
+  - [How to add a new record type (rtype)](#how-to-add-a-new-record-type-rtype)
+    - [Step 1: Update `pkg/js/helpers.js`](#step-1-update-pkgjshelpersjs)
+    - [Step 2: Update `models/makers.go` (NOT NEEDED FOR CUSTOM TYPES)](#step-2-update-modelsmakersgo-not-needed-for-custom-types)
+    - [Step 3: Add a `CanUseTYPENAME`](#step-3-add-a-canusetypename)
+    - [Step 4: Document it](#step-4-document-it)
+    - [Step 5: Update the matrix](#step-5-update-the-matrix)
+    - [Step 6: Add a `parse_tests` test case](#step-6-add-a-parse_tests-test-case)
+    - [Step 7: Test it out with BIND](#step-7-test-it-out-with-bind)
+    - [Step 8: Add an integration test helper](#step-8-add-an-integration-test-helper)
+    - [Step 9: Add Integration tests](#step-9-add-integration-tests)
+    - [Step 10: Support more providers](#step-10-support-more-providers)
+    - [Step 11: Write documentation](#step-11-write-documentation)
+    - [Step 12: "go generate"](#step-12-go-generate)
+  - [How to enable an rtype in a provider](#how-to-enable-an-rtype-in-a-provider)
+  - [How to add a "builder"](#how-to-add-a-builder)
+    - [Legacy builders](#legacy-builders)
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes. However DNSControl also supports:
 
-- All standard (RFC) record types. Anything that [codeberg.org/miekg/dns supports](https://codeberg.org/miekg/dns)
-- Custom record types. DNS Service Providers often add their own unique record types.
-- Builders. Functions that can be used in `dnsconfig.js` that generate one or more records. For example, `SPF_BUILDER()` generates one or more `TXT` records.
-  - Modern builders are implemented in Go, in `models/b_NAME.go`
-  - Legacy builders are implemented purely in JavaScript in `pkg/js/helpers.js`
-  - In the future, we plan on migrating all builders to Go.
-
-The fields of standard and custom types are stored in a struct called an `RDATA`, which is stored in `models.RecordConfig.rdata`. Use the .GetRDATA() and .SetRDATA() getter/setter to access them.
-
-Legacy types store their fields directly in `models.RecordConfig`. For example, the MX preference
-is in `models.RecordConfig{MxPreference: 10}`. This means space is taken to store the MX Preference even when the record type is something else. While this seemed ok back in 2016, the structure is now very big. The goal of RecordConfig V3 is to save memory by eliminating those fields.
-
-While we transition to RecordConfig V3, the data is stored in both places (RDATA and the legacy fields). Data is converted bidirectionally. If RDATA is nil, DNSControl will create it automatically by plucking the data from the legacy fields.  The reverse also happens: when `SetRDATA()` is called, it populates any legacy fields.
-
-Eventually we'll get rid of the legacy code.
-
-The new system consolidates everything related to a record type to the record type's "object" (as much as Go has objects).  However the legacy code spreads logic for a given record type in many places in the code.  Those places are marked with the comment  `// rtype_variations`
+- **Standard record types:** Anything defined by an RFC. They must be supported by [codeberg.org/miekg/dns](https://codeberg.org/miekg/dns).
+- **Custom record types:** Pseudo-types, typically specific to a particular DNS Service Provider.
+- **Builders:** Pseuddo-types that generate 1 more DNS records. For example `SPF_BUILDER()` generates one or more `TXT` records.
 
 ## How to add a CUSTOM record type (rtype)
 
@@ -63,7 +51,7 @@ grep codepoint pkg/privatetypes/types_generate.yaml | sort | tail -1
 
 ### Step 2: Describe the custom type in YAML
 
-Custom types are described in `pkg/privatetypes/types_generate.yaml`.  The generator will create 3 Go files in `pkg/privatetypes`:
+Custom types are described in `pkg/privatetypes/types_generate.yaml`.  A generator will create these files in `pkg/privatetypes`:
 
 - `t_typename.go` -- structures, parsers, etc. (header + RDATA)
 - `t_typename_test.go` -- Unit test of the parser and .String() functions.
@@ -105,22 +93,16 @@ cd pkg/privatetypes && go generate
 go test -failfast -count=1 ./...
 ```
 
-Feelf free to aadd to the code generator `pkg/privatetypes/types_generate.go` if your custom type requires
+You may neeed to modify the code generator `pkg/privatetypes/types_generate.go` if your custom type requires
 special code, new field types, etc.
 
-Now this type is as functional as a standard type, except it is in the `privatetypes` and `privatetypesrdata` names spaces instead of the `dnsv2` and `dnsrdatav2` namespaces.
+Now this type is as functional just like the standard types. The only differnece is that it is in the `privatetypes` and `privatetypesrdata` names spaces instead of the `dnsv2` and `dnsrdatav2` namespaces.
 
-Standard types:
-
-- `dnsv2.TypeSRV` -- the codepoint
-- `dnsv2.SRV{}` -- the entire struct (header + RDATA) (rarely used)
-- `dnsrdatav2.SRV{}` -- the RDATA struct
-
-Custom types:
-
-- `privatetypes.TypeAKAMAICDN` -- the codepoint
-- `privatetypes.AKAMAICDN{}` -- the entire struct (header + RDATA) (rarely used)
-- `privatetypesrdata.AKAMAICDN{}` -- the RDATA struct
+| Purpose | Standard | Custom | Notes |
+| --- | --- | --- | --- |
+| codepoint | `dnsv2.TypeSRV` | `privatetypes.TypeAKAMAICDN` | int representing the record type |
+| struct | `dnsv2.SRV{}` | `privatetypes.AKAMAICDN{}` | the entire struct (header + RDATA) |
+| RDATA struct | `dnsrdatav2.SRV{}` | `privatetypesrdata.AKAMAICDN{}` | The RDATA (fields) of the struct |
 
 ### Step 5: Write the remaining functions
 
@@ -432,3 +414,10 @@ Add a function called BuilderROBERT() with this signature:
 ```go
 func BuilderROBERT(dc *DomainConfig, ttl uint32, args []any, subdomain string) (Records, error) {
 ```
+
+### Legacy builders
+
+- Modern builders are implemented in Go, in `models/b_NAME.go`
+- Legacy builders are implemented purely in JavaScript in `pkg/js/helpers.js`
+
+Over time we hope to port all the legacy builders to Go.

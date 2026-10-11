@@ -25,6 +25,7 @@ func init() {
 	privatetypes.RegisterMaker(dnsv2.TypeAAAA, MakeAAAA)
 	privatetypes.RegisterMaker(dnsv2.TypeCAA, MakeCAA)
 	privatetypes.RegisterMaker(dnsv2.TypeCNAME, MakeCNAME)
+	privatetypes.RegisterMaker(dnsv2.TypeCSYNC, MakeCSYNC)
 	privatetypes.RegisterMaker(dnsv2.TypeDHCID, MakeDHCID)
 	privatetypes.RegisterMaker(dnsv2.TypeDNAME, MakeDNAME)
 	privatetypes.RegisterMaker(dnsv2.TypeDNSKEY, MakeDNSKEY)
@@ -96,6 +97,7 @@ func MakeCAA(origin string, _ map[string]string, isEnabled nrc.Flags, args ...an
 
 	return dnsrdatav2.CAA{Flag: mustbe.Uint8(args[0]), Tag: tag, Value: mustbe.RawString(args[2])}, nil
 }
+
 func MakeCNAME(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
 	mustbe.ValidArgs(args)
 	if len(args) != 1 {
@@ -106,6 +108,20 @@ func MakeCNAME(origin string, _ map[string]string, isEnabled nrc.Flags, args ...
 		return nil, err
 	}
 	return dnsrdatav2.CNAME{Target: target}, nil
+}
+
+func MakeCSYNC(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
+	mustbe.ValidArgs(args)
+	if len(args) != 3 {
+		return nil, fmt.Errorf("MakeCSYNC expects exactly 3 arguments, got %d: %+v", len(args), args)
+	}
+
+	// Parsing the 3rd argument is tricky. We'll let NewData do it for us.  It
+	// will be slower thana custom parser, but that's ok because CSYNC is rare
+	// and this code is only used in the Make*() functions, which are only used
+	// when parsing zone files.
+	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%s %s %s", args[0], args[1], args[2]), origin)
+	return rd, err
 }
 
 func MakeDHCID(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
