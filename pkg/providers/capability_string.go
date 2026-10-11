@@ -37,12 +37,11 @@ func _() {
 	_ = x[DocDualHost-26]
 	_ = x[DocOfficiallySupported-27]
 	_ = x[CanUseAKAMAITLC-28]
-	_ = x[CanUseCSYNC-29]
 }
 
-const _Capability_name = "CanAutoDNSSECCanConcurCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseRPCanUseSMIMEACanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYCanUseOPENPGPKEYDocCreateDomainsDocDualHostDocOfficiallySupportedCanUseAKAMAITLCCanUseCSYNC"
+const _Capability_name = "CanAutoDNSSECCanConcurCanGetZonesCanUseAKAMAICDNCanUseAliasCanUseAzureAliasCanUseCAACanUseDHCIDCanUseDNAMECanUseDSCanUseDSForChildrenCanUseHTTPSCanUseLOCCanUseNAPTRCanUsePTRCanUseRoute53AliasCanUseRPCanUseSMIMEACanUseSOACanUseSRVCanUseSSHFPCanUseSVCBCanUseTLSACanUseDNSKEYCanUseOPENPGPKEYDocCreateDomainsDocDualHostDocOfficiallySupportedCanUseAKAMAITLC"
 
-var _Capability_index = [...]uint16{0, 13, 22, 33, 48, 59, 75, 84, 95, 106, 114, 133, 144, 153, 164, 173, 191, 199, 211, 220, 229, 240, 250, 260, 272, 288, 304, 315, 337, 352, 363}
+var _Capability_index = [...]uint16{0, 13, 22, 33, 48, 59, 75, 84, 95, 106, 114, 133, 144, 153, 164, 173, 191, 199, 211, 220, 229, 240, 250, 260, 272, 288, 304, 315, 337, 352}
 
 func (i Capability) String() string {
 	idx := int(i) - 0

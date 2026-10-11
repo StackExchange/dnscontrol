@@ -251,6 +251,16 @@ func matrixData() *FeatureMatrix {
 			)
 		}
 
+		// setRecordType reports support for a record type from the provider's
+		// SupportedTypes (including any notes from legacy Features).
+		setRecordType := func(
+			featureName string,
+			typeName string,
+		) {
+			note := def.RecordTypeSupport(typeName)
+			featureMap[featureName] = &note
+		}
+
 		setDocumentation := func(
 			featureName string,
 			capability providers.Capability,
@@ -284,86 +294,29 @@ func matrixData() *FeatureMatrix {
 			ProviderThreadSafe,
 			providers.CanConcur,
 		)
-		setCapability(
-			DomainModifierAlias,
-			providers.CanUseAlias,
-		)
+		setRecordType(DomainModifierAlias, "ALIAS")
 		setCapability(
 			DomainModifierDnssec,
 			providers.CanAutoDNSSEC,
 		)
-		setCapability(
-			DomainModifierCaa,
-			providers.CanUseCAA,
-		)
-		setCapability(
-			DomainModifierCsync,
-			providers.CanUseCSYNC,
-		)
-		setCapability(
-			DomainModifierDhcid,
-			providers.CanUseDHCID,
-		)
-		setCapability(
-			DomainModifierDname,
-			providers.CanUseDNAME,
-		)
-		setCapability(
-			DomainModifierDs,
-			providers.CanUseDS,
-		)
-		setCapability(
-			DomainModifierDnskey,
-			providers.CanUseDNSKEY,
-		)
-		setCapability(
-			DomainModifierHTTPS,
-			providers.CanUseHTTPS,
-		)
-		setCapability(
-			DomainModifierLoc,
-			providers.CanUseLOC,
-		)
-		setCapability(
-			DomainModifierNaptr,
-			providers.CanUseNAPTR,
-		)
-		setCapability(
-			DomainModifierOpenpgpkey,
-			providers.CanUseOPENPGPKEY,
-		)
-		setCapability(
-			DomainModifierPtr,
-			providers.CanUsePTR,
-		)
-		setCapability(
-			DomainModifierRP,
-			providers.CanUseRP,
-		)
-		setCapability(
-			DomainModifierSMIMEA,
-			providers.CanUseSMIMEA,
-		)
-		setCapability(
-			DomainModifierSoa,
-			providers.CanUseSOA,
-		)
-		setCapability(
-			DomainModifierSrv,
-			providers.CanUseSRV,
-		)
-		setCapability(
-			DomainModifierSshfp,
-			providers.CanUseSSHFP,
-		)
-		setCapability(
-			DomainModifierSvcb,
-			providers.CanUseSVCB,
-		)
-		setCapability(
-			DomainModifierTlsa,
-			providers.CanUseTLSA,
-		)
+		setRecordType(DomainModifierCaa, "CAA")
+		setRecordType(DomainModifierCsync, "CSYNC")
+		setRecordType(DomainModifierDhcid, "DHCID")
+		setRecordType(DomainModifierDname, "DNAME")
+		setRecordType(DomainModifierDs, "DS")
+		setRecordType(DomainModifierDnskey, "DNSKEY")
+		setRecordType(DomainModifierHTTPS, "HTTPS")
+		setRecordType(DomainModifierLoc, "LOC")
+		setRecordType(DomainModifierNaptr, "NAPTR")
+		setRecordType(DomainModifierOpenpgpkey, "OPENPGPKEY")
+		setRecordType(DomainModifierPtr, "PTR")
+		setRecordType(DomainModifierRP, "RP")
+		setRecordType(DomainModifierSMIMEA, "SMIMEA")
+		setRecordType(DomainModifierSoa, "SOA")
+		setRecordType(DomainModifierSrv, "SRV")
+		setRecordType(DomainModifierSshfp, "SSHFP")
+		setRecordType(DomainModifierSvcb, "SVCB")
+		setRecordType(DomainModifierTlsa, "TLSA")
 		setCapability(
 			GetZones,
 			providers.CanGetZones,
