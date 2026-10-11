@@ -715,13 +715,12 @@ declare function CNAME(name: string, target: string, ...modifiers: RecordModifie
  *
  * - `1` (immediate): the parent may process the record immediately, without first checking the SOA serial.
  * - `2` (soaminimum): the parent should only process the record if the child's SOA serial is greater than or equal to the CSYNC serial.
+ * - `3` is 1 + 2.
  *
  * Types is a space-separated list of the record types to synchronize, such as `"A NS AAAA"`.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   // Ask the parent to copy the NS, A and AAAA records once the zone's
- *   // SOA serial is at least 2026101100.
  *   CSYNC("@", 2026101100, 2, "A NS AAAA"),
  * );
  * ```
