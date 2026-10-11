@@ -75,6 +75,7 @@ Set `DNSIMPLE_DEBUG_HTTP` environment variable to `1` to dump all API calls made
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅

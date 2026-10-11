@@ -16,7 +16,7 @@ import (
 var RecordTypeCapabilities = map[string]Capability{
 	"AKAMAICDN": CanUseAKAMAICDN, "AKAMAITLC": CanUseAKAMAITLC,
 	"ALIAS": CanUseAlias, "AZURE_ALIAS": CanUseAzureAlias,
-	"CAA": CanUseCAA, "DHCID": CanUseDHCID, "DNAME": CanUseDNAME,
+	"CAA": CanUseCAA, "CSYNC": CanUseCSYNC, "DHCID": CanUseDHCID, "DNAME": CanUseDNAME,
 	"DNSKEY": CanUseDNSKEY, "DS": CanUseDS, "HTTPS": CanUseHTTPS,
 	"LOC": CanUseLOC, "NAPTR": CanUseNAPTR, "OPENPGPKEY": CanUseOPENPGPKEY,
 	"PTR": CanUsePTR, "R53_ALIAS": CanUseRoute53Alias, "RP": CanUseRP,

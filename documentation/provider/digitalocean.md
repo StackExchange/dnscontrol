@@ -87,6 +87,7 @@ Since `SOA` record support is so limited we do not provide the option to update 
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ❌
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ❌

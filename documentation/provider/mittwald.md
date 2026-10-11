@@ -80,6 +80,7 @@ mStudio allows an API user 3000 requests in 600 seconds. When a response says th
   - [get-zones](../commands/get-zones.md): ❌
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ❌
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ❌

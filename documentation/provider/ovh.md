@@ -157,6 +157,7 @@ OVH now allows to host DNS zone for a domain that is not registered in their reg
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ❌
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❔
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ❌

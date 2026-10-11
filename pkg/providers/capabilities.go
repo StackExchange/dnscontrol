@@ -104,6 +104,9 @@ const (
 
 	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAITLC
+
+	// CanUseCSYNC indicates the provider can handle CSYNC records.
+	CanUseCSYNC
 )
 
 // ProviderHasCapability returns true if provider has capability.

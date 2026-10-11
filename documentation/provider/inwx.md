@@ -128,6 +128,7 @@ INWX enforces the [RFC 7505](https://www.rfc-editor.org/rfc/rfc7505.html#section
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❔
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅

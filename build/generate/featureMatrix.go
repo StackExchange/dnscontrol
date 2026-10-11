@@ -153,6 +153,7 @@ func matrixData() *FeatureMatrix {
 		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
 		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
+		DomainModifierCsync      = "[`CSYNC`](../language-reference/domain-modifiers/CSYNC.md)"
 		DomainModifierDhcid      = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname      = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
 		DomainModifierDnskey     = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
@@ -200,6 +201,7 @@ func matrixData() *FeatureMatrix {
 			},
 			{ // DNS extensions
 				DomainModifierAlias,
+				DomainModifierCsync,
 				DomainModifierDname,
 				DomainModifierLoc,
 				DomainModifierPtr,
@@ -293,6 +295,10 @@ func matrixData() *FeatureMatrix {
 		setCapability(
 			DomainModifierCaa,
 			providers.CanUseCAA,
+		)
+		setCapability(
+			DomainModifierCsync,
+			providers.CanUseCSYNC,
 		)
 		setCapability(
 			DomainModifierDhcid,
