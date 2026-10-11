@@ -122,6 +122,7 @@ Set `apiurl` key to the endpoint url for the sandbox (https://api.sandbox.gandi.
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ✅
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ✅
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
   - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
@@ -131,6 +132,7 @@ Set `apiurl` key to the endpoint url for the sandbox (https://api.sandbox.gandi.
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ✅
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ✅
   - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅

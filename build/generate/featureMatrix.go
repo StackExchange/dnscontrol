@@ -205,6 +205,7 @@ func matrixData() *FeatureMatrix {
 				DomainModifierDname,
 				DomainModifierLoc,
 				DomainModifierPtr,
+				DomainModifierRP,
 				DomainModifierSoa,
 			},
 			{ // service discovery
@@ -216,6 +217,7 @@ func matrixData() *FeatureMatrix {
 			{ // security
 				DomainModifierCaa,
 				DomainModifierHTTPS,
+				DomainModifierOpenpgpkey,
 				DomainModifierSMIMEA,
 				DomainModifierSshfp,
 				DomainModifierTlsa,
