@@ -117,10 +117,11 @@ func MakeCSYNC(origin string, _ map[string]string, isEnabled nrc.Flags, args ...
 	}
 
 	// Parsing the 3rd argument is tricky. We'll let NewData do it for us.  It
-	// will be slower thana custom parser, but that's ok because CSYNC is rare
+	// will be slower than a custom parser, but that's ok because CSYNC is rare
 	// and this code is only used in the Make*() functions, which are only used
 	// when parsing zone files.
-	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%s %s %s", args[0], args[1], args[2]), origin)
+	// Serial and flags arrive as float64 from dnsconfig.js and as strings from zone lines.
+	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%d %d %s", mustbe.Uint32(args[0]), mustbe.Uint16(args[1]), mustbe.RawString(args[2])), origin)
 	return rd, err
 }
 
