@@ -42,12 +42,44 @@ var globalCfg map[string]string
 // Default TTL used in integration tests.
 var defaultTTL = uint32(300)
 
+// recOpt is an optional modifier for tr(), such as withTTL() or withMeta().
+type recOpt func(*models.RecordConfig)
+
 // Helper function to create a test RecordConfig fixture.
-func tr(label string, rtype any, zoneline string) *models.RecordConfig {
+// Optional modifiers are applied in order:
+//
+//	tr("lab", "A", "10.0.1.1", withTTL(123), withMeta("k1", "v1", "k2", "v2"))
+func tr(label string, rtype any, zoneline string, opts ...recOpt) *models.RecordConfig {
 	r, err := globalDC.NewRecordConfigParse(label, defaultTTL, rtype, zoneline)
 	panicOnErr(err)
 
+	for _, opt := range opts {
+		opt(r)
+	}
 	return r
+}
+
+// withTTL sets the TTL of a tr() record.
+func withTTL(t uint32) recOpt {
+	return func(r *models.RecordConfig) {
+		r.TTL = t
+	}
+}
+
+// withMeta adds metadata to a tr() record. It takes key/value pairs:
+// withMeta("k1", "v1", "k2", "v2"). Existing metadata is kept unless a key is repeated.
+func withMeta(kv ...string) recOpt {
+	if len(kv)%2 != 0 {
+		panic(fmt.Sprintf("withMeta: expected key/value pairs, got an odd number of arguments: %q", kv))
+	}
+	return func(r *models.RecordConfig) {
+		if r.Metadata == nil {
+			r.Metadata = map[string]string{}
+		}
+		for i := 0; i < len(kv); i += 2 {
+			r.Metadata[kv[i]] = kv[i+1]
+		}
+	}
 }
 
 // Helper functions to perform substitutions
@@ -408,7 +440,7 @@ func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.NameFQDN = nameutil.ToFqdnWithDot(label, "**current-domain**.")
 }
 
-func withMeta(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
+func withMetaMap(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
 	record.Metadata = metadata
 	return record
 }
