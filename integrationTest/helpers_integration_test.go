@@ -66,21 +66,23 @@ func withTTL(t uint32) recOpt {
 	}
 }
 
-// withMeta adds metadata to a tr() record. It takes key/value pairs:
-// withMeta("k1", "v1", "k2", "v2"). Existing metadata is kept unless a key is repeated.
-func withMeta(kv ...string) recOpt {
-	if len(kv)%2 != 0 {
-		panic(fmt.Sprintf("withMeta: expected key/value pairs, got an odd number of arguments: %q", kv))
-	}
-	return func(r *models.RecordConfig) {
-		if r.Metadata == nil {
-			r.Metadata = map[string]string{}
-		}
-		for i := 0; i < len(kv); i += 2 {
-			r.Metadata[kv[i]] = kv[i+1]
-		}
-	}
-}
+// Commented out until we're ready to use this.
+//
+// // withMeta adds metadata to a tr() record. It takes key/value pairs:
+// // withMeta("k1", "v1", "k2", "v2"). Existing metadata is kept unless a key is repeated.
+// func withMeta(kv ...string) recOpt {
+// 	if len(kv)%2 != 0 {
+// 		panic(fmt.Sprintf("withMeta: expected key/value pairs, got an odd number of arguments: %q", kv))
+// 	}
+// 	return func(r *models.RecordConfig) {
+// 		if r.Metadata == nil {
+// 			r.Metadata = map[string]string{}
+// 		}
+// 		for i := 0; i < len(kv); i += 2 {
+// 			r.Metadata[kv[i]] = kv[i+1]
+// 		}
+// 	}
+// }
 
 // Helper functions to perform substitutions
 

@@ -2485,18 +2485,10 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("CSYNC",
-			tc("Create",
-				tr("lab", dnsv2.TypeCSYNC, `66 3 A NS AAAA`),
-			),
-			tc("mod serial",
-				tr("lab", dnsv2.TypeCSYNC, `67 3 A NS AAAA`),
-			),
-			tc("mod flags",
-				tr("lab", dnsv2.TypeCSYNC, `67 1 A NS AAAA`),
-			),
-			tc("mod bitmap",
-				tr("lab", dnsv2.TypeCSYNC, `67 1 NS AAAA`),
-			),
+			tc("Create", tr("lab", dnsv2.TypeCSYNC, `66 3 A NS AAAA`)),
+			tc("mod serial", tr("lab", dnsv2.TypeCSYNC, `67 3 A NS AAAA`)),
+			tc("mod flags", tr("lab", dnsv2.TypeCSYNC, `67 1 A NS AAAA`)),
+			tc("mod bitmap", tr("lab", dnsv2.TypeCSYNC, `67 1 NS AAAA`)),
 		),
 
 		// Clear everything out.
