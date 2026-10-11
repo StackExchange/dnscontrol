@@ -187,6 +187,20 @@ func testPermitted(p string, f TestGroup) error {
 		}
 	}
 
+	// Every record type used in the group must be supported by the provider.
+	// The whole group is skipped, since skipping individual steps would leave
+	// the zone in an unexpected state for the steps that follow.
+	for _, tst := range f.tests {
+		for _, r := range tst.Records {
+			if r.TypeNum == 0 {
+				panic(fmt.Sprintf("testgroup %q: record %q of type %q has no TypeNum", f.Desc, r.GetLabel(), r.Type))
+			}
+			if !providers.RecordTypeSupported(*providerFlag, r.TypeNum, r.GetLabel()) {
+				return fmt.Errorf("provider does not support %s", r.Type)
+			}
+		}
+	}
+
 	// If there are any "only" items, you must be one of them.
 	if len(f.only) != 0 {
 		if slices.Contains(f.only, p) {

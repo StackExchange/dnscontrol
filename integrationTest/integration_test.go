@@ -2485,7 +2485,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("CSYNC",
-			only("NETNOD"),
 			tc("Create",
 				tr("lab", dnsv2.TypeCSYNC, `66 3 A NS AAAA`),
 			),
