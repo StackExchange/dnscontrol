@@ -14,25 +14,21 @@ import (
 
 func TestSupportedTypesDefaults(t *testing.T) {
 	for _, tc := range []struct {
-		name       string
-		selectors  []string
-		features   DocumentationNotes
-		exhaustive bool
-		allowed    []string
+		name      string
+		selectors []string
+		features  DocumentationNotes
+		allowed   []string
 	}{
-		{"nil", nil, nil, true, []string{"A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"}},
-		{"Basic8", []string{"Basic8"}, nil, true, []string{"A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"}},
-		{"empty", []string{}, nil, true, nil},
-		{"legacy", nil, DocumentationNotes{CanUseCAA: Can()}, false, []string{"CAA"}},
-		{"empty with legacy", []string{}, DocumentationNotes{CanUseCAA: Can()}, true, []string{"CAA"}},
+		{"nil", nil, nil, []string{"A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"}},
+		{"Basic8", []string{"Basic8"}, nil, []string{"A", "AAAA", "CAA", "CNAME", "MX", "NS", "SRV", "TXT"}},
+		{"empty", []string{}, nil, nil},
+		{"nil with features", nil, DocumentationNotes{CanUseDS: Can()}, []string{"A", "AAAA", "CAA", "CNAME", "DS", "MX", "NS", "SRV", "TXT"}},
+		{"empty with features", []string{}, DocumentationNotes{CanUseCAA: Can()}, []string{"CAA"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			isolateDefinitions(t)
 			Register[*definitionDNS]("TEST", Definition{FriendlyName: "Test", SupportedTypes: tc.selectors, Features: tc.features})
 			d, _ := GetDefinition("TEST")
-			if d.UsesSupportedTypes() != tc.exhaustive {
-				t.Fatal("incorrect validation mode")
-			}
 			for _, typ := range privatetypes.RecordTypes() {
 				if got := d.RecordTypeSupport(typ.Name).HasFeature; got != slices.Contains(tc.allowed, typ.Name) {
 					t.Errorf("support for %s = %v", typ.Name, got)

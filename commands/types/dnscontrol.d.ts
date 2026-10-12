@@ -735,6 +735,29 @@ declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordMo
 declare function CNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `CSYNC` adds a [Child-to-Parent Synchronization record](https://www.rfc-editor.org/rfc/rfc7477) to a domain. The name should be the relative label for the record. A CSYNC record is normally published at the apex (`@`) of a child zone. It tells the parent's operator which records should be copied from the child zone into the parent zone.
+ *
+ * Serial is the SOA serial number of the child zone that the CSYNC record applies to.
+ *
+ * Flags is a bit field:
+ *
+ * - `1` (immediate): the parent may process the record immediately, without first checking the SOA serial.
+ * - `2` (soaminimum): the parent should only process the record if the child's SOA serial is greater than or equal to the CSYNC serial.
+ * - `3` is 1 + 2.
+ *
+ * Types is a space-separated list of the record types to synchronize, such as `"A NS AAAA"`.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CSYNC("@", 2026101100, 2, "A NS AAAA"),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/csync
+ */
+declare function CSYNC(name: string, serial: number, flags: number, types: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `D` adds a domain for DNSControl to manage. The first argument is the domain name
  * (fully qualified `example.com` without a trailing dot). Follow it with
  * [REGISTRAR](../domain-modifiers/REGISTRAR.md) unless a registrar is supplied by
@@ -890,8 +913,11 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
  * Digest should be a string.
  *
  * ```javascript
- * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
- *   DHCID("example.com", "ABCDEFG"),
+ * D("example.com",
+ *   REGISTRAR("my_registrar"),
+ *   SERVICE("my_dns_provider"),
+ *
+ *   DHCID("host", "ABCDEFG"),
  * );
  * ```
  *
@@ -915,6 +941,7 @@ declare function DHCID(name: string, digest: string, ...modifiers: RecordModifie
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),
  *     ...
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/disable_ignore_safety_check
@@ -1199,8 +1226,11 @@ declare function DOMAIN_ELSEWHERE_AUTO(domain: string, registrar: string | Domai
  * Digest must be a string.
  *
  * ```javascript
- * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
- *   DS("example.com", 2371, 13, 2, "ABCDEF"),
+ * D("example.com",
+ *   REGISTRAR("my_registrar"),
+ *   SERVICE("my_dns_provider"),
+ *
+ *   DS("@", 2371, 13, 2, "ABCDEF"),
  * );
  * ```
  *
@@ -1425,7 +1455,7 @@ declare const HEDNS_DYNAMIC_ON: RecordModifier;
  * ```javascript
  * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
  *   HTTPS("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
- *   HTTPS("@", 1, "test.com", ""),
+ *   HTTPS("@", 1, "test.com.", ""),
  * );
  * ```
  *
@@ -1687,6 +1717,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),  // Error!  Ignoring an item we inserted
  *     ...
+ * );
  * ```
  *
  * To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
@@ -1698,19 +1729,13 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),
  *     ...
+ * );
  * ```
  *
  * FYI: Previously DNSControl permitted disabling this check on
  * a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`:
  *
  * The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2 world and its use will result in a validation error. Use the above example instead.
- *
- * ```javascript
- * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
- *     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
- *     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
- * );
- * ```
  *
  * ## Caveats
  *
@@ -3771,8 +3796,11 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * Here is an example of how SPF settings are normally done:
  *
  * ```javascript
- * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
- *   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
+ * D("example.com",
+ *   REGISTRAR("my_registrar"),
+ *   SERVICE("my_dns_provider"),
+ *
+ *   TXT("@", "v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
  * );
  * ```
  *
@@ -3785,9 +3813,12 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * ## The DNSControl way
  *
  * ```javascript
- * D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
+ * D("example.com",
+ *   REGISTRAR("my_registrar"),
+ *   SERVICE("my_dns_provider"),
+ *
  *   A("@", "10.2.2.2"),
- *   MX("@", "example.com."),
+ *   MX("@", 10, "example.com."),
  *   SPF_BUILDER({
  *     label: "@",
  *     overflow: "_spf%d",
@@ -3803,12 +3834,12 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *       "include:mail.zendesk.com", // Zenddesk
  *       "include:servers.mcsv.net", // MailChimp
  *       "include:sendgrid.net", // SendGrid
- *       "include:450622.spf05.hubspotemail.net", // Hubspot (Ticket# SREREQ-107)
+ *       "include:123456.spf05.hubspotemail.net", // Hubspot (Ticket# SRE-107)
  *       "~all"
  *     ],
  *     flatten: [
  *       "spf-basic.fogcreek.com", // Rationale: Being deprecated. Low risk if it breaks.
- *       "450622.spf05.hubspotemail.net" // Rationale: Unlikely to change without warning.
+ *       "123456.spf05.hubspotemail.net" // Rationale: Unlikely to change without warning.
  *     ]
  *   }),
  * );
@@ -4124,7 +4155,7 @@ declare function TTL(ttl: Duration): RecordModifier;
  *       TXT("multiple", ["one", "two", "three"]),  // Multiple strings
  *       TXT("quoted", 'any "quotes" and escapes? ugh; no worries!'),
  *       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
- *       TXT("long", "X".repeat(300)), // Long strings are split automatically.
+ *       TXT("long", new Array(301).join("X")), // Long strings are split automatically.
  *     );
  * ```
  *

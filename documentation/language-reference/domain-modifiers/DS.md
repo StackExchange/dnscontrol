@@ -28,8 +28,11 @@ Digest must be a string.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
-  DS("example.com", 2371, 13, 2, "ABCDEF"),
+D("example.com",
+  REGISTRAR("my_registrar"),
+  SERVICE("my_dns_provider"),
+
+  DS("@", 2371, 13, 2, "ABCDEF"),
 );
 ```
 {% endcode %}

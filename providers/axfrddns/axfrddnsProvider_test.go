@@ -88,14 +88,15 @@ func newAXFRServer(t *testing.T, messages [][]string, signer dnsv2.TSIGSigner, c
 		}
 
 		client := dnsv2.NewClient()
+		var options *dnsv2.TransferOption
 		if signer != nil {
-			client.Transfer = &dnsv2.Transfer{TSIGSigner: signer}
+			options = &dnsv2.TransferOption{TSIGSigner: signer}
 		}
 
 		env := make(chan *dnsv2.Envelope)
 		var wg sync.WaitGroup
 		wg.Go(func() {
-			if err := client.TransferOut(w, r, env); err != nil {
+			if err := client.TransferOut(w, r, env, options); err != nil {
 				t.Errorf("server: TransferOut: %v", err)
 			}
 			if closeConn {

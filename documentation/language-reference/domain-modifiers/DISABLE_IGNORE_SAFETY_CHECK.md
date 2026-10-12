@@ -17,4 +17,5 @@ D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
     TXT("myhost", "mytext"),
     IGNORE("myhost", "*", "*"),
     ...
+);
 ```

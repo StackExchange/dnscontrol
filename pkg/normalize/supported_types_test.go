@@ -191,7 +191,7 @@ func TestImportTransformChecksCopiedRecords(t *testing.T) {
 }
 
 func TestCatalogValidationWithoutResolvedProvider(t *testing.T) {
-	for _, pTypes := range [][]string{nil, {"-"}, {plainProviderType}} {
+	for _, pTypes := range [][]string{nil, {"-"}} {
 		r := &models.RecordConfig{Type: "UNKNOWN_TYPE"}
 		if err := validateSupportedRecordTypes(r, "example.com", pTypes); err == nil || !strings.Contains(err.Error(), "unknown record type") {
 			t.Fatalf("providers=%v, error=%v", pTypes, err)

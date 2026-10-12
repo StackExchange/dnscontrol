@@ -55,6 +55,10 @@ func RDtoFieldsStrings(s dnsv2.RDATA) ([]string, error) {
 	}
 	result := make([]string, len(items))
 	for i, item := range items {
+		if types, ok := item.([]uint16); ok && hasTypeBitMap(s) {
+			result[i] = typeBitMapString(types)
+			continue
+		}
 		switch v := item.(type) {
 		case string:
 			result[i] = v
@@ -87,6 +91,14 @@ func RDtoFieldsJS(s dnsv2.RDATA) ([]string, error) {
 	}
 	result := make([]string, len(items))
 	for i, item := range items {
+		if types, ok := item.([]uint16); ok && hasTypeBitMap(s) {
+			b, err := json.Marshal(typeBitMapString(types))
+			if err != nil {
+				return nil, err
+			}
+			result[i] = string(b)
+			continue
+		}
 		switch v := item.(type) {
 		case string:
 			// https://stackoverflow.com/questions/51691901
@@ -102,4 +114,28 @@ func RDtoFieldsJS(s dnsv2.RDATA) ([]string, error) {
 		}
 	}
 	return result, nil
+}
+
+// hasTypeBitMap reports whether rd is a type whose []uint16 field is a type
+// bitmap (a list of record types). Other types may use []uint16 for other
+// purposes, so their fields are left alone.
+func hasTypeBitMap(rd dnsv2.RDATA) bool {
+	switch rd.(type) {
+	case dnsrdatav2.CSYNC, dnsrdatav2.NSEC, dnsrdatav2.NSEC3:
+		return true
+	}
+	return false
+}
+
+// typeBitMapString formats a type bitmap as a space-separated list of type
+// names, such as "A NS AAAA".
+func typeBitMapString(types []uint16) string {
+	names := make([]string, len(types))
+	for i, typ := range types {
+		names[i] = dnsv2.TypeToString[typ]
+		if names[i] == "" {
+			names[i] = fmt.Sprintf("TYPE%d", typ)
+		}
+	}
+	return strings.Join(names, " ")
 }

@@ -1,0 +1,48 @@
+{
+  "dns_providers": [],
+  "domains": [
+    {
+      "dnsProviders": {},
+      "name": "foo.com",
+      "records": [
+        {
+          "comparablev3": "66 3 A NS AAAA",
+          "filepos": "[line:2:5]",
+          "name": "@",
+          "name_unicode": "@",
+          "rdata": {
+            "Flags": 3,
+            "Serial": 66,
+            "TypeBitMap": [
+              1,
+              2,
+              28
+            ]
+          },
+          "ttl": 300,
+          "type": "CSYNC",
+          "typenum": 62
+        },
+        {
+          "comparablev3": "1 0 NS",
+          "filepos": "[line:3:5]",
+          "name": "sub",
+          "name_unicode": "sub",
+          "rdata": {
+            "Flags": 0,
+            "Serial": 1,
+            "TypeBitMap": [
+              2
+            ]
+          },
+          "ttl": 300,
+          "type": "CSYNC",
+          "typenum": 62
+        }
+      ],
+      "registrar": "none",
+      "uniquename": "foo.com"
+    }
+  ],
+  "registrars": []
+}

@@ -28,7 +28,7 @@ If you set the parameter `ech` to the special value `IGNORE`, DNSControl will ig
 ```javascript
 D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
   HTTPS("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
-  HTTPS("@", 1, "test.com", ""),
+  HTTPS("@", 1, "test.com.", ""),
 );
 ```
 {% endcode %}

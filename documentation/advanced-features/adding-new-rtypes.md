@@ -1,46 +1,31 @@
 # Creating new DNS Resource Types (rtypes)
 
-- [How to add a CUSTOM record type (rtype)](#how-to-add-a-custom-record-type-rtype)
-  - [Step 1: Pick a unique id](#step-1-pick-a-unique-id)
-  - [Step 2: Describe the custom type in YAML](#step-2-describe-the-custom-type-in-yaml)
-  - [Step 3: Generate the code](#step-3-generate-the-code)
-  - [Step 4: Test](#step-4-test)
-  - [Step 5: Write the remaining functions](#step-5-write-the-remaining-functions)
-- [How to add a new record type (rtype)](#how-to-add-a-new-record-type-rtype)
-  - [Step 1: Update `pkg/js/helpers.js`](#step-1-update-pkg-js-helpers.js)
-  - [Step 2: Update `models/makers.go` (NOT NEEDED FOR CUSTOM TYPES)](#step-2-update-models-makers.go-not-needed-for-custom-types)
-  - [Step 3: Add a `CanUseTYPENAME`](#step-3-add-a-canusetypename)
-  - [Step 4: Document it](#step-4-document-it)
-  - [Step 5: Update the matrix](#step-5-update-the-matrix)
-  - [Step 6: Add a `parse_tests` test case](#step-6-add-a-parse_tests-test-case)
-  - [Step 7: Test it out with BIND](#step-7-test-it-out-with-bind)
-  - [Step 8: Add an integration test helper](#step-8-add-an-integration-test-helper)
-  - [Step 9: Add Integration tests](#step-9-add-integration-tests)
-  - [Step 10: Support more providers](#step-10-support-more-providers)
-  - [Step 11: Write documentation](#step-11-write-documentation)
-  - [Step 12: "go generate"](#step-12-go-generate)
-- [How to enable an rtype in a provider](#how-to-enable-an-rtype-in-a-provider)
-- [How to add a "builder"](#how-to-add-a-builder)
+- [Creating new DNS Resource Types (rtypes)](#creating-new-dns-resource-types-rtypes)
+  - [How to add a CUSTOM record type (rtype)](#how-to-add-a-custom-record-type-rtype)
+    - [Step 1: Pick a unique id](#step-1-pick-a-unique-id)
+    - [Step 2: Describe the custom type in YAML](#step-2-describe-the-custom-type-in-yaml)
+    - [Step 3: Generate the code](#step-3-generate-the-code)
+    - [Step 4: Test](#step-4-test)
+    - [Step 5: Write the remaining functions](#step-5-write-the-remaining-functions)
+  - [How to add a new record type (rtype)](#how-to-add-a-new-record-type-rtype)
+    - [Step 1: Update `pkg/js/helpers.js`](#step-1-update-pkgjshelpersjs)
+    - [Step 2: Update `models/makers.go` (NOT NEEDED FOR CUSTOM TYPES)](#step-2-update-modelsmakersgo-not-needed-for-custom-types)
+    - [Step 3: Document it](#step-3-document-it)
+    - [Step 4: Update the matrix](#step-4-update-the-matrix)
+    - [Step 5: Add a `parse_tests` test case](#step-5-add-a-parse_tests-test-case)
+    - [Step 6: Add Integration tests](#step-6-add-integration-tests)
+    - [Step 7: Support more providers](#step-7-support-more-providers)
+    - [Step 8: Write documentation](#step-8-write-documentation)
+    - [Step 9: "go generate"](#step-9-go-generate)
+  - [How to enable an rtype in a provider](#how-to-enable-an-rtype-in-a-provider)
+  - [How to add a "builder"](#how-to-add-a-builder)
+    - [Legacy builders](#legacy-builders)
 
 Everyone is familiar with A, AAAA, CNAME, NS and other Rtypes. However DNSControl also supports:
 
-- All standard (RFC) record types. Anything that [codeberg.org/miekg/dns supports](https://codeberg.org/miekg/dns)
-- Custom record types. DNS Service Providers often add their own unique record types.
-- Builders. Functions that can be used in `dnsconfig.js` that generate one or more records. For example, `SPF_BUILDER()` generates one or more `TXT` records.
-  - Modern builders are implemented in Go, in `models/b_NAME.go`
-  - Legacy builders are implemented purely in JavaScript in `pkg/js/helpers.js`
-  - In the future, we plan on migrating all builders to Go.
-
-The fields of standard and custom types are stored in a struct called an `RDATA`, which is stored in `models.RecordConfig.rdata`. Use the .GetRDATA() and .SetRDATA() getter/setter to access them.
-
-Legacy types store their fields directly in `models.RecordConfig`. For example, the MX preference
-is in `models.RecordConfig{MxPreference: 10}`. This means space is taken to store the MX Preference even when the record type is something else. While this seemed ok back in 2016, the structure is now very big. The goal of RecordConfig V3 is to save memory by eliminating those fields.
-
-While we transition to RecordConfig V3, the data is stored in both places (RDATA and the legacy fields). Data is converted bidirectionally. If RDATA is nil, DNSControl will create it automatically by plucking the data from the legacy fields.  The reverse also happens: when `SetRDATA()` is called, it populates any legacy fields.
-
-Eventually we'll get rid of the legacy code.
-
-The new system consolidates everything related to a record type to the record type's "object" (as much as Go has objects).  However the legacy code spreads logic for a given record type in many places in the code.  Those places are marked with the comment  `// rtype_variations`
+- **Standard record types:** Anything defined by an RFC. They must be supported by [codeberg.org/miekg/dns](https://codeberg.org/miekg/dns).
+- **Custom record types:** Pseudo-types, typically specific to a particular DNS Service Provider.
+- **Builders:** Pseuddo-types that generate 1 more DNS records. For example `SPF_BUILDER()` generates one or more `TXT` records.
 
 ## How to add a CUSTOM record type (rtype)
 
@@ -63,7 +48,7 @@ grep codepoint pkg/privatetypes/types_generate.yaml | sort | tail -1
 
 ### Step 2: Describe the custom type in YAML
 
-Custom types are described in `pkg/privatetypes/types_generate.yaml`.  The generator will create 3 Go files in `pkg/privatetypes`:
+Custom types are described in `pkg/privatetypes/types_generate.yaml`.  A generator will create these files in `pkg/privatetypes`:
 
 - `t_typename.go` -- structures, parsers, etc. (header + RDATA)
 - `t_typename_test.go` -- Unit test of the parser and .String() functions.
@@ -105,22 +90,16 @@ cd pkg/privatetypes && go generate
 go test -failfast -count=1 ./...
 ```
 
-Feelf free to aadd to the code generator `pkg/privatetypes/types_generate.go` if your custom type requires
+You may neeed to modify the code generator `pkg/privatetypes/types_generate.go` if your custom type requires
 special code, new field types, etc.
 
-Now this type is as functional as a standard type, except it is in the `privatetypes` and `privatetypesrdata` names spaces instead of the `dnsv2` and `dnsrdatav2` namespaces.
+Now this type is as functional just like the standard types. The only differnece is that it is in the `privatetypes` and `privatetypesrdata` names spaces instead of the `dnsv2` and `dnsrdatav2` namespaces.
 
-Standard types:
-
-- `dnsv2.TypeSRV` -- the codepoint
-- `dnsv2.SRV{}` -- the entire struct (header + RDATA) (rarely used)
-- `dnsrdatav2.SRV{}` -- the RDATA struct
-
-Custom types:
-
-- `privatetypes.TypeAKAMAICDN` -- the codepoint
-- `privatetypes.AKAMAICDN{}` -- the entire struct (header + RDATA) (rarely used)
-- `privatetypesrdata.AKAMAICDN{}` -- the RDATA struct
+| Purpose | Standard | Custom | Notes |
+| --- | --- | --- | --- |
+| codepoint | `dnsv2.TypeSRV` | `privatetypes.TypeAKAMAICDN` | int representing the record type |
+| struct | `dnsv2.SRV{}` | `privatetypes.AKAMAICDN{}` | the entire struct (header + RDATA) |
+| RDATA struct | `dnsrdatav2.SRV{}` | `privatetypesrdata.AKAMAICDN{}` | The RDATA (fields) of the struct |
 
 ### Step 5: Write the remaining functions
 
@@ -136,43 +115,41 @@ Congrats!  A new RFC has been published that defines a new DNS record type!
 
 Note: Since DNSControl depends on `https://codeberg.org/miekg/dns` for basic DNS record types, we must first wait for miekg to add support. He's usually quite good at adding new types but [file an issue](https://codeberg.org/miekg/dns/issues/new) if you want to make sure it is on his radar.
 
-Addding a new type has 2 major parts.  First DNSControl must be updated to support it. Once that is complete, each provider must be updated to handle it.
+Addding a new type has two major parts.  First DNSControl must be updated to support it. Once that is complete, each provider must be updated to handle it.
 
 Enable the type in DNSControl itself:
 
 ### Step 1: Update `pkg/js/helpers.js`
 
-- Add to list at the end. Just follow the pattern.
-- This enables the record to be used in `dnsconfig.js`.
+This enables the record to be used in `dnsconfig.js`.
+
+- Add to list at the end. Just follow the pattern. Please keep the list sorted alphabetically.
+
+Example:
+
+```javascript
+var CSYNC = rawrecordBuilder("CSYNC");
+```
 
 ### Step 2: Update `models/makers.go` (NOT NEEDED FOR CUSTOM TYPES)
 
+This creates a way for providers to create RDATA of this type.
+
+- Edit `models/makers.go`
 - Add a Make$TYPENAME
   - This takes arguments of any type (like NewRecordConfig()). Every argument must pass through a `mustbe.` function. See `pkg/mustbe/README.md` for details.
 - Add this new Make$TYPENAME to the func init().
 
-### Step 3: Add a `CanUseTYPENAME`
-
-Since not all providers support this new record type, add a "capability" so that providers can mark themselves as willing.
-
-You'll need to have Stringer installed:
-
-```shell
-go tool stringer
-```
-
-- Update `pkg/providers/capabilities.go` (search for CanUseSRV and add something similar. Please add it in alphabetical order!)
-- Update `build/generate/featureMatrix.go` (search for SRV and do something similar for your type)
-- Run: `cd pkg/providers && go generate`
-
-### Step 4: Document it
+### Step 3: Document it
 
 Add documentation:
 
 - `documentation/language-reference/domain-modifiers/TYPENAME.md` (see SRV.md as an example)
 - `documentation/SUMMARY.md` Add your doc to the TOC.
 
-### Step 5: Update the matrix
+### Step 4: Update the matrix
+
+In this step we make the new type appear in the feature matrics.
 
 Add this feature to the feature matrix in `dnscontrol/build/generate/featureMatrix.go`. Add it to the variable `matrix` maintaining alphabetical ordering, which should look like this:
 
@@ -201,49 +178,7 @@ func matrixData() *FeatureMatrix {
 
 {% endcode %}
 
-Then add it later in the file with a `setCapability()` statement, which should look like this:
-
-{% code title="dnscontrol/build/generate/featureMatrix.go" %}
-
-```diff
-...
-+       setCapability(
-+           DomainModifierFoo,
-+           providers.CanUseFOO,
-+       )
-...
-```
-
-{% endcode %}
-
-Add the capability to the list of features that zones are validated against (i.e. if you want DNSControl to report an error if this feature is used with a DNS provider that doesn't support it). That's in the `checkProviderCapabilities` function in `pkg/normalize/validate.go`. It should look like this:
-
-{% code title="pkg/normalize/validate.go" %}
-
-```diff
-var providerCapabilityChecks = []pairTypeCapability{
-...
-+   capabilityCheck("FOO", providers.CanUseFOO),
-...
-```
-
-{% endcode %}
-
-DNSControl will warn/error if this new record is used with a provider that does not support the capability.
-
-- Add the capability to the validations in `pkg/normalize/validate.go` by adding it to `providerCapabilityChecks`
-- Some capabilities can't be tested for. If such testing can't be done, add it to the whitelist in function `TestCapabilitiesAreFiltered` in `pkg/normalize/capabilities_test.go`
-
-If the capabilities testing is not configured correctly, `go test ./...` will report something like the `MISSING` message below. In this example we removed `providers.CanUseCAA` from the `providerCapabilityChecks` list.
-
-```text
---- FAIL: TestCapabilitiesAreFiltered (0.00s)
-    capabilities_test.go:66: ok: providers.CanUseAlias (0) is checked for with "ALIAS"
-    capabilities_test.go:68: MISSING: providers.CanUseCAA (1) is not checked by checkProviderCapabilities
-    capabilities_test.go:66: ok: providers.CanUseNAPTR (3) is checked for with "NAPTR"
-```
-
-### Step 6: Add a `parse_tests` test case
+### Step 5: Add a `parse_tests` test case
 
 Add at least one test case to the `pkg/js/parse_tests` directory. Test `013-mx.js` is a very simple one and is good for cloning. See also `017-txt.js`.
 
@@ -261,28 +196,12 @@ If these tests pass you know the `dnsconfig.js` and `helpers.js` code is working
 
 The tests also verify that for every "capability" there is a validation. This is explained in Step 2 (search for `TestCapabilitiesAreFiltered` or `MISSING`)
 
-### Step 7: Test it out with BIND
+### Step 6: Add Integration tests
 
-The `BIND` provider supports all record types. Update `providers/bind` to support this
-record type.  The next section describes how to enable a new record type on a provider.
+Add an integration test for the new type.  The test group should create the record then attempt to change each field one at at a time.
 
-Here's how to run the integration tests on the `BIND` provider:
-
-```shell
-cd integrationTest
-go test -failfast -v -args -verbose -profile BIND
-```
-
-### Step 8: Add an integration test helper
-
-- Edit `integrationTest/helpers_integration_test.go`
-- Add a typename() function (alphabetically). For example, there are functions like `mx()` and `a()` which make it easy to write test cases.
-
-### Step 9: Add Integration tests
-
-Add at least one test case to the `integrationTest/integration_test.go` file.  Add tests that create the type then changes each field individually.  For example, the MX records are tested by creating an MX record, changing the target, changing the preference, then deleting the record.
-
-Look for `func makeTests` and add the test to the end of this list.
+- Edit `integrationTest/integration_test.go`
+- Look for `func makeTests` and add a `testgroup()` to the end of the list.
 
 Each `testgroup()` is a named list of tests.
 
@@ -290,12 +209,12 @@ Each `testgroup()` is a named list of tests.
 
 ```go
 testgroup("MX",
-  tc("MX record", mx("@", 5, "foo.com.")),
-  tc("Change MX pref", mx("@", 10, "foo.com.")),
-  tc("Change MX target", mx("@", 10, "mx.foo.com.")),
+  tc("MX record", tr("@", "MX", "5 foo.com.")),
+  tc("Change MX pref", tr("@", "MX", "10 foo.com.")),
+  tc("Change MX target", tr("@", "MX", "10 mx.foo.com.")),
   tc("Make MX and A",
-      mx("@", 10, "mx.foo.com."),
-      a("@", "1.2.3.4"),
+      tr("@", "MX", "10 mx.foo.com."),
+      tr("@", "A", "1.2.3.4"),
   ),
 )
 ```
@@ -306,24 +225,25 @@ Line 1: `testgroup()` gives a name to a group of tests. It also tells the system
 
 Line 2-4: Each `tc()` encodes all the records of a zone.
 
-The test framework will create the equivalent of a `dnsconfig.js` for each `tc()`. In this example, the first `dnsconfig.js` is a zone with a single MX record. The next `dnsconfig.js` is similar but with a different MX preference. The next `dnsconfig.js` changes the target. The last `tc()` creates a zone with two records, an MX and A.
+The test framework will create the equivalent of a `dnsconfig.js` for each `tc()`. In this example, the first `dnsconfig.js` is a zone with a single MX record (`tr()` stands for "test record"). The next `dnsconfig.js` is similar but with a different MX preference. The next `dnsconfig.js` changes the target. The last `tc()` creates a zone with two records, an MX and A.
 
- The test framework will run the equivalent of `dnscontrol push` twice for each `tc()`. The first time it expects changes. The second run it expects no changes are required because the first was successful. Otherwise, the test will fail.
+ The test framework will run the equivalent of `dnscontrol push` twice for each `tc()`. The first time it expects changes, because we are creating or modifying a record. The second run is expected to have no changes since the first run should have been successful. Otherwise, the test is marked as a failure.
 
-If you look at the tests for `CAA`, it inserts a few records then attempts to modify each field of a record one at a time. This test was useful because it turns out we hadn't written the code to properly see a change in priority. We fixed this bug before the code made it into production.
+Notice that some tests include `requires()`, `not()` and `only()` statements. This is how we restrict tests to certain providers. These options must be listed first in a `testgroup`. More details are in the source code. They are generally not needed because the framework now only runs a `testgroup()` if the DNS record types are compatible with the provider. Therefore, if a provider doesn't support (for example) `SRV`, the SRV tests will automatically be skipped.
 
-Notice that some tests include `requires()`, `not()` and `only()` statements. This is how we restrict tests to certain providers. These options must be listed first in a `testgroup`. More details are in the source code.
-
-To run the integration test with the BIND provider:
+The BIND provider supports all types. Therefore, it's a good way to test if your integration test worked.  To run the integration test with the BIND provider:
 
 ```shell
 cd integrationTest
 go test -v -args -verbose -profile BIND
 ```
 
-### Step 10: Support more providers
+### Step 7: Support more providers
 
-Now add support in other providers. Add the `providers.CanUse...` flag to the provider and re-run the integration tests:
+Now we activate the type for a provider.
+
+1. Add the record type to the list of supported types in the provider's `providers.Definition{}`. Look for the `SupportedTypes` field.
+2. Run the integration tests. It should fail because we haven't added code to support the type yet.
 
 For example, this will run the tests on Amazon AWS Route53:
 
@@ -336,11 +256,17 @@ go test -v -args -verbose -profile ROUTE53
 popd
 ```
 
-The test should reveal any bugs. Keep iterating between fixing the code and running the tests. When the tests all work, you are done. (Well, you might want to clean up some code a bit, but at least you know that everything is working.)
+You can save time by using the `-start` and `-end` flags. For example, to only run test 100, add `-start 100 -end 100` to the command.
+
+Now that you've isolated the failure, update the provider's code to support this type.
+
+(In some rare occasions the provider will simply work on the first try. Congrats! You can skip the rest of this step.)
+
+Keep iterating between fixing the code and running the tests. When the tests all work, you are done. (Well, you might want to clean up some code a bit, but at least you know that everything is working.)
 
 If you find bugs that aren't covered by the tests, please please please add a test that demonstrates the bug (then fix the bug, of course). This will help all future contributors. If you need help with adding tests, please ask!
 
-### Step 11: Write documentation
+### Step 8: Write documentation
 
 Add a new Markdown file to `documentation/language-reference/domain-modifiers`. Copy an existing file (`CNAME.md` is a good example). The section between the lines of `---` is called the front matter and it has the following keys:
 
@@ -379,7 +305,7 @@ Add the new file `FOO.md` to the documentation table of contents `documentation/
 
 {% endcode %}
 
-### Step 12: "go generate"
+### Step 9: "go generate"
 
 Re-generate the documentation:
 
@@ -416,8 +342,9 @@ records.
 
 Assume the builder is named "robert" and appears in `dnsconfig.js` as `ROBERT(label, data)`
 
-Step 1. Create the builder in `models/b_robert.go`
-Step 2. Register the builder: (see `models/b_loc.go` as an example)
+Step 1. Add it to the list at the end of `pkg/js/helpers.js`. The 2nd parameter should be `true` if the builder doesn't take a label as the first parameter.
+Step 2. Create the builder in `models/b_robert.go`
+Step 3. Register the builder: (see `models/b_loc.go` as an example)
 
 ```go
 func init() {
@@ -432,3 +359,10 @@ Add a function called BuilderROBERT() with this signature:
 ```go
 func BuilderROBERT(dc *DomainConfig, ttl uint32, args []any, subdomain string) (Records, error) {
 ```
+
+### Legacy builders
+
+- Modern builders are implemented in Go, in `models/b_NAME.go`
+- Legacy builders are implemented purely in JavaScript in `pkg/js/helpers.js`
+
+Over time we hope to port all the legacy builders to Go.

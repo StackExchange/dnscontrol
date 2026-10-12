@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v5/models"
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
 	_ "github.com/DNSControl/dnscontrol/v5/pkg/providers/_all"
@@ -254,8 +255,8 @@ func makeTests() []*TestGroup {
 			not("LINODE"),  // Linode does not support arbitrary TTLs: both are rounded up to 3600.
 			not("OPENWRT"), // OpenWRT does not support per record TTL
 			not("NETCUP"),  // NETCUP does not support custom TTLs.
-			tc("Create Arc", ttl(a("testa", "1.1.1.1"), 333)),
-			tc("Change TTL", ttl(a("testa", "1.1.1.1"), 999)),
+			tc("Create Arc", tr("testa", "A", "1.1.1.1", withTTL(333))),
+			tc("Change TTL", tr("testa", "A", "1.1.1.1", withTTL(999))),
 		),
 
 		testgroup("TTL",
@@ -493,6 +494,7 @@ func makeTests() []*TestGroup {
 		testgroup("NS only APEX",
 			not(
 				"AZURE_PRIVATE_DNS", // Apex NS records are managed by Azure.
+				"CLOUDPRESS",        // "NS records are not supported on the root of the domain."
 				"BUNNY_DNS",         // Apex NS records are managed by BunnyDNS.
 				"DNSCALE",           // Apex NS records are managed by DNScale.
 				"DNSIMPLE",          // Does not support NS records nor subdomains.
@@ -1349,19 +1351,19 @@ func makeTests() []*TestGroup {
 			alltrue(!strings.EqualFold(globalCfg["site"], "intl")),
 			tc("create records on the default and telecom lines",
 				a("tencent-line", "1.2.3.4"),
-				withMeta(a("tencent-line", "1.2.3.4"), map[string]string{
+				withMetaMap(a("tencent-line", "1.2.3.4"), map[string]string{
 					"tencentdns_line": "电信",
 				}),
 			),
 			tc("change the telecom record value",
 				a("tencent-line", "1.2.3.4"),
-				withMeta(a("tencent-line", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-line", "5.6.7.8"), map[string]string{
 					"tencentdns_line": "电信",
 				}),
 			),
 			tc("change the record line",
 				a("tencent-line", "1.2.3.4"),
-				withMeta(a("tencent-line", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-line", "5.6.7.8"), map[string]string{
 					"tencentdns_line": "联通",
 				}),
 			),
@@ -1371,7 +1373,7 @@ func makeTests() []*TestGroup {
 			),
 			tc("restore line metadata",
 				a("tencent-line", "1.2.3.4"),
-				withMeta(a("tencent-line", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-line", "5.6.7.8"), map[string]string{
 					"tencentdns_line": "电信",
 				}),
 			),
@@ -1380,18 +1382,18 @@ func makeTests() []*TestGroup {
 			),
 			tcEmptyZone(),
 			tc("create weighted records",
-				withMeta(a("tencent-weight", "1.2.3.4"), map[string]string{
+				withMetaMap(a("tencent-weight", "1.2.3.4"), map[string]string{
 					"tencentdns_weight": "80",
 				}),
-				withMeta(a("tencent-weight", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-weight", "5.6.7.8"), map[string]string{
 					"tencentdns_weight": "20",
 				}),
 			),
 			tc("change weights",
-				withMeta(a("tencent-weight", "1.2.3.4"), map[string]string{
+				withMetaMap(a("tencent-weight", "1.2.3.4"), map[string]string{
 					"tencentdns_weight": "50",
 				}),
-				withMeta(a("tencent-weight", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-weight", "5.6.7.8"), map[string]string{
 					"tencentdns_weight": "50",
 				}),
 			),
@@ -1400,10 +1402,10 @@ func makeTests() []*TestGroup {
 				a("tencent-weight", "5.6.7.8"),
 			),
 			tc("explicit zero weights are equivalent to omitted weights",
-				withMeta(a("tencent-weight", "1.2.3.4"), map[string]string{
+				withMetaMap(a("tencent-weight", "1.2.3.4"), map[string]string{
 					"tencentdns_weight": "0",
 				}),
-				withMeta(a("tencent-weight", "5.6.7.8"), map[string]string{
+				withMetaMap(a("tencent-weight", "5.6.7.8"), map[string]string{
 					"tencentdns_weight": "0",
 				}),
 			).ExpectNoChanges(),
@@ -1565,13 +1567,13 @@ func makeTests() []*TestGroup {
 				mikrotikFwd("internal", "10.0.0.2"),
 			),
 			tc("FWD with match_subdomain",
-				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"match_subdomain": "true"}),
+				withMetaMap(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"match_subdomain": "true"}),
 			),
 			tc("FWD with address_list",
-				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"address_list": "mylist"}),
+				withMetaMap(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"address_list": "mylist"}),
 			),
 			tc("FWD with comment",
-				withMeta(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"comment": "test forward"}),
+				withMetaMap(mikrotikFwd("internal", "10.0.0.2"), map[string]string{"comment": "test forward"}),
 			),
 			tc("multiple FWD records",
 				mikrotikFwd("internal", "10.0.0.2"),
@@ -1599,13 +1601,13 @@ func makeTests() []*TestGroup {
 		testgroup("MIKROTIK_METADATA",
 			only("MIKROTIK"),
 			tc("A record with comment",
-				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "test comment"}),
+				withMetaMap(a("meta", "1.2.3.4"), map[string]string{"comment": "test comment"}),
 			),
 			tc("change comment",
-				withMeta(a("meta", "1.2.3.4"), map[string]string{"comment": "updated comment"}),
+				withMetaMap(a("meta", "1.2.3.4"), map[string]string{"comment": "updated comment"}),
 			),
 			tc("A with match_subdomain",
-				withMeta(a("wildmeta", "1.2.3.4"), map[string]string{"match_subdomain": "true"}),
+				withMetaMap(a("wildmeta", "1.2.3.4"), map[string]string{"match_subdomain": "true"}),
 			),
 		),
 
@@ -2262,17 +2264,17 @@ func makeTests() []*TestGroup {
 		//
 		// testgroup("CLOUDNS geodns tests",
 		// 	only("CLOUDNS"),
-		// 	tc("Add record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+		// 	tc("Add record with geodns code", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 		// 		"cloudns_geodns_code": "US",
 		// 	})),
-		// 	tc("Update record with default geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+		// 	tc("Update record with default geodns code", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 		// 		"cloudns_geodns_code": "DEFAULT",
 		// 	})),
-		// 	tc("Update record with geodns code", withMeta(a("@", "1.2.3.4"), map[string]string{
+		// 	tc("Update record with geodns code", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 		// 		"cloudns_geodns_code": "BR",
 		// 	})),
 		// 	tc("Delete metadata from record", a("@", "1.2.3.4")),
-		// 	tc("Update a record with the value DEFAULT after removing the metadata should do nothing", withMeta(a("@", "1.2.3.4"), map[string]string{
+		// 	tc("Update a record with the value DEFAULT after removing the metadata should do nothing", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 		// 		"cloudns_geodns_code": "DEFAULT",
 		// 	})).ExpectNoChanges(),
 		// ),
@@ -2282,18 +2284,18 @@ func makeTests() []*TestGroup {
 		testgroup("PORKBUN url forwarding tests",
 			only("PORKBUN"),
 			tc("Add a urlfwd", porkbunUrlfwd("urlfwd1", "http://example.com")),
-			tc("Update a urlfwd with metadata", withMeta(porkbunUrlfwd("urlfwd1", "http://example.com"), map[string]string{
+			tc("Update a urlfwd with metadata", withMetaMap(porkbunUrlfwd("urlfwd1", "http://example.com"), map[string]string{
 				"type":        "permanent",
 				"includePath": "yes",
 				"wildcard":    "no",
 			})),
 			tc("Add a url", url("urlfwd2", "http://example.com")),
-			tc("Update a url with metadata", withMeta(url("urlfwd2", "http://example.com"), map[string]string{
+			tc("Update a url with metadata", withMetaMap(url("urlfwd2", "http://example.com"), map[string]string{
 				"includePath": "yes",
 				"wildcard":    "no",
 			})),
 			tc("Add a url301", url301("urlfwd3", "http://example.com")),
-			tc("Update a url with metadata", withMeta(url301("urlfwd3", "http://example.com"), map[string]string{
+			tc("Update a url with metadata", withMetaMap(url301("urlfwd3", "http://example.com"), map[string]string{
 				"includePath": "yes",
 				"wildcard":    "no",
 			})),
@@ -2303,7 +2305,7 @@ func makeTests() []*TestGroup {
 
 		testgroup("GCORE metadata tests",
 			only("GCORE"),
-			tc("Add record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+			tc("Add record with metadata", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 				"gcore_filters":    "geodistance,false;first_n,false,2",
 				"gcore_asn":        "1234,2345",
 				"gcore_continents": "as,na,an,sa,oc,eu,af",
@@ -2314,7 +2316,7 @@ func makeTests() []*TestGroup {
 				"gcore_weight":     "12",
 				"gcore_ip":         "1.2.3.4",
 			})),
-			tc("Update record with metadata", withMeta(a("@", "1.2.3.4"), map[string]string{
+			tc("Update record with metadata", withMetaMap(a("@", "1.2.3.4"), map[string]string{
 				"gcore_filters":            "healthcheck,false;geodns,false;first_n,false,3",
 				"gcore_failover_protocol":  "HTTP",
 				"gcore_failover_port":      "443",
@@ -2380,28 +2382,28 @@ func makeTests() []*TestGroup {
 
 		testgroup("Bunny DNS smart routing",
 			only("BUNNY_DNS"),
-			tc("Create geographic A", withMeta(a("smart", "1.2.3.4"), map[string]string{
+			tc("Create geographic A", withMetaMap(a("smart", "1.2.3.4"), map[string]string{
 				"bunny_smart_routing_type":    "geographic",
 				"bunny_geolocation_latitude":  "40.7128",
 				"bunny_geolocation_longitude": "-74.006",
 			})),
-			tc("Ignore unrelated metadata", withMeta(a("smart", "1.2.3.4"), map[string]string{
+			tc("Ignore unrelated metadata", withMetaMap(a("smart", "1.2.3.4"), map[string]string{
 				"bunny_smart_routing_type":    "geographic",
 				"bunny_geolocation_latitude":  "40.7128",
 				"bunny_geolocation_longitude": "-74.006",
 				"unrelated":                   "ignored",
 			})).ExpectNoChanges(),
-			tc("Change geographic coordinates", withMeta(a("smart", "1.2.3.4"), map[string]string{
+			tc("Change geographic coordinates", withMetaMap(a("smart", "1.2.3.4"), map[string]string{
 				"bunny_smart_routing_type":    "geographic",
 				"bunny_geolocation_latitude":  "48.8566",
 				"bunny_geolocation_longitude": "2.3522",
 			})),
-			tc("Switch to latency routing", withMeta(a("smart", "1.2.3.4"), map[string]string{
+			tc("Switch to latency routing", withMetaMap(a("smart", "1.2.3.4"), map[string]string{
 				"bunny_smart_routing_type": "latency",
 				"bunny_latency_zone":       "NY",
 			})),
 			tc("Disable smart routing", a("smart", "1.2.3.4")),
-			tc("Create latency AAAA", withMeta(aaaa("smartv6", "2607:f8b0:4006:820::2006"), map[string]string{
+			tc("Create latency AAAA", withMetaMap(aaaa("smartv6", "2607:f8b0:4006:820::2006"), map[string]string{
 				"bunny_smart_routing_type": "latency",
 				"bunny_latency_zone":       "NY",
 			})),
@@ -2409,21 +2411,21 @@ func makeTests() []*TestGroup {
 
 		testgroup("Bunny DNS health monitoring",
 			only("BUNNY_DNS"),
-			tc("Create monitored A", withMeta(a("monitor", "1.2.3.4"), map[string]string{
+			tc("Create monitored A", withMetaMap(a("monitor", "1.2.3.4"), map[string]string{
 				"bunny_monitor_type": "ping",
 			})),
-			tc("Ignore unrelated metadata", withMeta(a("monitor", "1.2.3.4"), map[string]string{
+			tc("Ignore unrelated metadata", withMetaMap(a("monitor", "1.2.3.4"), map[string]string{
 				"bunny_monitor_type": "ping",
 				"unrelated":          "ignored",
 			})).ExpectNoChanges(),
-			tc("Change monitor type", withMeta(a("monitor", "1.2.3.4"), map[string]string{
+			tc("Change monitor type", withMetaMap(a("monitor", "1.2.3.4"), map[string]string{
 				"bunny_monitor_type": "http",
 			})),
 			tc("Disable monitoring", a("monitor", "1.2.3.4")),
-			tc("Create monitored AAAA", withMeta(aaaa("monitorv6", "2607:f8b0:4006:820::2006"), map[string]string{
+			tc("Create monitored AAAA", withMetaMap(aaaa("monitorv6", "2607:f8b0:4006:820::2006"), map[string]string{
 				"bunny_monitor_type": "ping",
 			})),
-			tc("Create monitored CNAME", withMeta(cname("monitorc", "www.google.com."), map[string]string{
+			tc("Create monitored CNAME", withMetaMap(cname("monitorc", "www.google.com."), map[string]string{
 				"bunny_monitor_type": "http",
 			})),
 			tc("Disable CNAME monitoring", cname("monitorc", "www.google.com.")),
@@ -2480,6 +2482,13 @@ func makeTests() []*TestGroup {
 				hednsDynamicA("hdmix-dyn", "1.1.1.1", "on"),
 				a("hdmix-static", "3.3.3.3"),
 			),
+		),
+
+		testgroup("CSYNC",
+			tc("Create", tr("lab", dnsv2.TypeCSYNC, `66 3 A NS AAAA`)),
+			tc("mod serial", tr("lab", dnsv2.TypeCSYNC, `67 3 A NS AAAA`)),
+			tc("mod flags", tr("lab", dnsv2.TypeCSYNC, `67 1 A NS AAAA`)),
+			tc("mod bitmap", tr("lab", dnsv2.TypeCSYNC, `67 1 NS AAAA`)),
 		),
 
 		// Clear everything out.

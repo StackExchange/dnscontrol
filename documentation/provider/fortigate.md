@@ -49,12 +49,10 @@ The following domain-level metadata keys are supported. These affect zone-level 
 D("example.com", REGISTRAR("none"), SERVICE("FORTIGATE"),
   A("@", "192.0.2.1"),
   {
-    metadata: {
-      authoritative: "false",
-      forwarder: "8.8.8.8"
-    }
-  }
-)
+    authoritative: "false",
+    forwarder: "8.8.8.8"
+  },
+);
 ```
 
 If `forwarder` is provided, it must be a valid IPv4 address. An error will be raised otherwise.
@@ -81,7 +79,7 @@ D("example.com", REGISTRAR("none"), SERVICE("FORTIGATE"),
   CNAME("blog", "external.example.net."),
   MX("@", 10, "mail.example.com."),
   NS("@", "ns1.example.net.")
-)
+);
 ```
 
 ## Activation
@@ -146,9 +144,11 @@ Debug logging of HTTP traffic can be enabled with the `debug_http` flag.
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ❌
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ❌
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
   - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
@@ -158,6 +158,7 @@ Debug logging of HTTP traffic can be enabled with the `debug_http` flag.
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ❌
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
   - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ❌
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ❌

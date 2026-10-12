@@ -41,8 +41,8 @@ D("example.com", REGISTRAR("my_registrar"),
     NAMESERVER_TTL("10m"), // On domain apex NS RRs
     DefaultTTL("5m"), // Default for a domain
 
-    MX("@", 5, "1.2.3.4", mailTTL), // use variable to
-    MX("@", 10, "4.3.2.1", mailTTL), // set TTL
+    MX("@", 5, "mail1.example.com.", mailTTL), // use variable to
+    MX("@", 10, "mail2.example.com.", mailTTL), // set TTL
 
     A("@", "1.2.3.4", TTL("10m")), // individual record
     CNAME("mail", "mx01"), // TTL of 5m, as defined per DefaultTTL()
@@ -123,7 +123,7 @@ D("example.com", REGISTRAR("my_registrar"), SERVICE("route53_user1"),
 ```javascript
 D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
   A("@", "10.2.2.2"),
-  MX("@", "example.com."),
+  MX("@", 10, "example.com."),
   SPF_BUILDER({
     label: "@",
     overflow: "_spf%d",

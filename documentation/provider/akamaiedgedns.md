@@ -96,7 +96,7 @@ Example `dnsconfig.js`:
 D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -122,7 +122,7 @@ Example:
 D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -146,7 +146,7 @@ Example:
 D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -212,7 +212,7 @@ Example:
 D("example_2.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured_2.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured_2.edgesuite.net.", TTL(20)),
   A("foo_2", "1.2.3.5"),
 );
 ```
@@ -257,7 +257,7 @@ Example 1
 D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -290,7 +290,7 @@ In this example the A record is updated to have the IP **1.2.3.10** from **1.2.3
 D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.10"),
 );
 ```
@@ -321,7 +321,7 @@ Example:
 D("example_3.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured_3.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured_3.edgesuite.net.", TTL(20)),
   A("foo_3", "1.2.3.6"),
 );
 ```
@@ -356,9 +356,11 @@ Created zone: example_3.com
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ✅
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
   - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
@@ -368,6 +370,7 @@ Created zone: example_3.com
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
   - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅

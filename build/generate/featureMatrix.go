@@ -153,6 +153,7 @@ func matrixData() *FeatureMatrix {
 		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
 		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
+		DomainModifierCsync      = "[`CSYNC`](../language-reference/domain-modifiers/CSYNC.md)"
 		DomainModifierDhcid      = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname      = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
 		DomainModifierDnskey     = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
@@ -161,7 +162,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierHTTPS      = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
 		DomainModifierLoc        = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
 		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
-		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
+		DomainModifierOpenpgpkey = "[`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
 		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
 		DomainModifierRP         = "[`RP`](../language-reference/domain-modifiers/RP.md)"
 		DomainModifierSMIMEA     = "[`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md)"
@@ -200,9 +201,11 @@ func matrixData() *FeatureMatrix {
 			},
 			{ // DNS extensions
 				DomainModifierAlias,
+				DomainModifierCsync,
 				DomainModifierDname,
 				DomainModifierLoc,
 				DomainModifierPtr,
+				DomainModifierRP,
 				DomainModifierSoa,
 			},
 			{ // service discovery
@@ -214,6 +217,7 @@ func matrixData() *FeatureMatrix {
 			{ // security
 				DomainModifierCaa,
 				DomainModifierHTTPS,
+				DomainModifierOpenpgpkey,
 				DomainModifierSMIMEA,
 				DomainModifierSshfp,
 				DomainModifierTlsa,
@@ -249,6 +253,16 @@ func matrixData() *FeatureMatrix {
 			)
 		}
 
+		// setRecordType reports support for a record type from the provider's
+		// SupportedTypes (including any notes from legacy Features).
+		setRecordType := func(
+			featureName string,
+			typeName string,
+		) {
+			note := def.RecordTypeSupport(typeName)
+			featureMap[featureName] = &note
+		}
+
 		setDocumentation := func(
 			featureName string,
 			capability providers.Capability,
@@ -282,82 +296,29 @@ func matrixData() *FeatureMatrix {
 			ProviderThreadSafe,
 			providers.CanConcur,
 		)
-		setCapability(
-			DomainModifierAlias,
-			providers.CanUseAlias,
-		)
+		setRecordType(DomainModifierAlias, "ALIAS")
 		setCapability(
 			DomainModifierDnssec,
 			providers.CanAutoDNSSEC,
 		)
-		setCapability(
-			DomainModifierCaa,
-			providers.CanUseCAA,
-		)
-		setCapability(
-			DomainModifierDhcid,
-			providers.CanUseDHCID,
-		)
-		setCapability(
-			DomainModifierDname,
-			providers.CanUseDNAME,
-		)
-		setCapability(
-			DomainModifierDs,
-			providers.CanUseDS,
-		)
-		setCapability(
-			DomainModifierDnskey,
-			providers.CanUseDNSKEY,
-		)
-		setCapability(
-			DomainModifierHTTPS,
-			providers.CanUseHTTPS,
-		)
-		setCapability(
-			DomainModifierLoc,
-			providers.CanUseLOC,
-		)
-		setCapability(
-			DomainModifierNaptr,
-			providers.CanUseNAPTR,
-		)
-		setCapability(
-			DomainModifierOpenpgpkey,
-			providers.CanUseOPENPGPKEY,
-		)
-		setCapability(
-			DomainModifierPtr,
-			providers.CanUsePTR,
-		)
-		setCapability(
-			DomainModifierRP,
-			providers.CanUseRP,
-		)
-		setCapability(
-			DomainModifierSMIMEA,
-			providers.CanUseSMIMEA,
-		)
-		setCapability(
-			DomainModifierSoa,
-			providers.CanUseSOA,
-		)
-		setCapability(
-			DomainModifierSrv,
-			providers.CanUseSRV,
-		)
-		setCapability(
-			DomainModifierSshfp,
-			providers.CanUseSSHFP,
-		)
-		setCapability(
-			DomainModifierSvcb,
-			providers.CanUseSVCB,
-		)
-		setCapability(
-			DomainModifierTlsa,
-			providers.CanUseTLSA,
-		)
+		setRecordType(DomainModifierCaa, "CAA")
+		setRecordType(DomainModifierCsync, "CSYNC")
+		setRecordType(DomainModifierDhcid, "DHCID")
+		setRecordType(DomainModifierDname, "DNAME")
+		setRecordType(DomainModifierDs, "DS")
+		setRecordType(DomainModifierDnskey, "DNSKEY")
+		setRecordType(DomainModifierHTTPS, "HTTPS")
+		setRecordType(DomainModifierLoc, "LOC")
+		setRecordType(DomainModifierNaptr, "NAPTR")
+		setRecordType(DomainModifierOpenpgpkey, "OPENPGPKEY")
+		setRecordType(DomainModifierPtr, "PTR")
+		setRecordType(DomainModifierRP, "RP")
+		setRecordType(DomainModifierSMIMEA, "SMIMEA")
+		setRecordType(DomainModifierSoa, "SOA")
+		setRecordType(DomainModifierSrv, "SRV")
+		setRecordType(DomainModifierSshfp, "SSHFP")
+		setRecordType(DomainModifierSvcb, "SVCB")
+		setRecordType(DomainModifierTlsa, "TLSA")
 		setCapability(
 			GetZones,
 			providers.CanGetZones,

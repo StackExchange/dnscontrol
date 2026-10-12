@@ -298,6 +298,7 @@ D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
     TXT("myhost", "mytext"),
     IGNORE("myhost", "*", "*"),  // Error!  Ignoring an item we inserted
     ...
+);
 ```
 {% endcode %}
 
@@ -311,6 +312,7 @@ D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
     TXT("myhost", "mytext"),
     IGNORE("myhost", "*", "*"),
     ...
+);
 ```
 {% endcode %}
 
@@ -320,15 +322,6 @@ a per-record basis using `IGNORE_NAME_DISABLE_SAFETY_CHECK`:
 {% endhint %}
 
 The `IGNORE_NAME_DISABLE_SAFETY_CHECK` feature does not exist in the diff2 world and its use will result in a validation error. Use the above example instead.
-
-{% code %}
-```javascript
-D("example.com", REGISTRAR("my_registrar"), SERVICE("my_dns_provider"),
-    // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
-    TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
-);
-```
-{% endcode %}
 
 ## Caveats
 

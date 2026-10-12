@@ -66,14 +66,12 @@ type Definition struct {
 	Features               DocumentationNotes
 
 	// SupportedTypes is an exhaustive declaration of record support. Nil means
-	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT), except that non-nil
-	// Features retains legacy validation. A non-nil empty slice declares no
-	// support beyond Features.
+	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
+	// declares no support beyond Features.
 	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
 	SupportedTypes []string
 
-	typeSelectors   []typeSelector
-	exhaustiveTypes bool
+	typeSelectors []typeSelector
 
 	// Calculated by Register and Finalize. Providers must leave these fields unset.
 	TypeName           string
@@ -129,7 +127,6 @@ func Register[T InitializableProvider](name string, definition Definition) {
 
 	def := &definition
 	def.TypeName = name
-	def.exhaustiveTypes = def.SupportedTypes != nil || def.Features == nil
 	if err := def.compileTypeSelectors(); err != nil {
 		panic(err)
 	}

@@ -20,7 +20,7 @@ func TestRegisteredDefinition(t *testing.T) {
 			t.Fatalf("migration changed legacy capability or note: %s", capability)
 		}
 	}
-	if !def.UsesSupportedTypes() || !providers.ProviderHasCapability("BIND", providers.CanUseAKAMAITLC) {
+	if !providers.ProviderHasCapability("BIND", providers.CanUseAKAMAITLC) {
 		t.Fatal("BIND wildcard must enable exhaustive support, including pseudo-types")
 	}
 	if errors := providers.AuditRecords("BIND", nil); len(errors) != 0 {

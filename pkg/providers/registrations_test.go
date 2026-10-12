@@ -14,7 +14,7 @@ func TestAllProvidersUseDefinitions(t *testing.T) {
 		if got, ok := providers.GetDefinition(def.TypeName); !ok || got != def {
 			t.Fatalf("%s: canonical definition lookup failed", def.TypeName)
 		}
-		if def.SupportedTypes == nil || !def.UsesSupportedTypes() {
+		if def.SupportedTypes == nil {
 			t.Errorf("%s: missing exhaustive SupportedTypes declaration", def.TypeName)
 		}
 		for capability, note := range def.Features {
