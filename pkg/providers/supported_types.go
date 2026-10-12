@@ -34,7 +34,7 @@ type typeSelector struct {
 
 func (d *Definition) compileTypeSelectors() error {
 	selectors := d.SupportedTypes
-	if selectors == nil && d.Features == nil {
+	if selectors == nil {
 		selectors = []string{"Basic8"}
 	}
 	for _, source := range selectors {
@@ -129,13 +129,8 @@ func (d *Definition) resolveType(typ privatetypes.RecordType) (DocumentationNote
 	return result, nil
 }
 
-// UsesSupportedTypes reports whether validation must check every record type.
-// Legacy Features without SupportedTypes retains the old validation coverage.
-func (d *Definition) UsesSupportedTypes() bool { return d.exhaustiveTypes }
-
 // RecordTypeSupport returns the effective status and compatible legacy notes.
-// Unknown types are unsupported, including when '*' is declared. In legacy
-// mode this describes only explicit capabilities, not an exhaustive inventory.
+// Unknown types are unsupported, including when '*' is declared.
 func (d *Definition) RecordTypeSupport(name string) DocumentationNote {
 	typ, ok := privatetypes.LookupRecordType(strings.ToUpper(name))
 	if !ok {
@@ -149,15 +144,15 @@ func (d *Definition) RecordTypeSupport(name string) DocumentationNote {
 }
 
 // RecordTypeSupported reports whether DNS provider type pType can serve a
-// record of type typeNum at label (a short name, "@" for the apex). Providers
-// without SupportedTypes are not checked and always report true.
+// record of type typeNum at label (a short name, "@" for the apex). Unknown
+// provider types (such as "-") are not checked and always report true.
 //
 // label only matters for DS records: a provider with CanUseDSForChildren but
 // without general DS support may publish DS records on delegated subdomains,
 // but not at the apex. For all other types label is ignored.
 func RecordTypeSupported(pType string, typeNum uint16, label string) bool {
 	def, ok := GetDefinition(pType)
-	if !ok || !def.UsesSupportedTypes() {
+	if !ok {
 		return true
 	}
 	if name, ok := dnsv2.TypeToString[typeNum]; ok && def.RecordTypeSupport(name).HasFeature {
@@ -192,9 +187,6 @@ func Finalize() error {
 	catalog := privatetypes.RecordTypes()
 	updates := map[*Definition]DocumentationNotes{}
 	for _, d := range allDefinitions() {
-		if !d.exhaustiveTypes {
-			continue
-		}
 		for _, s := range d.typeSelectors {
 			if s.priority == 1 {
 				if _, ok := privatetypes.LookupRecordType(s.name); !ok {

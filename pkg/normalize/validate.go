@@ -19,10 +19,6 @@ import (
 
 // make sure target is valid reference for cnames, mx, etc.
 func checkTarget(target string) error {
-	// The target shouldn't be "@". It should be $origin+"."
-	if target == "" {
-		return errors.New("empty target (\"\"). Did you mean \"@\" instead?")
-	}
 	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
 	}
@@ -114,20 +110,12 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox s
 	if mbox == "" {
 		return errors.New("SOA MBox must be specified")
 	}
-	if strings.ContainsRune(mbox, '@') {
-		return errors.New("SOA MBox must have '.' instead of '@'")
-	}
 	return nil
 }
 
 // checkTargets returns zero or more errors when problems are found.
 // FYI: Many of these checks are obsolete since Make*() does the same thing. We'll be removing the duplicate checks over time.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
-	switch rec.Type {
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP", "DS":
-		return nil
-	}
-
 	label := rec.GetLabel()
 	check := func(e error) {
 		if e != nil {
@@ -140,11 +128,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	}
 	switch rec.Type { // #rtype_variations
 
-	// No longer needed
-	case "A":
-	case "AAAA":
-	case "LOC":
-	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT":
+	// IMPORT_TRANSFORM is not in the record catalog, so the default case would reject it.
+	case "IMPORT_TRANSFORM":
 
 	case "ALIAS":
 		check(checkTarget(rec.AsALIAS().Target))
@@ -813,74 +798,6 @@ func checkR53WeightedGroupConsistency(records models.Records) (errs []error) {
 	return errs
 }
 
-// We pull this out of checkProviderCapabilities() so that it's visible within
-// the package elsewhere, so that our test suite can look at the list of
-// capabilities we're checking and make sure that it's up-to-date.
-var providerCapabilityChecks = func() []pairTypeCapability {
-	checks := []pairTypeCapability{capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC)}
-	for rType, capability := range providers.RecordTypeCapabilities {
-		check := capabilityCheck(rType, capability)
-		if rType == "DS" {
-			check.caps = append(check.caps, providers.CanUseDSForChildren)
-			check.checkFunc = checkProviderDS
-		}
-		checks = append(checks, check)
-	}
-	sort.Slice(checks, func(i, j int) bool { return checks[i].rType < checks[j].rType })
-	return checks
-}()
-
-type pairTypeCapability struct {
-	rType string
-	// Capabilities the provider must implement if any records of type rType are found
-	// in the zonefile. This is a disjunction - implementing at least one of the listed
-	// capabilities is sufficient.
-	caps []providers.Capability
-	// checkFunc provides additional checks of each provider. This function should be
-	// called if records of type rType are found in the zonefile.
-	checkFunc func(pType string, _ models.Records) error
-}
-
-func capabilityCheck(rType string, caps ...providers.Capability) pairTypeCapability {
-	return pairTypeCapability{
-		rType: rType,
-		caps:  caps,
-	}
-}
-
-func providerHasAtLeastOneCapability(pType string, caps ...providers.Capability) bool {
-	for _, cap := range caps {
-		if providers.ProviderHasCapability(pType, cap) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func checkProviderDS(pType string, records models.Records) error {
-	switch {
-	case providers.ProviderHasCapability(pType, providers.CanUseDS):
-		// The provider can use DS records anywhere, including at the root
-		return nil
-	case !providers.ProviderHasCapability(pType, providers.CanUseDSForChildren):
-		// Provider has no support for DS records
-		return fmt.Errorf("provider %s uses DS records but does not support them", pType)
-	default:
-		// Provider supports DS records but not at the root
-		for _, record := range records {
-			if record.Type == "DS" && record.Name == "@" {
-				return fmt.Errorf(
-					"provider %s only supports child DS records, but zone had a record at the root (@)",
-					pType,
-				)
-			}
-		}
-	}
-
-	return nil
-}
-
 func checkProviderCapabilities(dc *models.DomainConfig) error {
 	var pTypes []string
 	for _, provider := range dc.DNSProviderInstances {
@@ -891,50 +808,23 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 			return err
 		}
 	}
-	// Check if the zone uses a capability that the provider doesn't
-	// support.
-	for _, ty := range providerCapabilityChecks {
-		hasAny := false
-		switch ty.rType {
-		case "AUTODNSSEC":
-			if dc.AutoDNSSEC != "" {
-				hasAny = true
-			}
-		default:
-			for _, r := range dc.Records {
-				if r.Type == ty.rType {
-					hasAny = true
-					break
-				}
-			}
-		}
-		if !hasAny {
+
+	// AUTODNSSEC is not a record type, so SupportedTypes does not cover it.
+	if dc.AutoDNSSEC == "" {
+		return nil
+	}
+	for _, provider := range dc.DNSProviderInstances {
+		if provider.ProviderType == "-" {
+			// "-" indicates that we don't yet know who the provider type
+			// is.  This is probably due to the fact that `dnscontrol
+			// check` doesn't read creds.json, which is where the TYPE is
+			// set.  We will skip this test in this instance.  Later if
+			// `dnscontrol preview` or `push` is used, the full check will
+			// be performed.
 			continue
 		}
-		for _, provider := range dc.DNSProviderInstances {
-			if provider.ProviderType == "-" {
-				// "-" indicates that we don't yet know who the provider type
-				// is.  This is probably due to the fact that `dnscontrol
-				// check` doesn't read creds.json, which is where the TYPE is
-				// set.  We will skip this test in this instance.  Later if
-				// `dnscontrol preview` or `push` is used, the full check will
-				// be performed.
-				continue
-			}
-			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
-			if def, ok := providers.GetDefinition(provider.ProviderType); ok && def.UsesSupportedTypes() && ty.rType != "AUTODNSSEC" {
-				continue // Exhaustive record checks above also handle child-only DS.
-			}
-			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
-				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
-			}
-
-			if ty.checkFunc != nil {
-				checkErr := ty.checkFunc(provider.ProviderType, dc.Records)
-				if checkErr != nil {
-					return fmt.Errorf("while checking %s records in domain %s: %w", ty.rType, dc.Name, checkErr)
-				}
-			}
+		if !providers.ProviderHasCapability(provider.ProviderType, providers.CanAutoDNSSEC) {
+			return fmt.Errorf("domain %s uses AUTODNSSEC records, but DNS provider type %s does not support them", dc.Name, provider.ProviderType)
 		}
 	}
 	return nil
