@@ -38,15 +38,10 @@ func validateSupportedRecordTypes(rec *models.RecordConfig, domain string, pType
 	if _, known := privatetypes.LookupRecordType(rec.Type); !known {
 		return fmt.Errorf("unknown record type %s in domain %s", rec.Type, domain)
 	}
+	// rec.TypeNum may be stale after transformations, so derive it from rec.Type.
+	typeNum := dnsv2.StringToType[rec.Type]
 	for _, pType := range pTypes {
-		def, ok := providers.GetDefinition(pType)
-		if !ok || !def.UsesSupportedTypes() {
-			continue
-		}
-		if def.RecordTypeSupport(rec.Type).HasFeature {
-			continue
-		}
-		if rec.Type == "DS" && rec.GetLabel() != "@" && providers.ProviderHasCapability(pType, providers.CanUseDSForChildren) {
+		if providers.RecordTypeSupported(pType, typeNum, rec.GetLabel()) {
 			continue
 		}
 		return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them at %s", domain, rec.Type, pType, rec.GetLabel())

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v5/pkg/privatetypes"
 )
 
@@ -145,6 +146,24 @@ func (d *Definition) RecordTypeSupport(name string) DocumentationNote {
 		panic(err) // Finalize detects conflicts before consumers read definitions.
 	}
 	return note
+}
+
+// RecordTypeSupported reports whether DNS provider type pType can serve a
+// record of type typeNum at label (a short name, "@" for the apex). Providers
+// without SupportedTypes are not checked and always report true.
+//
+// label only matters for DS records: a provider with CanUseDSForChildren but
+// without general DS support may publish DS records on delegated subdomains,
+// but not at the apex. For all other types label is ignored.
+func RecordTypeSupported(pType string, typeNum uint16, label string) bool {
+	def, ok := GetDefinition(pType)
+	if !ok || !def.UsesSupportedTypes() {
+		return true
+	}
+	if name, ok := dnsv2.TypeToString[typeNum]; ok && def.RecordTypeSupport(name).HasFeature {
+		return true
+	}
+	return typeNum == dnsv2.TypeDS && label != "@" && ProviderHasCapability(pType, CanUseDSForChildren)
 }
 
 var (

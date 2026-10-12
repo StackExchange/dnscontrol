@@ -128,9 +128,11 @@ INWX enforces the [RFC 7505](https://www.rfc-editor.org/rfc/rfc7505.html#section
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❔
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
   - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
@@ -140,6 +142,7 @@ INWX enforces the [RFC 7505](https://www.rfc-editor.org/rfc/rfc7505.html#section
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ✅
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
   - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅

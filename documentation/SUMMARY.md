@@ -39,6 +39,7 @@
     * [CAA](language-reference/domain-modifiers/CAA.md)
     * [CAA_BUILDER](language-reference/domain-modifiers/CAA_BUILDER.md)
     * [CNAME](language-reference/domain-modifiers/CNAME.md)
+    * [CSYNC](language-reference/domain-modifiers/CSYNC.md)
     * [DHCID](language-reference/domain-modifiers/DHCID.md)
     * [DNAME](language-reference/domain-modifiers/DNAME.md)
     * [DNSKEY](language-reference/domain-modifiers/DNSKEY.md)

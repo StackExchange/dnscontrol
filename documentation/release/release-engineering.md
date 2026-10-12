@@ -354,3 +354,17 @@ Review output for homebrew/docker logs:
 grep -i -A2 "homebrew\|cask" /tmp/goreleaser.log
 grep -i -A2 "docker" /tmp/goreleaser.log
 ```
+
+## Tip: How to update codeberg.org/miekg/dns
+
+Currently we're using a patched version of codeberg.org/miekg/dns because we're
+waiting for https://codeberg.org/miekg/dns/pulls/1074 to land.
+
+Any time that PR changes, we need to update `go.mod`
+
+```
+go mod edit -dropreplace  codeberg.org/miekg/dns
+GONOSUMDB=codeberg.org/TomOnTime/dns go mod edit -replace codeberg.org/miekg/dns=codeberg.org/TomOnTime/dns@tlim_txtfull
+GONOSUMDB=codeberg.org/TomOnTime/dns GOPROXY=direct go mod tidy
+```
+

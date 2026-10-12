@@ -25,6 +25,7 @@ func init() {
 	privatetypes.RegisterMaker(dnsv2.TypeAAAA, MakeAAAA)
 	privatetypes.RegisterMaker(dnsv2.TypeCAA, MakeCAA)
 	privatetypes.RegisterMaker(dnsv2.TypeCNAME, MakeCNAME)
+	privatetypes.RegisterMaker(dnsv2.TypeCSYNC, MakeCSYNC)
 	privatetypes.RegisterMaker(dnsv2.TypeDHCID, MakeDHCID)
 	privatetypes.RegisterMaker(dnsv2.TypeDNAME, MakeDNAME)
 	privatetypes.RegisterMaker(dnsv2.TypeDNSKEY, MakeDNSKEY)
@@ -96,6 +97,7 @@ func MakeCAA(origin string, _ map[string]string, isEnabled nrc.Flags, args ...an
 
 	return dnsrdatav2.CAA{Flag: mustbe.Uint8(args[0]), Tag: tag, Value: mustbe.RawString(args[2])}, nil
 }
+
 func MakeCNAME(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
 	mustbe.ValidArgs(args)
 	if len(args) != 1 {
@@ -106,6 +108,27 @@ func MakeCNAME(origin string, _ map[string]string, isEnabled nrc.Flags, args ...
 		return nil, err
 	}
 	return dnsrdatav2.CNAME{Target: target}, nil
+}
+
+func MakeCSYNC(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
+	mustbe.ValidArgs(args)
+	if len(args) != 3 {
+		return nil, fmt.Errorf("MakeCSYNC expects exactly 3 arguments, got %d: %+v", len(args), args)
+	}
+
+	// Parsing the 3rd argument is tricky. We'll let NewData do it for us.  It
+	// will be slower than a custom parser, but that's ok because CSYNC is rare
+	// and this code is only used in the Make*() functions, which are only used
+	// when parsing zone files.
+	// Serial and flags arrive as float64 from dnsconfig.js and as strings from zone lines.
+	types := mustbe.RawString(args[2])
+	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%d %d %s", mustbe.Uint32(args[0]), mustbe.Uint16(args[1]), types), origin)
+	if err != nil {
+		// Serial and flags were validated above, so the problem is the type list.
+		// The dns package's error names the wrong token, so give a clearer one.
+		return nil, fmt.Errorf("CSYNC types %q: must be a space-separated list of record types, such as \"A NS AAAA\": %w", types, err)
+	}
+	return rd, nil
 }
 
 func MakeDHCID(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {

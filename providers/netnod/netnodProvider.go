@@ -33,6 +33,7 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS",
+			"CSYNC",
 			"HTTPS",
 			"NAPTR",
 			"PTR",

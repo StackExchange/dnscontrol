@@ -264,12 +264,13 @@ func (c *axfrddnsProvider) FetchZoneRecords(domain string) ([]dnsv2.RR, error) {
 	request := dnsv2.NewMsg(domain+".", dnsv2.TypeAXFR)
 	request.RecursionDesired = false
 
+	var options *dnsv2.TransferOption
 	if c.transferKey != nil {
 		request.Pseudo = []dnsv2.RR{c.transferKey.stub()}
-		client.Transfer = &dnsv2.Transfer{TSIGSigner: c.transferKey.signer()}
+		options = &dnsv2.TransferOption{TSIGSigner: c.transferKey.signer()}
 	}
 
-	envelope, err := client.TransferInWithConn(context.Background(), request, con)
+	envelope, err := client.TransferInWithConn(context.Background(), request, con, options)
 	if err != nil {
 		return nil, err
 	}

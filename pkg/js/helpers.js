@@ -2268,6 +2268,7 @@ var CF_TEMP_REDIRECT = rawrecordBuilder("CF_TEMP_REDIRECT", true);
 var CF_WORKER_ROUTE = rawrecordBuilder("CF_WORKER_ROUTE", true);
 var CLOUDNS_WR = rawrecordBuilder("CLOUDNS_WR");
 var CNAME = rawrecordBuilder("CNAME");
+var CSYNC = rawrecordBuilder("CSYNC");
 var DHCID = rawrecordBuilder("DHCID");
 var DNAME = rawrecordBuilder("DNAME");
 var DNSKEY = rawrecordBuilder("DNSKEY");
