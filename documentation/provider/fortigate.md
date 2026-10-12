@@ -49,12 +49,10 @@ The following domain-level metadata keys are supported. These affect zone-level 
 D("example.com", REG_NONE, DnsProvider("FORTIGATE"),
   A("@", "192.0.2.1"),
   {
-    metadata: {
-      authoritative: "false",
-      forwarder: "8.8.8.8"
-    }
-  }
-)
+    authoritative: "false",
+    forwarder: "8.8.8.8"
+  },
+);
 ```
 
 If `forwarder` is provided, it must be a valid IPv4 address. An error will be raised otherwise.
@@ -81,7 +79,7 @@ D("example.com", REG_NONE, DnsProvider("FORTIGATE"),
   CNAME("blog", "external.example.net."),
   MX("@", 10, "mail.example.com."),
   NS("@", "ns1.example.net.")
-)
+);
 ```
 
 ## Activation
