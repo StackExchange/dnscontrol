@@ -121,8 +121,14 @@ func MakeCSYNC(origin string, _ map[string]string, isEnabled nrc.Flags, args ...
 	// and this code is only used in the Make*() functions, which are only used
 	// when parsing zone files.
 	// Serial and flags arrive as float64 from dnsconfig.js and as strings from zone lines.
-	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%d %d %s", mustbe.Uint32(args[0]), mustbe.Uint16(args[1]), mustbe.RawString(args[2])), origin)
-	return rd, err
+	types := mustbe.RawString(args[2])
+	rd, err := dnsv2.NewData(dnsv2.TypeCSYNC, fmt.Sprintf("%d %d %s", mustbe.Uint32(args[0]), mustbe.Uint16(args[1]), types), origin)
+	if err != nil {
+		// Serial and flags were validated above, so the problem is the type list.
+		// The dns package's error names the wrong token, so give a clearer one.
+		return nil, fmt.Errorf("CSYNC types %q: must be a space-separated list of record types, such as \"A NS AAAA\": %w", types, err)
+	}
+	return rd, nil
 }
 
 func MakeDHCID(origin string, _ map[string]string, isEnabled nrc.Flags, args ...any) (dnsv2.RDATA, error) {
