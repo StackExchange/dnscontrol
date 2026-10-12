@@ -228,13 +228,16 @@ func filterBy(s []targetConfig, m map[string]*targetConfig) []targetConfig {
 // humanDiff returns a human-friendly string showing what changed
 // between a and b.
 func humanDiff(a, b targetConfig) string {
-	// FUTURE(tlim): Records like MX and SRV should have more clever output.
-	// For example if only the MX priority changes, show just that.
-
-	// FUTURE(tlim): If the data but NOT the TTLs are different, omit the TTLs.
-
 	if a.comparableNoTTL != b.comparableNoTTL {
-		// The recorddata is different:
+		// The recorddata is different. If possible, show just the fields that changed:
+		if fields, ok := fieldDiff(a.rec.GetRDATA(), b.rec.GetRDATA()); ok {
+			if a.rec.TTL != b.rec.TTL {
+				fields += fmt.Sprintf(" ttl=(%d->%d)", a.rec.TTL, b.rec.TTL)
+			}
+			return fields
+		}
+
+		// FUTURE(tlim): If the data but NOT the TTLs are different, omit the TTLs.
 		//return fmt.Sprintf("(%s) -> (%s)", a.comparableFull, b.comparableFull)
 		return fmt.Sprintf("(%s ttl=%d) -> (%s ttl=%d)", a.rec.GetRDATA().String(), a.rec.TTL, b.rec.GetRDATA().String(), b.rec.TTL)
 	}
