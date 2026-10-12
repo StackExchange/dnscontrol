@@ -1,0 +1,3 @@
+csync.com	@	300	IN	SOA	ns3.serverfault.com. sysadmin.stackoverflow.com. 2020022300 3600 600 604800 1440
+csync.com	@	300	IN	CSYNC	0 1 NS
+sub.csync.com	sub	300	IN	CSYNC	66 3 A NS AAAA
