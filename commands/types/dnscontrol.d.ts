@@ -50,7 +50,6 @@ type Duration =
  * > 2. Make sure DNSControl only uses verified configuration if you want to use `FETCH`. For example, an attacker can send Pull Requests to your config repo, and have your CI test malicious configurations and make arbitrary HTTP requests. Therefore, `FETCH` must be explicitly enabled with flag `--allow-fetch` on DNSControl invocation.
  *
  * ```javascript
- * // FIXME(tlim): This example needs --allow-fetch and a reachable endpoint.
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@", "1.2.3.4"),
  * );
