@@ -357,7 +357,7 @@ func nativeToRecords(dc *models.DomainConfig, akarecset dns.RecordSet) (models.R
 	if akatype == "AKAMAITLC" {
 		// FIXME(tlim): Why join these then split them?  Would be better to
 		// check len(akarecset.Rdata) == 2 and assign parts := akarecset.Rdata.
-		// Is there every a case where len != 2?
+		// Is there ever a case where len != 2?
 		combined := strings.Join(akarecset.Rdata, " ")
 		parts := strings.Fields(combined)
 		if len(parts) != 2 {
