@@ -89,9 +89,9 @@ dnscontrol push --domains cafferata.dev
 ```shell
 ******************** Domain: cafferata.dev
 2 corrections (transip)
-#1: [1/2] delete: ± MODIFY cafferata.dev CAA (0 iodef "mailto:info@cafferata.dev" ttl=86400) -> (128 iodef "mailto:info@cafferata.dev" ttl=86400)
+#1: [1/2] delete: ± MODIFY cafferata.dev CAA flag=(0->128) tag=iodef value=mailto:info@cafferata.dev
 SUCCESS!
-#2: [2/2] create: ± MODIFY cafferata.dev CAA (0 iodef "mailto:info@cafferata.dev" ttl=86400) -> (128 iodef "mailto:info@cafferata.dev" ttl=86400)
+#2: [2/2] create: ± MODIFY cafferata.dev CAA flag=(0->128) tag=iodef value=mailto:info@cafferata.dev
 SUCCESS!
 Done. 2 corrections.
 ```
