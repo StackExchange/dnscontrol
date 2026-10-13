@@ -1,13 +1,13 @@
 package models
 
 //go:generate go run github.com/DNSControl/dnscontrol/v5/build/astypegen
+//go:generate go run github.com/DNSControl/dnscontrol/v5/build/normalizergen
 
 import (
 	"fmt"
 	"os"
 	"reflect"
 	"runtime/debug"
-	"strings"
 
 	dnsv2 "codeberg.org/miekg/dns"
 	dnsrdatav2 "codeberg.org/miekg/dns/rdata"
@@ -17,12 +17,7 @@ import (
 
 // SetRDATA is a setter for RecordConfig.rdata.
 func (rc *RecordConfig) SetRDATA(rd dnsv2.RDATA) {
-	if txt, ok := rd.(dnsrdatav2.TXT); ok {
-		txt.Txt = TXTSegmented(txt)
-		rd = txt
-	}
-	rd = normalizeRDATA(rd)
-	rc.rdata = rd
+	rc.rdata = normalizeRDATA(rd)
 	rc.validateRDATA()
 	rc.generateComparableV3()
 }
@@ -43,24 +38,6 @@ func (rc *RecordConfig) GetRDATA() (rd dnsv2.RDATA) {
 func (rc *RecordConfig) ClearRDATA() {
 	rc.rdata = nil
 	rc.ComparableV3 = ""
-}
-
-func MyNewData(typeNum uint16, contents string, origin string) (dnsv2.RDATA, error) {
-	switch typeNum {
-
-	case dnsv2.TypeTXT:
-		// NewData expects quotes around TXT contents.
-		if len(contents) > 0 && (contents[0] != '"' && contents[len(contents)-1] != '"') {
-			contents = `"` + contents + `"`
-		}
-
-	}
-
-	rd2, err := dnsv2.NewData(typeNum, contents, origin+".")
-	if err != nil {
-		return nil, fmt.Errorf("NewData(%d, %q, %q) failed: %w", typeNum, contents, origin+".", err)
-	}
-	return normalizeRDATA(rd2), nil
 }
 
 // validateRDATA is used to verify that .rdata didn't accidentally get set to
@@ -88,53 +65,6 @@ func (rc *RecordConfig) validateRDATA() {
 	fmt.Println(string(debug.Stack()))
 	panic(l)
 }
-
-func normalizeRDATA(rd2 dnsv2.RDATA) dnsv2.RDATA {
-	// TODO(tlim): This duplicates code in the MakeTYPE() functions, but
-	// sadly those functions aren't called by dnsv2.NewData().
-	// Fixing this would be difficult since we can't add methods to the
-	// dnsv2.RDATA interface.  We could use interfaces that only get called when they exist.
-
-	switch v := rd2.(type) {
-
-	case dnsrdatav2.DS:
-		// Uppercase to make comparisons case-insensitive.
-		v.Digest = strings.ToUpper(v.Digest)
-		return v
-
-	case dnsrdatav2.SSHFP:
-		// Uppercase to make comparisons case-insensitive.
-		v.FingerPrint = strings.ToUpper(v.FingerPrint)
-		return v
-
-	case dnsrdatav2.TLSA:
-		// Uppercase to make comparisons case-insensitive.
-		v.Certificate = strings.ToUpper(v.Certificate)
-		return v
-
-	case dnsrdatav2.TXT:
-		// Store TXT data segments with each segment being 255 octets, the remainder in the final segment.
-		v.Txt = TXTSegmented(v)
-		return v
-
-	}
-
-	return rd2
-}
-
-/*
-
-FUTURE():
-
-Add this interface. normalizeRDATA() will call the interface (if it exists for
-the RDATA).  The type-specific code currently in normalizeRDATA will move to
-files such as t_ds.go, t_sshfp.go, t_tlsa.go, t_txt.go.
-
-type Normalizer interface {
-	Normalize(*RecordConfig)
-}
-
-*/
 
 /*
 

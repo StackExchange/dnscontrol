@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	dnsproviders "github.com/DNSControl/dnscontrol/v5/pkg/providers"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -60,25 +61,21 @@ func TestCapabilitiesAreFiltered(t *testing.T) {
 	}
 	sort.Strings(constantNames)
 
-	if len(providerCapabilityChecks) == 0 {
-		t.Fatal("missing entries in providerCapabilityChecks")
-	}
-
-	capIntsToNames := make(map[int]string, len(providerCapabilityChecks))
-	for _, pair := range providerCapabilityChecks {
-		for _, cap := range pair.caps {
-			capIntsToNames[int(cap)] = pair.rType
-		}
+	// Record-type capabilities are checked through SupportedTypes, and
+	// CanUseDSForChildren by validateSupportedRecordTypes().
+	capIntsToNames := map[int]string{int(dnsproviders.CanUseDSForChildren): "DS"}
+	for rType, capability := range dnsproviders.RecordTypeCapabilities {
+		capIntsToNames[int(capability)] = rType
 	}
 
 	for _, capName := range constantNames {
 		capInt := capabilityInts[capName]
 		if _, ok := skipCheckCapabilities[capName]; ok {
-			t.Logf("ok: providers.%s (%d) is exempt from checkProviderCapabilities", capName, capInt)
+			t.Logf("ok: providers.%s (%d) is exempt from validateSupportedRecordTypes", capName, capInt)
 		} else if rType, ok := capIntsToNames[capInt]; ok {
 			t.Logf("ok: providers.%s (%d) is checked for with %q", capName, capInt, rType)
 		} else {
-			t.Errorf("MISSING: providers.%s (%d) is not checked by checkProviderCapabilities", capName, capInt)
+			t.Errorf("MISSING: providers.%s (%d) is not checked by validateSupportedRecordTypes", capName, capInt)
 		}
 	}
 }

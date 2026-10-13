@@ -22,35 +22,11 @@ const (
 	metaRecordWeight    = "tencentdns_weight"
 )
 
-var features = providers.DocumentationNotes{
-	providers.CanUseAlias:            providers.Cannot(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUsePTR:              providers.Cannot(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can("Tencent Cloud allows full management of apex NS records"),
-	providers.DocOfficiallySupported: providers.Cannot(),
-}
-
 func init() {
-	const providerName = "TENCENTDNS"
-	const providerMaintainer = "@cylonchau"
-	fns := providers.DspFuncs{
-		Initializer:   newTencentDNSDsp,
-		RecordAuditor: AuditRecords,
-	}
-	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterRegistrarType(providerName, newTencentDNSReg)
-	providers.RegisterMaintainer(providerName, providerMaintainer)
-	// Default TTL for Tencent Cloud DNSPod is 600 for free plan.
-	providers.RegisterDefaultTTL(providerName, defaultTTL)
-	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
-		DisplayName: "Tencent Cloud DNS",
-		Kind:        providers.KindDNS | providers.KindRegistrar,
-		DocsURL:     "https://docs.dnscontrol.org/provider/tencentdns",
-		PortalURL:   "https://console.intl.cloud.tencent.com/cam/capi",
-		Fields: []providers.CredsField{
+	providers.Register[*tencentdnsProvider]("TENCENTDNS", providers.Definition{
+		FriendlyName: "Tencent Cloud DNS",
+		PortalURL:    "https://console.intl.cloud.tencent.com/cam/capi",
+		CredFields: []providers.CredsField{
 			{
 				Key:      "secret_id",
 				Label:    "Secret ID",
@@ -78,6 +54,14 @@ func init() {
 				Default: "cn",
 			},
 		},
+		Maintainer:     "@cylonchau",
+		DefaultTTL:     defaultTTL,
+		RecordIdentity: recordIdentity,
+		SupportedTypes: []string{
+			"Basic8",
+		},
+		DocDualHost:            providers.Can("Tencent Cloud allows full management of apex NS records"),
+		DocOfficiallySupported: providers.Cannot(),
 	})
 }
 
@@ -85,19 +69,12 @@ type tencentdnsProvider struct {
 	client *tencentCloudClient
 }
 
-func newTencentDNSDsp(config map[string]string, metadata json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newTencentDNS(config)
-}
-
-func newTencentDNSReg(config map[string]string) (providers.Registrar, error) {
-	return newTencentDNS(config)
-}
-
-func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
+// Initialize initializes a fresh provider instance.
+func (p *tencentdnsProvider) Initialize(config map[string]string, _ json.RawMessage, _ *providers.CreateOptions) error {
 	secretID := config["secret_id"]
 	secretKey := config["secret_key"]
 	if secretID == "" || secretKey == "" {
-		return nil, errors.New("missing tencent cloud credentials (secret_id, secret_key)")
+		return errors.New("missing tencent cloud credentials (secret_id, secret_key)")
 	}
 
 	region := config["region"]
@@ -107,17 +84,18 @@ func newTencentDNS(config map[string]string) (*tencentdnsProvider, error) {
 
 	siteConfig, err := siteConfigForSite(config["site"])
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	client, err := newClient(secretID, secretKey, region, siteConfig.dnspodEndpoint, siteConfig.useIntlDomainClient)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &tencentdnsProvider{
+	*p = tencentdnsProvider{
 		client: client,
-	}, nil
+	}
+	return nil
 }
 
 type tencentSiteConfig struct {
@@ -240,6 +218,27 @@ func recordMetadataComparable(existingRecords models.Records) diff2.ComparableFu
 		}
 		return lineComparable + " weight=" + weight
 	}
+}
+
+// recordIdentity returns the identity text used by validation-time duplicate
+// detection. Validation runs before the provider has read the zone, so this
+// reads nothing but the record itself: the line ID when set, otherwise the line
+// name. Weight stays out, because it is not part of the key the service uses.
+func recordIdentity(rc *models.RecordConfig) string {
+	if rc.Metadata != nil {
+		if lineID := rc.Metadata[metaRecordLineID]; lineID != "" {
+			return "line_id=" + lineID
+		}
+		if line := rc.Metadata[metaRecordLine]; line != "" {
+			// The default line has one name and one ID.
+			if line == defaultRecordLine {
+				return "line_id=" + defaultRecordLineID
+			}
+			return "line=" + line
+		}
+	}
+	// A record without line metadata answers on the default line.
+	return "line_id=" + defaultRecordLineID
 }
 
 func (p *tencentdnsProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existingRecords models.Records) ([]*models.Correction, int, error) {

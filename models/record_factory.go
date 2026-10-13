@@ -96,11 +96,32 @@ func (dc *DomainConfig) NewRecordConfigParse(name string, ttl uint32, typeAny an
 		return dc.NewRecordConfig(name, ttl, typeNum, data, isEnabled)
 	}
 
-	rd, err := MyNewData(typeNum, data, origin)
+	rd, err := myNewData(typeNum, data, origin)
 	if err != nil {
 		return nil, err
 	}
 	return newRecordConfigHelper(dc.Name, name, ttl, typeNum, rd, nil)
+}
+
+func myNewData(typeNum uint16, contents string, origin string) (dnsv2.RDATA, error) {
+	switch typeNum {
+
+	case dnsv2.TypeTXT:
+		// NewData expects quotes around TXT contents.
+		if len(contents) > 0 && (contents[0] != '"' && contents[len(contents)-1] != '"') {
+			contents = `"` + contents + `"`
+		}
+
+	}
+
+	rd2, err := dnsv2.NewData(typeNum, contents, origin+".")
+	if err != nil {
+		return nil, fmt.Errorf("NewData(%d, %q, %q) failed: %w", typeNum, contents, origin+".", err)
+	}
+	// We do not need to call normalizeRDATA here because every caller to
+	// myNewData eventually passes the result to newRecordConfigHelper,
+	// which calls SetRDATA, which calls normalizeRDATA.
+	return rd2, nil
 }
 
 // NewRecordConfigForRRv2toRC is like NewRecordConfig but takes an RDATA. It

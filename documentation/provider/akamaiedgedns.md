@@ -75,6 +75,8 @@ Store your zone configuration details in a dnsconfig.js file in the same folder 
 
 Akamai assigns a unique set of authoritative nameservers for each contract.  These authorities should be used as the NS records on all zones belonging to this contract.
 
+**Note:** Every Edge DNS zone is tied to the specific contract used to create it, and its nameservers are assigned based on that contract. If the `contract_id` in your `creds.json` does not match the contract that was originally used to create the zone, DNSControl sees the mismatch as a discrepancy and attempts to switch the zone's NS records to the nameservers of the contract specified in `creds.json`. To prevent this, set the `contract_id` field in your `creds.json` to match the contract that was originally used to create the zone.
+
 The NS records for these authorities have a TTL of 86400.
 
 Add:
@@ -97,7 +99,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -126,7 +128,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -153,7 +155,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -222,7 +224,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example_2.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured_2.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured_2.edgesuite.net.", TTL(20)),
   A("foo_2", "1.2.3.5"),
 );
 ```
@@ -270,7 +272,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.4"),
 );
 ```
@@ -306,7 +308,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
   A("foo", "1.2.3.10"),
 );
 ```
@@ -340,7 +342,7 @@ var DSP_AKAMAIEDGEDNS = NewDnsProvider("akamaiedgedns");
 D("example_3.com", REG_NONE, DnsProvider(DSP_AKAMAIEDGEDNS),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
-  AKAMAICDN("@", "www.preconfigured_3.edgesuite.net", TTL(20)),
+  AKAMAICDN("@", "www.preconfigured_3.edgesuite.net.", TTL(20)),
   A("foo_3", "1.2.3.6"),
 );
 ```
@@ -375,23 +377,26 @@ Created zone: example_3.com
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
-  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❔
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
+  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ✅
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
-  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❔
+  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
   - [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md): ✅
   - [`SRV`](../language-reference/domain-modifiers/SRV.md): ✅
-  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❔
+  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❌
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
-  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❔
-  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❔
+  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
+  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅
 - DNSSEC
   - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ✅
-  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❔
+  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❌
   - [`DS`](../language-reference/domain-modifiers/DS.md): ❌
 <!-- provider-features-end -->

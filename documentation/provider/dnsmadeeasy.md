@@ -62,7 +62,7 @@ Global Traffic Director feature is not supported.
 
 ### DNS Made Easy sandbox environment
 
-Sandbox control panel is available at [https://sandbox.dnsmadeeasy.com/](sandbox.dnsmadeeasy.com). To generate sandbox API credentials, sign up for a free trial and go to [Account Information](https://sandbox.dnsmadeeasy.com/account/info) in Config menu.
+Sandbox control panel is available at [https://sandbox.dnsmadeeasy.com/](https://sandbox.dnsmadeeasy.com/). To generate sandbox API credentials, sign up for a free trial and go to [Account Information](https://sandbox.dnsmadeeasy.com/account/info) in Config menu.
 
 Set `sandbox` key to a non-empty value in credentials JSON alongside `TYPE`, `api_key` and `secret_key` to make all API calls against DNS Made Easy sandbox environment. Details in [DNS Made Easy API documentation](https://api-docs.dnsmadeeasy.com/).
 
@@ -103,24 +103,27 @@ go test -v -test.timeout 2h -args -verbose -profile DNSMADEEASY
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
-  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❔
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
+  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
-  - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❔
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
+  - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
-  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❔
-  - [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md): ❔
+  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
+  - [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md): ❌
   - [`SRV`](../language-reference/domain-modifiers/SRV.md): ✅
-  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❔
+  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❌
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
-  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❔
-  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❔
+  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
+  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ❌
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ❌
 - DNSSEC
   - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ❔
-  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❔
+  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❌
   - [`DS`](../language-reference/domain-modifiers/DS.md): ❌
 <!-- provider-features-end -->
 

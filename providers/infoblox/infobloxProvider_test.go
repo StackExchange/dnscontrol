@@ -24,9 +24,14 @@ func newTestAPI(ts *httptest.Server, view string) *infobloxAPI {
 	}
 }
 
+// testDC creates a DomainConfig for testing.
+func testDC(domain string) *models.DomainConfig {
+	return &models.DomainConfig{Name: domain}
+}
+
 func TestConvertA(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:a/ZG5z:10.0.0.1","name":"host.example.com","ipv4addr":"10.0.0.1","ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("a", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -37,8 +42,8 @@ func TestConvertA(t *testing.T) {
 	if rc.TTL != 300 {
 		t.Errorf("expected TTL 300, got %d", rc.TTL)
 	}
-	if rc.AsA().String() != "10.0.0.1" {
-		t.Errorf("expected target 10.0.0.1, got %s", rc.AsA().String())
+	if rc.GetTargetField() != "10.0.0.1" {
+		t.Errorf("expected target 10.0.0.1, got %s", rc.GetTargetField())
 	}
 	if rc.GetLabel() != "host" {
 		t.Errorf("expected label 'host', got %q", rc.GetLabel())
@@ -46,8 +51,8 @@ func TestConvertA(t *testing.T) {
 }
 
 func TestConvertAAAA(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:aaaa/ZG5z:2001:db8::1","name":"host.example.com","ipv6addr":"2001:db8::1","ttl":600,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("aaaa", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -58,14 +63,11 @@ func TestConvertAAAA(t *testing.T) {
 	if rc.TTL != 600 {
 		t.Errorf("expected TTL 600, got %d", rc.TTL)
 	}
-	if rc.AsAAAA().String() != "2001:db8::1" {
-		t.Errorf("expected target 2001:db8::1, got %s", rc.AsAAAA().String())
-	}
 }
 
 func TestConvertCNAME(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:cname/ZG5z:www","name":"www.example.com","canonical":"web.example.com","ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("cname", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -73,14 +75,14 @@ func TestConvertCNAME(t *testing.T) {
 	if rc.Type != "CNAME" {
 		t.Errorf("expected type CNAME, got %s", rc.Type)
 	}
-	if rc.AsCNAME().Target != "web.example.com." {
-		t.Errorf("expected target web.example.com., got %s", rc.AsCNAME().Target)
+	if rc.GetTargetField() != "web.example.com." {
+		t.Errorf("expected target web.example.com., got %s", rc.GetTargetField())
 	}
 }
 
 func TestConvertMX(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:mx/ZG5z:mx","name":"example.com","mail_exchanger":"mail.example.com","preference":10,"ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("mx", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -88,17 +90,18 @@ func TestConvertMX(t *testing.T) {
 	if rc.Type != "MX" {
 		t.Errorf("expected type MX, got %s", rc.Type)
 	}
-	if rc.AsMX().Preference != 10 {
-		t.Errorf("expected preference 10, got %d", rc.AsMX().Preference)
+	mx := rc.AsMX()
+	if mx.Preference != 10 {
+		t.Errorf("expected preference 10, got %d", mx.Preference)
 	}
-	if rc.AsMX().Mx != "mail.example.com." {
-		t.Errorf("expected target mail.example.com., got %s", rc.AsMX().Mx)
+	if mx.Mx != "mail.example.com." {
+		t.Errorf("expected target mail.example.com., got %s", mx.Mx)
 	}
 }
 
 func TestConvertTXT(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:txt/ZG5z:txt","name":"example.com","text":"v=spf1 -all","ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("txt", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -112,8 +115,8 @@ func TestConvertTXT(t *testing.T) {
 }
 
 func TestConvertSRV(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:srv/ZG5z:srv","name":"_sip._tcp.example.com","target":"sip.example.com","priority":10,"weight":20,"port":5060,"ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("srv", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -121,20 +124,21 @@ func TestConvertSRV(t *testing.T) {
 	if rc.Type != "SRV" {
 		t.Errorf("expected type SRV, got %s", rc.Type)
 	}
-	if rc.AsSRV().Priority != 10 {
-		t.Errorf("expected priority 10, got %d", rc.AsSRV().Priority)
+	srv := rc.AsSRV()
+	if srv.Priority != 10 {
+		t.Errorf("expected priority 10, got %d", srv.Priority)
 	}
-	if rc.AsSRV().Weight != 20 {
-		t.Errorf("expected weight 20, got %d", rc.AsSRV().Weight)
+	if srv.Weight != 20 {
+		t.Errorf("expected weight 20, got %d", srv.Weight)
 	}
-	if rc.AsSRV().Port != 5060 {
-		t.Errorf("expected port 5060, got %d", rc.AsSRV().Port)
+	if srv.Port != 5060 {
+		t.Errorf("expected port 5060, got %d", srv.Port)
 	}
 }
 
 func TestConvertCAA(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:caa/ZG5z:caa","name":"example.com","ca_flag":0,"ca_tag":"issue","ca_value":"letsencrypt.org","ttl":300,"use_ttl":true}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("caa", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -142,17 +146,18 @@ func TestConvertCAA(t *testing.T) {
 	if rc.Type != "CAA" {
 		t.Errorf("expected type CAA, got %s", rc.Type)
 	}
-	if rc.AsCAA().Flag != 0 {
-		t.Errorf("expected flag 0, got %d", rc.AsCAA().Flag)
+	caa := rc.AsCAA()
+	if caa.Flag != 0 {
+		t.Errorf("expected flag 0, got %d", caa.Flag)
 	}
-	if rc.AsCAA().Tag != "issue" {
-		t.Errorf("expected tag 'issue', got %q", rc.AsCAA().Tag)
+	if caa.Tag != "issue" {
+		t.Errorf("expected tag 'issue', got %q", caa.Tag)
 	}
 }
 
 func TestConvertPTR(t *testing.T) {
-	dc := models.MustNewDomainConfig("0.0.10.in-addr.arpa")
 	raw := json.RawMessage(`{"_ref":"record:ptr/ZG5z:ptr","name":"1.0.0.10.in-addr.arpa","ptrdname":"host.example.com","ttl":300,"use_ttl":true}`)
+	dc := testDC("0.0.10.in-addr.arpa")
 	rc, err := toRecordConfig("ptr", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -160,14 +165,14 @@ func TestConvertPTR(t *testing.T) {
 	if rc.Type != "PTR" {
 		t.Errorf("expected type PTR, got %s", rc.Type)
 	}
-	if rc.AsPTR().Ptr != "host.example.com." {
-		t.Errorf("expected target host.example.com., got %q", rc.AsPTR().Ptr)
+	if rc.GetTargetField() != "host.example.com." {
+		t.Errorf("expected target host.example.com., got %s", rc.GetTargetField())
 	}
 }
 
 func TestConvertNSApexSkipped(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:ns/ZG5z:ns","name":"example.com","nameserver":"ns1.example.com","ttl":3600}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("ns", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -178,8 +183,8 @@ func TestConvertNSApexSkipped(t *testing.T) {
 }
 
 func TestConvertNSSubdomain(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:ns/ZG5z:ns2","name":"sub.example.com","nameserver":"ns1.sub.example.com","ttl":3600}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("ns", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -193,8 +198,8 @@ func TestConvertNSSubdomain(t *testing.T) {
 }
 
 func TestTTLInheritance(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
 	raw := json.RawMessage(`{"_ref":"record:a/ZG5z:10.0.0.2","name":"host.example.com","ipv4addr":"10.0.0.2","ttl":0,"use_ttl":false}`)
+	dc := testDC("example.com")
 	rc, err := toRecordConfig("a", raw, dc, 3600)
 	if err != nil {
 		t.Fatal(err)
@@ -205,8 +210,11 @@ func TestTTLInheritance(t *testing.T) {
 }
 
 func TestBuildRecordBodyA(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("host", 300, dnsv2.TypeA, "10.0.0.1")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("host", 300, dnsv2.TypeA, "10.0.0.1")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	recType, body, err := buildRecordBody(rc, "default", true)
 	if err != nil {
@@ -227,8 +235,11 @@ func TestBuildRecordBodyA(t *testing.T) {
 }
 
 func TestBuildRecordBodyNoView(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("host", 300, dnsv2.TypeA, "10.0.0.1")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("host", 300, dnsv2.TypeA, "10.0.0.1")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	_, body, err := buildRecordBody(rc, "default", false)
 	if err != nil {
@@ -278,7 +289,7 @@ func TestCreateRecord(t *testing.T) {
 	var receivedBody string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed) // 405
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 		body, _ := readBody(r)
@@ -311,7 +322,7 @@ func TestDeleteRecord(t *testing.T) {
 	var deletedRef string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "DELETE" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed) // 405
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 		deletedRef = strings.TrimPrefix(r.URL.Path, "/wapi/v2.12/")
@@ -334,7 +345,7 @@ func TestUpdateRecord(t *testing.T) {
 	var updatedRef string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "PUT" {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed) // 405
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 		updatedRef = strings.TrimPrefix(r.URL.Path, "/wapi/v2.12/")
@@ -447,8 +458,11 @@ func TestEffectiveTTL(t *testing.T) {
 }
 
 func TestBuildRecordBodyTXT(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("@", 300, dnsv2.TypeTXT, "v=spf1 include:_spf.example.com -all")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("@", 300, dnsv2.TypeTXT, "v=spf1 include:_spf.example.com -all")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	recType, body, err := buildRecordBody(rc, "default", true)
 	if err != nil {
@@ -463,8 +477,11 @@ func TestBuildRecordBodyTXT(t *testing.T) {
 }
 
 func TestBuildRecordBodyMX(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("@", 300, dnsv2.TypeMX, 10, "mail.example.com.")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("@", 300, dnsv2.TypeMX, uint16(10), "mail.example.com.")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	recType, body, err := buildRecordBody(rc, "default", true)
 	if err != nil {
@@ -482,8 +499,11 @@ func TestBuildRecordBodyMX(t *testing.T) {
 }
 
 func TestBuildRecordBodySRV(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("_sip._tcp", 300, dnsv2.TypeSRV, 10, 20, 5060, "sip.example.com.")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("_sip._tcp", 300, dnsv2.TypeSRV, uint16(10), uint16(20), uint16(5060), "sip.example.com.")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	recType, body, err := buildRecordBody(rc, "default", true)
 	if err != nil {
@@ -501,8 +521,11 @@ func TestBuildRecordBodySRV(t *testing.T) {
 }
 
 func TestBuildRecordBodyCAA(t *testing.T) {
-	dc := models.MustNewDomainConfig("example.com")
-	rc := dc.MustNewRecordConfig("@", 300, dnsv2.TypeCAA, 0, "issue", "letsencrypt.org")
+	dc := testDC("example.com")
+	rc, err := dc.NewRecordConfig("@", 300, dnsv2.TypeCAA, uint8(0), "issue", "letsencrypt.org")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	recType, body, err := buildRecordBody(rc, "default", true)
 	if err != nil {

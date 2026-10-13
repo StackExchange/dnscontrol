@@ -72,7 +72,7 @@ func (stub *stubAsker) Multiline(_, _ string) (string, error) {
 	return value, nil
 }
 
-func (stub *stubAsker) Confirm(_ string, _ bool) (bool, error) {
+func (stub *stubAsker) Confirm(_, _ string, _ bool) (bool, error) {
 	if len(stub.confirm) == 0 {
 		stub.t.Fatalf("unexpected Confirm call")
 	}
@@ -92,7 +92,8 @@ func stubFetchNoRecords(t *testing.T) {
 
 // captureInitOutput keeps successful init-flow output from leaking into an
 // unrelated test failure. If an init test fails, its captured output is logged.
-func captureInitOutput(t *testing.T) {
+// The returned path can also be used for output assertions.
+func captureInitOutput(t *testing.T) string {
 	t.Helper()
 
 	output, err := os.CreateTemp(t.TempDir(), "init-output-*.txt")
@@ -117,6 +118,7 @@ func captureInitOutput(t *testing.T) {
 		}
 		t.Logf("init output:\n%s", captured)
 	})
+	return output.Name()
 }
 
 func TestRunInit_VerifyDNSProviderCredsWithZones(t *testing.T) {

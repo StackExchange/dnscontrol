@@ -2,17 +2,16 @@
 
 This document provides "cookbook" recipes for doing common tasks.
 
-- [Cookbook](#cookbook)
-  - [Create a `models.DomainConfig`](#create-a-modelsdomainconfig)
-  - [Create a `models.RecordConfig`](#create-a-modelsrecordconfig)
-  - [Getters/Setters for RDATA in `models.RecordConfig`](#getterssetters-for-rdata-in-modelsrecordconfig)
-  - [Create `models.RecordConfig` literals for testdata](#create-modelsrecordconfig-literals-for-testdata)
-  - [How to create a "builder"](#how-to-create-a-builder)
-  - [How to manipulate domain/zone names](#how-to-manipulate-domainzone-names)
-  - [What you should know about TXT records](#what-you-should-know-about-txt-records)
-    - [TXT functions](#txt-functions)
-  - [How to change the rtype of a RecordConfig](#how-to-change-the-rtype-of-a-recordconfig)
-  - [How to label imports](#how-to-label-imports)
+- [Create a `models.DomainConfig`](#create-a-models.domainconfig)
+- [Create a `models.RecordConfig`](#create-a-models.recordconfig)
+- [Getters/Setters for RDATA in `models.RecordConfig`](#getters-setters-for-rdata-in-models.recordconfig)
+- [Create `models.RecordConfig` literals for testdata](#create-models.recordconfig-literals-for-testdata)
+- [How to create a "builder"](#how-to-create-a-builder)
+- [How to manipulate domain/zone names](#how-to-manipulate-domain-zone-names)
+- [What you should know about TXT records](#what-you-should-know-about-txt-records)
+  - [TXT functions](#txt-functions)
+- [How to change the rtype of a RecordConfig](#how-to-change-the-rtype-of-a-recordconfig)
+- [How to label imports](#how-to-label-imports)
 
 ## Create a `models.DomainConfig`
 
@@ -54,12 +53,12 @@ rc2, err := dc.NewRecordConfigParse(LABEL, TTL, TYPE_STR_OR_NUM, RFC1038_STRING)
 - `NewRecordConfig()` takes a list of arguments. It doesn't matter if the arguments are strings, ints, `netip.Addrs`... the function will convert them to the correct type and return and error if they can't be converted.
 - `NewRecordConfigParse()` takes the arguments as one long string, which is parsed. If your provider returns (for example) the MX record data as `10 mx.example.com.` and the SRV record data as `4 100 123 three.example.com.`, you can just send the whole string to this function. This replaces `models.PopulateFromString()`
 
-- `LABEL`: Must be the output of one of these functions:
+- `LABEL`: Must be the result of one of these functions:
   - `dc.LabelFromShort()`: Use this if your provider always gives you the shortname (`foo` of `foo.example.com`)
   - `dc.LabelFromFQDNNoDot()`: Use this if your provider always gives you the FQDN (`foo.example.com`)
-  - `dc.LabelFromFQDNWithDot()`: Use this if your provider always give syou the FQDN+"." (`foo.example.com.`)
+  - `dc.LabelFromFQDNWithDot()`: Use this if your provider always gives you the FQDN+"." (`foo.example.com.`)
 - Which to use?
-  - Unsurer? Try LabelFromFQDNWithDot() and watch for errors. They often suggest what function to use.
+  - Unsure? Try LabelFromFQDNWithDot() and watch for errors. They often suggest what function to use.
   - Errors like `DEBUG: LabelFromFQDNWithDot(quux.a.dnscontrol-azure.com) called WRONG.'
   - In this case, the hostname (`quux.a.dnscontrol-azure.com`) indicates `LabelFromFQDNNoDot` is more appropriate.
   - If you see a shortname, use `dc.LabelFromShort()`
@@ -109,7 +108,30 @@ In this example, `*Parse` works just fine for all cases except `MX` records. The
     dc.AddRecord(rc)
 ```
 
-Deprecated:
+Flags
+
+You can modify NewRecordConfig() and NewRecordConfigParse() behavior with flags [documented here](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5/pkg/nrc)
+
+Does your SRV data have the "priority" field separate?
+
+```go
+case "SRV":
+        rc, err = dc.NewRecordConfig(label, ttl, dnsv2.TypeSRV, r.Priority, r.Answer,
+                        nrc.Flags{SrvWeirdSplit: true})
+```
+
+Does the record's target NOT include a dot?
+
+```go
+        dc.NewRecordConfig(...  nrc.Flags{TargetIsFqdnNoDot: true})
+        dc.NewRecordConfigParse(...  nrc.Flags{TargetIsFqdnNoDot: true})
+```
+
+Is your TXT record the plain string, not requring any de-quoting or unescaping?
+
+```go
+        dc.NewRecordConfigParse(... nrc.Flags{TxtDontParse: true})
+```
 
 Please do not create your own `RecordConfig`'s:
 
@@ -212,17 +234,22 @@ func init() {
 Add a function called BuilderROBERT() with this signature:
 
 ```go
-func BuilderROBERT(dc *DomainConfig, ttl uint32, args []any, metadata map[string]string, subdomain string) (Records, error) {
+func BuilderROBERT(dc *DomainConfig, ttl uint32, args []any, subdomain string) (Records, error) {
 ```
 
 - `dc`: The domain the builder was called in.
 - `ttl`: the desired TTL or `0` if it is unknown. Unknown TTLs are converted into the default TTL.
 - `args`: the arguments passed to the function in `dnsconfig.js`. Each should be passed through a `mustbe.*` function before use.
-- `metadata`: Any `{foo: "foo"}` (Javascript objects) passed to the function in `dnsconfig.js`.
-- `subdomain`: If the builder was used in a `D_EXTEND()`, the subdomain will be non-nil.
+- `subdomain`: If the builder was used in a `D_EXTEND()`, the subdomain will be non-empty.
   - If `D("example.com")` is followed by `D_EXTEND("foo.example.com")`, subdomain will be `foo`.
-  - To calculate the label: `name, _ := dc.LabelFromDnsconfigjs(args[0].(string), subdomain)`
-  - To calcuate a target name: `name, _ := mustbe.TagetHostWithSubdoman(dc.Name, subdomain, name)`
+  - The builder receives the subdomain as it was written in `dnsconfig.js`, not in IDNA form. Convert it with `idna.ToASCII()` and `strings.ToLower()` before passing it on, and use the converted value for `RecordConfig.SubDomain` as well.
+  - To calculate the label: `name, _ := dc.LabelFromDnsconfigjs(args[0].(string), subdomainASCII)`
+  - To calculate a target name: `name, _ := mustbe.TargetHost(targetOrigin, isEnabled, name)`, where `targetOrigin` is `dc.Name`, or `subdomainASCII + "." + dc.Name` if the builder was used in a `D_EXTEND()`.
+
+A builder does not receive the `{foo: "foo"}` (Javascript objects) passed to the
+function in `dnsconfig.js`: `RecordBuilderFn` has no metadata parameter. A
+builder that needs an object has to move it into `args` in `pkg/js/helpers.js`
+(see `m365Options()`).
 
 The builder function can do basically anything and generate as many records as it wants. `SPF_BUILDER()` returns many records. `LOC()` returns just one record.
 
@@ -319,7 +346,7 @@ For any other transformation:
 
 1. Set .Type and .TypeNum
 
-2. Create the RDATA using a MakeFOO() function and use the SetRDATA() to store it.  Be sure to use SetDATA() last since it rebuilds any pre-computed strings.
+2. Create the RDATA using a MakeFOO() function and use the SetRDATA() to store it.  Be sure to use SetRDATA() last since it rebuilds any pre-computed strings.
 
 Example:
 

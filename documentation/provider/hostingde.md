@@ -75,6 +75,17 @@ The `HOSTINGDE` provider **ignores the default nameserver set** defined in your 
 Instead, it uses hosting.de's nameservers (`ns1.hosting.de.`, `ns2.hosting.de.`, and `ns3.hosting.de.`) by default, regardless of your account settings.
 Using the `default_ns` metadata, the default nameserver set can be overwritten.
 
+## Caveats
+
+### SOA
+
+hosting.de derives the primary nameserver of a zone from its nameserver set and offers no way to override it, so the `ns` parameter of [`SOA()`](../language-reference/domain-modifiers/SOA.md) is ignored.
+
+The contact address of a zone lives in the zone configuration rather than in an SOA record, so the mailbox of `SOA()` ends up there.
+A mailbox that names its own host is used as the address, so `hostmaster.example.com.` becomes `hostmaster@example.com`.
+One without a host is qualified with the zone name.
+The address may not end in a period; the API rejects that.
+
 ## Feature Summary
 
 <!-- provider-features-start -->
@@ -89,23 +100,26 @@ Using the `default_ns` metadata, the default nameserver set can be overwritten.
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
-  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❔
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
+  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ✅
 - Service discovery
-  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❔
+  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
   - [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md): ❌
   - [`SRV`](../language-reference/domain-modifiers/SRV.md): ✅
-  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❔
+  - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ❌
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
-  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❔
-  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❔
+  - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
+  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅
 - DNSSEC
   - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ✅
-  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❔
+  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❌
   - [`DS`](../language-reference/domain-modifiers/DS.md): ✅
 <!-- provider-features-end -->

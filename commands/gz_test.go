@@ -3,8 +3,11 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/DNSControl/dnscontrol/v5/models"
+	"github.com/DNSControl/dnscontrol/v5/pkg/js"
 	_ "github.com/DNSControl/dnscontrol/v5/pkg/providers/_all"
 	"github.com/google/go-cmp/cmp"
 )
@@ -17,7 +20,7 @@ func TestFormatTypes(t *testing.T) {
 	  test_data/$DOMAIN.zone   zone            test_data/$DOMAIN.zone.zone
 	*/
 
-	for _, domain := range []string{"simple.com", "example.org", "apex.com", "ds.com"} {
+	for _, domain := range []string{"simple.com", "example.org", "apex.com", "ds.com", "csync.com"} {
 		t.Run(domain+"/js", func(t *testing.T) { testFormat(t, domain, "js") })
 		t.Run(domain+"/djs", func(t *testing.T) { testFormat(t, domain, "djs") })
 		t.Run(domain+"/tsv", func(t *testing.T) { testFormat(t, domain, "tsv") })
@@ -74,5 +77,50 @@ func testFormat(t *testing.T, domain, format string) {
 			t.Fatalf("can't write actual output: %v", err)
 		}
 		t.Errorf("testFormat mismatch (-got +want):\n%s", diff)
+	}
+}
+
+func TestFormatDslEscaping(t *testing.T) {
+	dc := &models.DomainConfig{Name: "example.com"}
+	hostile := `x"), A("injected", "192.0.2.66`
+
+	tests := []struct {
+		name  string
+		label string
+		rtype string
+		args  []any
+	}{
+		{"label", hostile, "A", []any{"192.0.2.1"}},
+		{"ns", "sub", "NS", []any{hostile + ".example.net."}},
+		{"apex ns", "@", "NS", []any{"ns1.example.net.\n" + hostile}},
+		{"caa", "@", "CAA", []any{0, "issue", hostile}},
+		{"caa critical", "@", "CAA", []any{128, "issue", hostile}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rc, err := dc.NewRecordConfig(tt.label, 300, tt.rtype, tt.args...)
+			if err != nil {
+				t.Fatalf("NewRecordConfig: %v", err)
+			}
+			line := formatDsl(rc, 300)
+			script := fmt.Sprintf("D(\"example.com\", NewRegistrar(\"none\"), DnsProvider(NewDnsProvider(\"none\")),\n%s\n);\n", line)
+			conf, err := js.ExecuteJavascriptString([]byte(script), false, nil)
+			if err != nil {
+				t.Fatalf("generated line does not parse: %v\n%s", err, line)
+			}
+			records := conf.Domains[0].Records
+			if strings.HasPrefix(line, "//") {
+				if len(records) != 0 {
+					t.Fatalf("commented-out line produced %d records:\n%s", len(records), line)
+				}
+				return
+			}
+			if len(records) != 1 {
+				t.Fatalf("got %d records, want 1:\n%s", len(records), line)
+			}
+			if got, want := records[0].GetRDATA().String(), rc.GetRDATA().String(); got != want {
+				t.Errorf("RDATA = %q, want %q", got, want)
+			}
+		})
 	}
 }

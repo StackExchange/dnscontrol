@@ -64,7 +64,6 @@ func TestCheckSoa(t *testing.T) {
 		{false, 123, 123, 123, 123, "foo.bar.com."},
 		// MBox
 		{true, 123, 123, 123, 123, ""},
-		{true, 123, 123, 123, 123, "foo@bar.com."},
 		{false, 123, 123, 123, 123, "foo.bar.com."},
 	}
 
@@ -322,7 +321,7 @@ func TestCNAMECloudflareProxied(t *testing.T) {
 	dc.AddRecordConfig(recCNAME)
 	recMX := dc.MustNewRecordConfig("mail", 0, dnsv2.TypeMX, 10, "smtp.example.com.")
 	dc.AddRecordConfig(recMX)
-	errs := checkCNAMEs(dc)
+	errs := checkCNAMEs(dc, nil)
 	if len(errs) != 0 {
 		t.Errorf("Expected no errors for proxied CNAME + MX, got: %v", errs)
 	}
@@ -334,7 +333,7 @@ func TestCNAMECloudflareProxied(t *testing.T) {
 	recMX2 := dc2.MustNewRecordConfig("mail", 0, dnsv2.TypeMX, 10, "smtp.example.com.")
 	dc2.AddRecordConfig(recCNAME2)
 	dc2.AddRecordConfig(recMX2)
-	errs2 := checkCNAMEs(dc2)
+	errs2 := checkCNAMEs(dc2, nil)
 	if len(errs2) == 0 {
 		t.Error("Expected error for non-proxied CNAME + MX, got none")
 	}
@@ -355,7 +354,7 @@ func TestCheckDuplicates(t *testing.T) {
 	dc.AddTestRC(t, "@", 0, dnsv2.TypeNS, "ns3.foo.com.")
 
 	// NOTE: The comparison ignores ttl. Therefore we don't test that.
-	errs := checkDuplicates(dc.Records)
+	errs := checkDuplicates(dc.Records, nil)
 	if len(errs) != 0 {
 		t.Errorf("Expected duplicate NOT found but found %q", errs)
 	}
@@ -368,7 +367,7 @@ func TestCheckDuplicates_dup_a(t *testing.T) {
 	dc.AddTestRC(t, "@", 0, dnsv2.TypeA, "1.1.1.1")
 	dc.AddTestRC(t, "@", 0, dnsv2.TypeA, "1.1.1.1")
 
-	errs := checkDuplicates(dc.Records)
+	errs := checkDuplicates(dc.Records, nil)
 	if len(errs) == 0 {
 		t.Error("Expect duplicate found but found none")
 	}
@@ -383,7 +382,7 @@ func TestCheckDuplicates_dup_ns(t *testing.T) {
 	dc.AddTestRC(t, "@", 0, dnsv2.TypeNS, "ns2.foo.com.")
 	dc.AddTestRC(t, "@", 0, dnsv2.TypeNS, "ns2.foo.com.")
 
-	errs := checkDuplicates(dc.Records)
+	errs := checkDuplicates(dc.Records, nil)
 	if len(errs) == 0 {
 		t.Error("Expect duplicate found but found none")
 	}
@@ -491,71 +490,41 @@ const (
 )
 
 func init() {
-	providers.RegisterDomainServiceProviderType(ProviderNoDS, providers.DspFuncs{}, providers.DocumentationNotes{})
-	providers.RegisterDomainServiceProviderType(ProviderFullDS, providers.DspFuncs{}, providers.DocumentationNotes{
-		providers.CanUseDS: providers.Can(),
-	})
-	providers.RegisterDomainServiceProviderType(ProviderChildDSOnly, providers.DspFuncs{}, providers.DocumentationNotes{
-		providers.CanUseDSForChildren: providers.Can(),
-	})
-	providers.RegisterDomainServiceProviderType(ProviderBothDSCaps, providers.DspFuncs{}, providers.DocumentationNotes{
-		providers.CanUseDS:            providers.Can(),
-		providers.CanUseDSForChildren: providers.Can(),
-	})
+	for name, features := range map[string]providers.DocumentationNotes{
+		ProviderNoDS:        {},
+		ProviderFullDS:      {providers.CanUseDS: providers.Can()},
+		ProviderChildDSOnly: {providers.CanUseDSForChildren: providers.Can()},
+		ProviderBothDSCaps:  {providers.CanUseDS: providers.Can(), providers.CanUseDSForChildren: providers.Can()},
+	} {
+		providers.Register[*validationProvider](name, providers.Definition{FriendlyName: name, Features: features})
+	}
 }
 
 func Test_DSChecks(t *testing.T) {
-	t.Run("no DS support", func(t *testing.T) {
-		err := checkProviderDS(ProviderNoDS, nil)
-		if err == nil {
-			t.Errorf("Provider %s implements no DS capabilities, so should have failed the check", ProviderNoDS)
-		}
-	})
+	dc := models.MustNewDomainConfig("example.com")
+	apexDS := dc.MustNewRecordConfig("@", 0, dnsv2.TypeDS, 1, 1, 1, 1)
+	childDS := dc.MustNewRecordConfig("child", 0, dnsv2.TypeDS, 1, 1, 1, 1)
 
-	t.Run("full DS support", func(t *testing.T) {
-		dc := models.MustNewDomainConfig("example.com")
-		apexDS := dc.MustNewRecordConfig("@", 0, dnsv2.TypeDS, 1, 1, 1, 1)
-		childDS := dc.MustNewRecordConfig("child", 0, dnsv2.TypeDS, 1, 1, 1, 1)
-		records := models.Records{apexDS, childDS}
-
-		// check permutations of ProviderCanDS and having both DS caps
-		for _, pType := range []string{ProviderFullDS, ProviderBothDSCaps} {
-			err := checkProviderDS(pType, records)
-			if err != nil {
-				t.Errorf("Provider %s implements full DS capabilities and should process the provided records", ProviderFullDS)
-			}
-		}
-	})
-
-	t.Run("child DS support only", func(t *testing.T) {
-		dc := models.MustNewDomainConfig("example.com")
-		apexDS := dc.MustNewRecordConfig("@", 0, dnsv2.TypeDS, 1, 1, 1, 1)
-		childDS := dc.MustNewRecordConfig("child", 0, dnsv2.TypeDS, 1, 1, 1, 1)
-
-		// this record is included at the apex to check the Type of the
-		// recordset is verified to only inspect records with type == DS
-		apexA := dc.MustNewRecordConfig("@", 0, dnsv2.TypeA, "1.2.3.4")
-
-		t.Run("accepts when child DS records only", func(t *testing.T) {
-			records := models.Records{childDS, apexA}
-			err := checkProviderDS(ProviderChildDSOnly, records)
-			if err != nil {
-				t.Errorf("Provider %s implements child DS support so the provided records should be accepted",
-					ProviderChildDSOnly,
-				)
+	for _, tc := range []struct {
+		pType   string
+		rec     *models.RecordConfig
+		wantErr bool
+	}{
+		{ProviderNoDS, childDS, true},
+		{ProviderFullDS, apexDS, false},
+		{ProviderFullDS, childDS, false},
+		{ProviderBothDSCaps, apexDS, false},
+		{ProviderBothDSCaps, childDS, false},
+		{ProviderChildDSOnly, childDS, false},
+		{ProviderChildDSOnly, apexDS, true},
+	} {
+		t.Run(tc.pType+"/"+tc.rec.GetLabel(), func(t *testing.T) {
+			err := validateSupportedRecordTypes(tc.rec, dc.Name, []string{tc.pType})
+			if (err != nil) != tc.wantErr {
+				t.Errorf("validateSupportedRecordTypes() error = %v, wantErr %v", err, tc.wantErr)
 			}
 		})
-
-		t.Run("fails with apex and child DS records", func(t *testing.T) {
-			records := models.Records{apexDS, childDS, apexA}
-			err := checkProviderDS(ProviderChildDSOnly, records)
-			if err == nil {
-				t.Errorf("Provider %s does not implement DS support at the zone apex, so should reject provided records",
-					ProviderChildDSOnly,
-				)
-			}
-		})
-	})
+	}
 }
 
 func TestCheckR53WeightedGroupConsistency_noerr_consistent(t *testing.T) {

@@ -1,17 +1,16 @@
 # Examples
 
-- [Examples](#examples)
-  - [Typical DNS Records](#typical-dns-records)
-  - [Set TTLs](#set-ttls)
-  - [Variables for common IP Addresses](#variables-for-common-ip-addresses)
-  - [Variables to swap active Data Center](#variables-to-swap-active-data-center)
-  - [Macro for repeated records](#macro-for-repeated-records)
-  - [Use SPF\_BUILDER to add comments to SPF records](#use-spf_builder-to-add-comments-to-spf-records)
-  - [Set default records modifiers](#set-default-records-modifiers)
-  - [Advanced Examples](#advanced-examples)
-    - [Dual DNS Providers](#dual-dns-providers)
-    - [Automate Fastmail DKIM records](#automate-fastmail-dkim-records)
-    - [More advanced examples](#more-advanced-examples)
+- [Typical DNS Records](#typical-dns-records)
+- [Set TTLs](#set-ttls)
+- [Variables for common IP Addresses](#variables-for-common-ip-addresses)
+- [Variables to swap active Data Center](#variables-to-swap-active-data-center)
+- [Macro for repeated records](#macro-for-repeated-records)
+- [Use SPF_BUILDER to add comments to SPF records](#use-spf_builder-to-add-comments-to-spf-records)
+- [Set default records modifiers](#set-default-records-modifiers)
+- [Advanced Examples](#advanced-examples)
+  - [Dual DNS Providers](#dual-dns-providers)
+  - [Automate Fastmail DKIM records](#automate-fastmail-dkim-records)
+  - [More advanced examples](#more-advanced-examples)
 
 ## Typical DNS Records
 
@@ -42,8 +41,8 @@ D("example.com", REG_MY_PROVIDER,
     NAMESERVER_TTL("10m"), // On domain apex NS RRs
     DefaultTTL("5m"), // Default for a domain
 
-    MX("@", 5, "1.2.3.4", mailTTL), // use variable to
-    MX("@", 10, "4.3.2.1", mailTTL), // set TTL
+    MX("@", 5, "mail1.example.com.", mailTTL), // use variable to
+    MX("@", 10, "mail2.example.com.", mailTTL), // set TTL
 
     A("@", "1.2.3.4", TTL("10m")), // individual record
     CNAME("mail", "mx01"), // TTL of 5m, as defined per DefaultTTL()
@@ -128,7 +127,7 @@ D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_R53),
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@", "10.2.2.2"),
-  MX("@", "example.com."),
+  MX("@", 10, "example.com."),
   SPF_BUILDER({
     label: "@",
     overflow: "_spf%d",

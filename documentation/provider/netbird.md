@@ -54,7 +54,7 @@ D("example.com", REG_NONE, DnsProvider(DSP_NETBIRD),
     { no_ns: "true" }, // NetBird does not expose nameservers
     A("test", "1.2.3.4"),
     AAAA("ipv6test", "2001:db8::1"),
-    CNAME("www", "example.com"),
+    CNAME("www", "example.com."),
 );
 ```
 {% endcode %}
@@ -107,9 +107,11 @@ For more information, see the [NetBird API documentation](https://docs.netbird.i
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ❌
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
   - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ❌
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
   - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
   - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
@@ -119,6 +121,7 @@ For more information, see the [NetBird API documentation](https://docs.netbird.i
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ❌
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ❌
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
   - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ❌
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ❌

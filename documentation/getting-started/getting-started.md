@@ -1,21 +1,25 @@
 # Getting Started
 
-- [Getting Started](#getting-started)
-  - [1. Install the software](#1-install-the-software)
-    - [Homebrew](#homebrew)
-    - [Docker](#docker)
-    - [Binaries](#binaries)
-    - [Source](#source)
-  - [1.1. Shell Completion](#11-shell-completion)
-    - [zsh](#zsh)
-    - [bash](#bash)
-  - [2. Create a place for the config files](#2-create-a-place-for-the-config-files)
-  - [3. Create the initial `dnsconfig.js`](#3-create-the-initial-dnsconfigjs)
-  - [4. Create the initial `creds.json`](#4-create-the-initial-credsjson)
-  - [5. Test the sample files](#5-test-the-sample-files)
-  - [6. Make a change](#6-make-a-change)
-  - [7. Use your own domains](#7-use-your-own-domains)
-  - [8. Production Advice](#8-production-advice)
+- [1. Install the software](#id-1.-install-the-software)
+  - [Homebrew](#homebrew)
+  - [Docker](#docker)
+  - [Binaries](#binaries)
+  - [Source](#source)
+- [1.1. Shell Completion](#id-1.1.-shell-completion)
+  - [zsh](#zsh)
+  - [bash](#bash)
+- [2. Create a place for the config files](#id-2.-create-a-place-for-the-config-files)
+- [3. Create the initial `dnsconfig.js`](#id-3.-create-the-initial-dnsconfig.js)
+- [4. Create the initial `creds.json`](#id-4.-create-the-initial-creds.json)
+- [5. Test the sample files](#id-5.-test-the-sample-files)
+- [6. Make a change](#id-6.-make-a-change)
+- [7. Use your own domains](#id-7.-use-your-own-domains)
+- [8. Production Advice](#id-8.-production-advice)
+
+There are two ways to get started:
+
+- **Quick path:** [install DNSControl](#id-1.-install-the-software), then run [`dnscontrol init`](../commands/init.md) in a new directory. The interactive wizard asks for your DNS provider and registrar, verifies your credentials, writes `creds.json` and `dnsconfig.js` with the records that already exist in your zones, and offers to run `dnscontrol preview`. Continue with [7. Use your own domains](#id-7.-use-your-own-domains) and [8. Production Advice](#id-8.-production-advice).
+- **Manual path:** follow all steps below. They use sample files and the BIND provider, so you can try DNSControl without API credentials.
 
 ## 1. Install the software
 
@@ -49,14 +53,14 @@ Download binaries from [GitHub](https://github.com/DNSControl/dnscontrol/release
 
 ### Source
 
-DNSControl can be built from source with Go version 1.18 or higher.
+DNSControl can be built from source with Go 1.27 or higher (see `go.mod` for the exact version).
 
 The `go install` command will download the source, compile it, and install `dnscontrol` in your `$GOBIN` directory.
 
 To install, simply run
 
 ```shell
-go install github.com/DNSControl/dnscontrol/v4@latest
+go install github.com/DNSControl/dnscontrol/v5@latest
 ```
 
 To download the source
@@ -94,7 +98,7 @@ Create a subdirectory called `zones` in the same directory as the configuration 
 `dnsconfig.js` is the main configuration and defines providers, DNS domains, and so on.
 
 {% hint style="success" %}
-**Quick path:** run `dnscontrol init` instead. The interactive wizard asks for your DNS provider and registrar, prompts for the right `creds.json` fields and writes a working starter `dnsconfig.js` for you. The rest of this section is the manual equivalent. See the [init command reference](../commands/init.md) for details.
+**Quick path:** run `dnscontrol init` instead. The interactive wizard asks for your DNS provider and registrar, prompts for the right `creds.json` fields and writes a working starter `dnsconfig.js` for you. The rest of this section and step 4 are the manual equivalent. See the [init command reference](../commands/init.md) for details.
 {% endhint %}
 
 Start your `dnsconfig.js` file by downloading [dnsconfig.js](https://github.com/DNSControl/dnscontrol/blob/main/documentation/assets/getting-started/dnsconfig.js) and renaming it.

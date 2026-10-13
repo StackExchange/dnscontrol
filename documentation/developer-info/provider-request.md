@@ -1,11 +1,10 @@
 # How to add a requested provider
 
-- [How to add a requested provider](#how-to-add-a-requested-provider)
-  - [1. Start from an up-to-date `main` branch](#1-start-from-an-up-to-date-main-branch)
-  - [2. Define variables](#2-define-variables)
-  - [3. Edit the provider index file](#3-edit-the-provider-index-file)
-  - [4. Commit your changes](#4-commit-your-changes)
-  - [5. Push and open a pull request](#5-push-and-open-a-pull-request)
+- [1. Start from an up-to-date `main` branch](#id-1.-start-from-an-up-to-date-main-branch)
+- [2. Define variables](#id-2.-define-variables)
+- [3. Edit the provider index file](#id-3.-edit-the-provider-index-file)
+- [4. Commit your changes](#id-4.-commit-your-changes)
+- [5. Push and open a pull request](#id-5.-push-and-open-a-pull-request)
 
 Follow the steps below to document a newly requested provider in the `documentation/provider/index.md` file.
 
@@ -65,7 +64,7 @@ Add and commit the modified file:
 
 ```shell
 git add documentation/provider/index.md
-git commit -m "DOCS: Added requested provider ${PROVIDER_NAME} (#${GITHUB_ISSUE_NUMBER})"
+git commit -m "docs: add requested provider ${PROVIDER_NAME} (#${GITHUB_ISSUE_NUMBER})"
 ```
 
 ## 5. Push and open a pull request
@@ -79,5 +78,5 @@ echo "Added ${PROVIDER_NAME} #${GITHUB_ISSUE_NUMBER} to the list of requested pr
 ```
 
 {% hint style="info" %}
-**NOTE**: GitHub does not support pre-filling pull request titles or descriptions via URL parameters. The title will be auto-filled using your commit message. You can adjust it manually after opening the PR.
+**NOTE**: GitHub does not support pre-filling pull request titles or descriptions via URL parameters. The title will be auto-filled using your commit message, which already follows the [pull request title](https://github.com/DNSControl/dnscontrol/blob/main/CONTRIBUTING.md#pull-request-titles) convention. If you adjust it after opening the PR, keep the `docs:` prefix and the lowercase subject.
 {% endhint %}

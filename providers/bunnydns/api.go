@@ -26,6 +26,10 @@ type zone struct {
 	HasDNSSEC   bool   `json:"DnsSecEnabled"`
 }
 
+func (zone *zone) Nameservers() []string {
+	return []string{zone.Nameserver1, zone.Nameserver2}
+}
+
 type record struct {
 	ID         int64      `json:"Id,omitempty"`
 	Type       recordType `json:"Type"`
@@ -40,7 +44,30 @@ type record struct {
 	Tag        string     `json:"Tag"`
 	PullZoneID int64      `json:"PullZoneId,omitempty"`
 	LinkName   string     `json:"LinkName,omitempty"`
+
+	SmartRoutingType     smartRoutingType `json:"SmartRoutingType,omitempty"`
+	GeolocationLatitude  *float64         `json:"GeolocationLatitude,omitempty"`
+	GeolocationLongitude *float64         `json:"GeolocationLongitude,omitempty"`
+	LatencyZone          string           `json:"LatencyZone,omitempty"`
+	MonitorType          monitorType      `json:"MonitorType,omitempty"`
 }
+
+type smartRoutingType int
+
+const (
+	smartRoutingNone       smartRoutingType = 0
+	smartRoutingLatency    smartRoutingType = 1
+	smartRoutingGeographic smartRoutingType = 2
+)
+
+type monitorType int
+
+const (
+	monitorNone   monitorType = 0
+	monitorPing   monitorType = 1
+	monitorHTTP   monitorType = 2
+	monitorCustom monitorType = 3
+)
 
 type listZonesResponse struct {
 	Items        []zone `json:"Items"`
@@ -56,6 +83,9 @@ type getZoneResponse struct {
 type queryParams map[string]string
 
 func (b *bunnydnsProvider) findZoneByDomain(domain string) (*zone, error) {
+	b.zonesMu.Lock()
+	defer b.zonesMu.Unlock()
+
 	if b.zones == nil {
 		zones, err := b.getAllZones()
 		if err != nil {
@@ -111,7 +141,9 @@ func (b *bunnydnsProvider) createZone(domain string) (*zone, error) {
 		return nil, err
 	}
 
+	b.zonesMu.Lock()
 	b.zones[domain] = zone
+	b.zonesMu.Unlock()
 	return zone, nil
 }
 
@@ -132,12 +164,39 @@ func (b *bunnydnsProvider) getAllRecords(zoneID int64) ([]*record, error) {
 
 func (b *bunnydnsProvider) createRecord(zoneID int64, r *record) error {
 	url := fmt.Sprintf("/dnszone/%d/records", zoneID)
-	return b.request("PUT", url, nil, r, nil, []int{http.StatusCreated})
+	created := &record{}
+	if err := b.request("PUT", url, nil, r, created, []int{http.StatusCreated}); err != nil {
+		return err
+	}
+
+	// Bunny ignores MonitorType when creating a CNAME; apply it with an update.
+	if r.Type == recordTypeCNAME && r.MonitorType != monitorNone {
+		return b.modifyRecord(zoneID, created.ID, r)
+	}
+
+	return nil
 }
 
 func (b *bunnydnsProvider) modifyRecord(zoneID int64, recordID int64, r *record) error {
 	url := fmt.Sprintf("/dnszone/%d/records/%d", zoneID, recordID)
-	return b.request("POST", url, nil, r, nil, []int{http.StatusNoContent})
+	body := any(r)
+	switch r.Type {
+	case recordTypeA, recordTypeAAAA:
+		// Updating an A/AAAA record to disable smart routing or monitoring must
+		// send the fields with 0 explicitly; omitted fields keep their old value.
+		body = struct {
+			*record
+			SmartRoutingType smartRoutingType `json:"SmartRoutingType"`
+			MonitorType      monitorType      `json:"MonitorType"`
+		}{r, r.SmartRoutingType, r.MonitorType}
+	case recordTypeCNAME:
+		// Updating a CNAME to disable monitoring must send 0 explicitly.
+		body = struct {
+			*record
+			MonitorType monitorType `json:"MonitorType"`
+		}{r, r.MonitorType}
+	}
+	return b.request("POST", url, nil, body, nil, []int{http.StatusNoContent})
 }
 
 func (b *bunnydnsProvider) deleteRecord(zoneID, recordID int64) error {

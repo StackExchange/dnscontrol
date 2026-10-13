@@ -12,33 +12,11 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
 )
 
-// Feature Declaration
-
-var features = providers.DocumentationNotes{
-	providers.CanGetZones:            providers.Can(),
-	providers.CanUsePTR:              providers.Cannot(), // FortiGate does not really support ARPA Zones and handles PTR records really weired
-	providers.CanUseLOC:              providers.Cannot(),
-	providers.CanConcur:              providers.Unimplemented(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocOfficiallySupported: providers.Cannot(), // unofficial integration
-}
-
-// Provider Registration
-
 func init() {
-	const providerName = "FORTIGATE"
-	const providerMaintainer = "@KlettIT"
-	providers.RegisterDomainServiceProviderType(providerName, providers.DspFuncs{
-		Initializer:   NewFortiGate,
-		RecordAuditor: AuditRecords,
-	}, features)
-	providers.RegisterMaintainer(providerName, providerMaintainer)
-	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
-		DisplayName: "FortiGate",
-		Kind:        providers.KindDNS,
-		DocsURL:     "https://docs.dnscontrol.org/provider/fortigate",
-		PortalURL:   "https://docs.fortinet.com/", // TODO: Verify
-		Fields: []providers.CredsField{
+	providers.Register[*fortigateProvider]("FORTIGATE", providers.Definition{
+		FriendlyName: "FortiGate",
+		PortalURL:    "https://docs.fortinet.com/", // TODO: Verify
+		CredFields: []providers.CredsField{
 			{
 				Key:      "host",
 				Label:    "FortiGate host",
@@ -59,15 +37,32 @@ func init() {
 				Required: true,
 			},
 			{
-				Key:   "insecure_tls",
-				Label: "Skip TLS verification (optional)",
-				Help:  "Set to \"true\" to skip TLS certificate verification when connecting to the FortiGate.",
+				Key:          "insecure_tls",
+				Label:        "Skip TLS certificate verification when connecting to the FortiGate?",
+				Help:         "Answer yes only when the FortiGate uses a self-signed certificate.",
+				ConfirmValue: "true",
 			},
 			{
-				Key:   "debug_http",
-				Label: "Debug HTTP (optional)",
-				Help:  "Set to \"true\" to log HTTP requests and responses for debugging.",
+				Key:          "debug_http",
+				Label:        "Log HTTP requests and responses for debugging?",
+				Help:         "Answer no for normal use.",
+				ConfirmValue: "true",
 			},
+		},
+		Maintainer: "@KlettIT",
+		SupportedTypes: []string{
+			"A",
+			"AAAA",
+			"CNAME",
+			"PTR:Cannot",
+		},
+		CanAutoDNSSEC:          providers.Cannot(),
+		CanConcur:              providers.Unimplemented(),
+		DocDualHost:            providers.Cannot(),
+		DocOfficiallySupported: providers.Cannot(),
+		// Features retains annotations for record types and interface-derived facts.
+		Features: providers.DocumentationNotes{
+			providers.CanUsePTR: providers.Cannot("does not really support ARPA Zones and handles PTR records weirdly"),
 		},
 	})
 }
@@ -82,8 +77,8 @@ type fortigateProvider struct {
 	client   *apiClient
 }
 
-// NewFortiGate creates a new instance of the FortiGate DNS provider.
-func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
+// Initialize initializes a fresh provider instance.
+func (p *fortigateProvider) Initialize(m map[string]string, _ json.RawMessage, _ *providers.CreateOptions) error {
 	host, vdom, apiKey := m["host"], m["vdom"], m["apiKey"]
 
 	var missing []string
@@ -97,20 +92,20 @@ func NewFortiGate(m map[string]string, _ json.RawMessage) (providers.DNSServiceP
 		missing = append(missing, "apiKey")
 	}
 	if len(missing) > 0 {
-		return nil, errors.New("[FORTIGATE] Missing required field(s): " + strings.Join(missing, ", "))
+		return errors.New("[FORTIGATE] Missing required field(s): " + strings.Join(missing, ", "))
 	}
 
 	insecure := strings.EqualFold(m["insecure_tls"], "true")
 	debug := strings.EqualFold(m["debug_http"], "true")
 
-	p := &fortigateProvider{
+	*p = fortigateProvider{
 		host:     host,
 		vdom:     vdom,
 		apiKey:   apiKey,
 		insecure: insecure,
 	}
 	p.client = newClient(host, vdom, apiKey, insecure, debug)
-	return p, nil
+	return nil
 }
 
 // Record Fetching

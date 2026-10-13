@@ -3,6 +3,7 @@ package bunnydns
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"slices"
@@ -88,6 +89,48 @@ func fromRecordConfig(rc *models.RecordConfig) (*record, error) {
 		}
 	}
 
+	// Smart routing (geographic / latency) metadata only applies to A and AAAA records.
+	if r.Type == recordTypeA || r.Type == recordTypeAAAA {
+		if srtStr, ok := rc.Metadata[metaSmartRoutingType]; ok {
+			srt, err := parseSmartRoutingType(srtStr)
+			if err != nil {
+				return nil, err
+			}
+			r.SmartRoutingType = srt
+
+			switch srt {
+			case smartRoutingGeographic:
+				if latStr, ok := rc.Metadata[metaGeolocationLatitude]; ok {
+					lat, err := strconv.ParseFloat(latStr, 64)
+					if err != nil {
+						return nil, fmt.Errorf("invalid %s: %w", metaGeolocationLatitude, err)
+					}
+					r.GeolocationLatitude = &lat
+				}
+				if lonStr, ok := rc.Metadata[metaGeolocationLongitude]; ok {
+					lon, err := strconv.ParseFloat(lonStr, 64)
+					if err != nil {
+						return nil, fmt.Errorf("invalid %s: %w", metaGeolocationLongitude, err)
+					}
+					r.GeolocationLongitude = &lon
+				}
+			case smartRoutingLatency:
+				r.LatencyZone = rc.Metadata[metaLatencyZone]
+			}
+		}
+	}
+
+	// Health monitoring applies to A, AAAA, and CNAME records.
+	if r.Type == recordTypeA || r.Type == recordTypeAAAA || r.Type == recordTypeCNAME {
+		if mtStr, ok := rc.Metadata[metaMonitorType]; ok {
+			mt, err := parseMonitorType(mtStr)
+			if err != nil {
+				return nil, err
+			}
+			r.MonitorType = mt
+		}
+	}
+
 	return &r, nil
 }
 
@@ -135,6 +178,40 @@ func toRecordConfig(dc *models.DomainConfig, r *record) (*models.RecordConfig, e
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	// Smart routing (geographic / latency) metadata only applies to A and AAAA records.
+	if r.Type == recordTypeA || r.Type == recordTypeAAAA {
+		if r.SmartRoutingType != smartRoutingNone {
+			if rc.Metadata == nil {
+				rc.Metadata = make(map[string]string)
+			}
+			rc.Metadata[metaSmartRoutingType] = smartRoutingTypeToString(r.SmartRoutingType)
+
+			switch r.SmartRoutingType {
+			case smartRoutingGeographic:
+				if r.GeolocationLatitude != nil {
+					rc.Metadata[metaGeolocationLatitude] = strconv.FormatFloat(*r.GeolocationLatitude, 'f', -1, 64)
+				}
+				if r.GeolocationLongitude != nil {
+					rc.Metadata[metaGeolocationLongitude] = strconv.FormatFloat(*r.GeolocationLongitude, 'f', -1, 64)
+				}
+			case smartRoutingLatency:
+				if r.LatencyZone != "" {
+					rc.Metadata[metaLatencyZone] = r.LatencyZone
+				}
+			}
+		}
+	}
+
+	// Health monitoring applies to A, AAAA, and CNAME records.
+	if r.Type == recordTypeA || r.Type == recordTypeAAAA || r.Type == recordTypeCNAME {
+		if r.MonitorType != monitorNone {
+			if rc.Metadata == nil {
+				rc.Metadata = make(map[string]string)
+			}
+			rc.Metadata[metaMonitorType] = monitorTypeToString(r.MonitorType)
+		}
 	}
 
 	rc.Original = r.ID
@@ -237,5 +314,61 @@ func recordTypeToString(t recordType) string {
 		return "TLSA"
 	default:
 		panic(fmt.Errorf("BUNNY_DNS: native rtype %v unimplemented", t))
+	}
+}
+
+var errInvalidSmartRoutingType = fmt.Errorf("invalid %s: valid values are 'latency' and 'geographic'", metaSmartRoutingType)
+
+func parseSmartRoutingType(s string) (smartRoutingType, error) {
+	switch strings.ToLower(s) {
+	case "", "none":
+		return smartRoutingNone, nil
+	case "latency":
+		return smartRoutingLatency, nil
+	case "geographic", "geo":
+		return smartRoutingGeographic, nil
+	default:
+		return smartRoutingNone, errInvalidSmartRoutingType
+	}
+}
+
+func smartRoutingTypeToString(srt smartRoutingType) string {
+	switch srt {
+	case smartRoutingLatency:
+		return "latency"
+	case smartRoutingGeographic:
+		return "geographic"
+	default:
+		return "none"
+	}
+}
+
+var errInvalidMonitorType = fmt.Errorf("invalid %s: valid values are 'ping' and 'http'", metaMonitorType)
+
+func parseMonitorType(s string) (monitorType, error) {
+	switch strings.ToLower(s) {
+	case "", "none":
+		return monitorNone, nil
+	case "ping":
+		return monitorPing, nil
+	case "http":
+		return monitorHTTP, nil
+	case "monitor":
+		return monitorCustom, nil
+	default:
+		return monitorNone, errInvalidMonitorType
+	}
+}
+
+func monitorTypeToString(mt monitorType) string {
+	switch mt {
+	case monitorPing:
+		return "ping"
+	case monitorHTTP:
+		return "http"
+	case monitorCustom:
+		return "monitor"
+	default:
+		return "none"
 	}
 }

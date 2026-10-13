@@ -16,26 +16,10 @@ import (
 	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v5/models"
 	"github.com/DNSControl/dnscontrol/v5/pkg/diff2"
+	"github.com/DNSControl/dnscontrol/v5/pkg/nrc"
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
 	"github.com/DNSControl/dnscontrol/v5/providers/bind"
 )
-
-var features = providers.DocumentationNotes{
-	// The default for unlisted capabilities is 'Cannot'.
-	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanGetZones:            providers.Can(),
-	providers.CanConcur:              providers.Can(),
-	providers.CanUseAlias:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Cannot(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Cannot(),
-	providers.CanUseTLSA:             providers.Cannot(),
-	providers.DocCreateDomains:       providers.Cannot(),
-	providers.DocDualHost:            providers.Cannot(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-}
 
 type autoDNSProvider struct {
 	baseURL         url.URL
@@ -46,33 +30,10 @@ type autoDNSProvider struct {
 }
 
 func init() {
-	const providerName = "AUTODNS"
-	const providerMaintainer = "@arnoschoon"
-	fns := providers.DspFuncs{
-		Initializer: func(settings map[string]string, _ json.RawMessage) (providers.DNSServiceProvider, error) {
-			api, err := newAutoDNSProvider(settings)
-			if err != nil {
-				return nil, err
-			}
-			return api, nil
-		},
-		RecordAuditor: AuditRecords,
-	}
-	providers.RegisterRegistrarType(providerName, func(settings map[string]string) (providers.Registrar, error) {
-		api, err := newAutoDNSProvider(settings)
-		if err != nil {
-			return nil, err
-		}
-		return api, nil
-	}, features)
-	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterMaintainer(providerName, providerMaintainer)
-	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
-		DisplayName: "AutoDNS",
-		Kind:        providers.KindDNS | providers.KindRegistrar,
-		DocsURL:     "https://docs.dnscontrol.org/provider/autodns",
-		PortalURL:   "https://login.autodns.com/", // TODO: Verify
-		Fields: []providers.CredsField{
+	providers.Register[*autoDNSProvider]("AUTODNS", providers.Definition{
+		FriendlyName: "AutoDNS",
+		PortalURL:    "https://login.autodns.com/", // TODO: Verify
+		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
 				Label:    "Username",
@@ -94,7 +55,7 @@ func init() {
 			},
 			{
 				Key:    "totp-key",
-				Label:  "TOTP shared secret (optional)",
+				Label:  "TOTP shared secret",
 				Help:   "Shared TOTP secret used to generate the 2FA token. Only needed if two factor authentication is enabled for the account.",
 				Secret: true,
 			},
@@ -104,12 +65,20 @@ func init() {
 				Help:  "Set to \"true\" so get-zones also lists zones owned by sub-users (master/admin accounts). Optional; defaults to off.",
 			},
 		},
+		Maintainer: "@arnoschoon",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"PTR",
+		},
+		CanConcur:              providers.Can(),
+		DocDualHost:            providers.Cannot(),
+		DocOfficiallySupported: providers.Cannot(),
 	})
 }
 
-func newAutoDNSProvider(settings map[string]string) (*autoDNSProvider, error) {
-	api := &autoDNSProvider{}
-
+// Initialize initializes a fresh provider instance.
+func (api *autoDNSProvider) Initialize(settings map[string]string, _ json.RawMessage, _ *providers.CreateOptions) error {
 	api.baseURL = url.URL{
 		Scheme: "https",
 		User: url.UserPassword(
@@ -133,16 +102,16 @@ func newAutoDNSProvider(settings map[string]string) (*autoDNSProvider, error) {
 	api.totpValue, api.totpKey = settings["totp"], settings["totp-key"]
 
 	if api.totpValue != "" && api.totpKey != "" {
-		return nil, errors.New("AUTODNS: totp and totp-key must not be specified at the same time")
+		return errors.New("AUTODNS: totp and totp-key must not be specified at the same time")
 	}
 
 	if api.totpKey != "" {
 		if _, err := totp.GenerateCode(api.totpKey, time.Now()); err != nil {
-			return nil, fmt.Errorf("AUTODNS: unable to generate a 2FA token from totp-key: %w", err)
+			return fmt.Errorf("AUTODNS: unable to generate a 2FA token from totp-key: %w", err)
 		}
 	}
 
-	return api, nil
+	return nil
 }
 
 func (api *autoDNSProvider) otp() (string, error) {
@@ -224,12 +193,14 @@ func recordsToNative(recs models.Records) ([]*models.Nameserver, uint32, []*Reso
 
 			switch rc.TypeNum {
 			case dnsv2.TypeMX:
+				// AutoDNS carries the preference in its own "pref" field,
+				// so "value" must be the bare target FQDN. Using the full
+				// RDATA here repeats the preference ("10 mail.example.net.")
+				// and the gateway rejects the entire zone update with
+				// EF020541 "The MX resource record value is invalid.".
 				f := rc.AsMX()
-				resourceRecord.Pref = int32(f.Preference)
-				resourceRecord.Value = rc.GetRDATA().String()
-				// If that doesn't work, try:
-				//resourceRecord.Pref = int32(f.Preference)
-				//resourceRecord.Value = f.Mx
+				resourceRecord.Pref = new(int32(f.Preference))
+				resourceRecord.Value = f.Mx
 
 			// case dnsv2.TypeSRV:
 			// 	resourceRecord.Value = rc.GetRDATA().String()
@@ -394,9 +365,10 @@ func toRecordConfig(dc *models.DomainConfig, record *ResourceRecord) (*models.Re
 	ttl := uint32(record.TTL)
 	switch record.Type {
 	case "MX":
-		rc, err = dc.NewRecordConfig(label, ttl, dnsv2.TypeMX, uint16(record.Pref), record.Value)
+		rc, err = dc.NewRecordConfig(label, ttl, dnsv2.TypeMX, uint16(record.pref()), record.Value)
 	case "SRV":
-		rc, err = dc.NewRecordConfigParse(label, ttl, dnsv2.TypeSRV, fmt.Sprintf("%d %s", record.Pref, record.Value))
+		rc, err = dc.NewRecordConfig(label, ttl, dnsv2.TypeSRV, record.pref(), record.Value,
+			nrc.Flags{SrvWeirdSplit: true})
 	default:
 		rc, err = dc.NewRecordConfigParse(label, ttl, record.Type, record.Value)
 	}

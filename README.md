@@ -2,7 +2,7 @@
 
 [![DNSControl/dnscontrol/build](https://github.com/DNSControl/dnscontrol/actions/workflows/pr_build.yml/badge.svg)](https://github.com/DNSControl/dnscontrol/actions/workflows/pr_build.yml)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/DNSControl/dnscontrol)](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v4)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/DNSControl/dnscontrol)](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5)
 
 [DNSControl](https://docs.dnscontrol.org/) is Infrastructure as Code for DNS.
 It includes a full-featured configuration language (Javascript-compatible),
@@ -18,7 +18,7 @@ extensible, so more providers can be added.
 ```js
 // define our registrar and providers
 var REG_NAMECOM = NewRegistrar("ndc_main");
-var DSP_ROUTE53 = NewDnsProvider("r53_main")
+var DSP_ROUTE53 = NewDnsProvider("r53_main");
 
 D("example.com", REG_NAMECOM, DnsProvider(DSP_ROUTE53),
   A("@", "1.2.3.4"),
@@ -38,33 +38,42 @@ The easiest way to run DNSControl is to use the Docker container:
 docker run --rm -it -v "$(pwd):/dns"  ghcr.io/dnscontrol/dnscontrol preview
 ```
 
-Want full "GitOps" control of your DNS data?  Clone this repo to get started!  [github.com/DNSControl/dns-config](https://github.com/DNSControl/dns-config)
+## Getting Started
 
-See [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on documentation site to get started!
+The quickest way to start is [`dnscontrol init`](https://docs.dnscontrol.org/commands/init). The interactive wizard asks for your DNS provider and registrar, verifies your credentials and writes a working `creds.json` and `dnsconfig.js`, including the records that already exist in your zones.
+
+See the [Getting Started](https://docs.dnscontrol.org/getting-started/getting-started) page on the documentation site for the full walkthrough.
+
+Want full "GitOps" control of your DNS data? Clone the [dns-config](https://github.com/DNSControl/dns-config) starter repo to get started!
 
 ## Supported Providers
 
-DNSControl supports 66 DNS providers and registrars:
+<!-- provider-table-start -->
+
+DNSControl supports 75 DNS providers and registrars:
 
 | | | | | |
 | ----- | ----- | ----- | ----- | ----- |
-| [AdGuard Home](https://docs.dnscontrol.org/provider/adguardhome) | [Akamai Edge DNS](https://docs.dnscontrol.org/provider/akamaiedgedns) | [Alibaba Cloud DNS](https://docs.dnscontrol.org/provider/alidns) | [AutoDNS](https://docs.dnscontrol.org/provider/autodns) | [AWS Route 53](https://docs.dnscontrol.org/provider/route53)¹ |
-| [AXFR+DDNS](https://docs.dnscontrol.org/provider/axfrddns) | [Azure DNS](https://docs.dnscontrol.org/provider/azuredns) | [Azure Private DNS](https://docs.dnscontrol.org/provider/azureprivatedns) | [BIND](https://docs.dnscontrol.org/provider/bind) | [Bunny DNS](https://docs.dnscontrol.org/provider/bunnydns) |
-| [CentralNic Reseller](https://docs.dnscontrol.org/provider/cnr)¹ | [Cloudflare](https://docs.dnscontrol.org/provider/cloudflareapi) | [ClouDNS](https://docs.dnscontrol.org/provider/cloudns) | [CSC Global](https://docs.dnscontrol.org/provider/cscglobal)¹ | [deSEC](https://docs.dnscontrol.org/provider/desec) |
-| [DigitalOcean](https://docs.dnscontrol.org/provider/digitalocean) | [DNS Made Easy](https://docs.dnscontrol.org/provider/dnsmadeeasy) | [DNSOVERHTTPS](https://docs.dnscontrol.org/provider/dnsoverhttps)² | [DNScale](https://docs.dnscontrol.org/provider/dnscale) | [DNSimple](https://docs.dnscontrol.org/provider/dnsimple)¹ |
-| [Domainnameshop](https://docs.dnscontrol.org/provider/domainnameshop) | [Dynadot](https://docs.dnscontrol.org/provider/dynadot)² | [easyname](https://docs.dnscontrol.org/provider/easyname)² | [Exoscale](https://docs.dnscontrol.org/provider/exoscale) | [Fortigate](https://docs.dnscontrol.org/provider/fortigate) |
-| [Gandi](https://docs.dnscontrol.org/provider/gandiv5)¹ | [Gcore](https://docs.dnscontrol.org/provider/gcore) | [Gidinet](https://docs.dnscontrol.org/provider/gidinet)¹ | [Google DNS](https://docs.dnscontrol.org/provider/gcloud) | [Hetzner](https://docs.dnscontrol.org/provider/hetzner) |
-| [hosting.de](https://docs.dnscontrol.org/provider/hostingde)¹ | [Huawei Cloud DNS](https://docs.dnscontrol.org/provider/huaweicloud) | [Hurricane Electric DNS](https://docs.dnscontrol.org/provider/hedns) | [Infoblox](https://docs.dnscontrol.org/provider/infoblox) | [Infomaniak](https://docs.dnscontrol.org/provider/infomaniak) |
-| [Internet.bs](https://docs.dnscontrol.org/provider/internetbs)² | [INWX](https://docs.dnscontrol.org/provider/inwx)¹ | [Joker](https://docs.dnscontrol.org/provider/joker) | [Linode](https://docs.dnscontrol.org/provider/linode) | [Loopia](https://docs.dnscontrol.org/provider/loopia)¹ |
-| [LuaDNS](https://docs.dnscontrol.org/provider/luadns) | Windows Server DNS | [MikroTik RouterOS](https://docs.dnscontrol.org/provider/mikrotik) | [Mythic Beasts](https://docs.dnscontrol.org/provider/mythicbeasts) | [Name.com](https://docs.dnscontrol.org/provider/namedotcom)¹ |
-| [Namecheap](https://docs.dnscontrol.org/provider/namecheap)¹ | [Netbird](https://docs.dnscontrol.org/provider/netbird) | [Netcup](https://docs.dnscontrol.org/provider/netcup) | [Netlify](https://docs.dnscontrol.org/provider/netlify) | [Netnod](https://docs.dnscontrol.org/provider/netnod) |
-| [NexDNS](https://docs.dnscontrol.org/provider/nexdns) | [NS1](https://docs.dnscontrol.org/provider/ns1) | [OpenSRS](https://docs.dnscontrol.org/provider/opensrs)² | [Oracle Cloud](https://docs.dnscontrol.org/provider/oracle) | [OVH](https://docs.dnscontrol.org/provider/ovh)¹ |
-| [Packetframe](https://docs.dnscontrol.org/provider/packetframe) | [Porkbun](https://docs.dnscontrol.org/provider/porkbun)¹ | [PowerDNS](https://docs.dnscontrol.org/provider/powerdns) | [Realtime Register](https://docs.dnscontrol.org/provider/realtimeregister)¹ | [RWTH DNS-Admin](https://docs.dnscontrol.org/provider/rwth) |
-| [Sakura Cloud](https://docs.dnscontrol.org/provider/sakuracloud) | [SoftLayer](https://docs.dnscontrol.org/provider/softlayer) | [Tencent Cloud DNS](https://docs.dnscontrol.org/provider/tencentdns)¹ | [TransIP](https://docs.dnscontrol.org/provider/transip) | [UniFi Network](https://docs.dnscontrol.org/provider/unifi) |
-| [Vercel](https://docs.dnscontrol.org/provider/vercel) | [Vultr](https://docs.dnscontrol.org/provider/vultr) | [WebSupport](https://docs.dnscontrol.org/provider/websupport) |  |  |
+| [AdGuard Home](https://docs.dnscontrol.org/provider/adguardhome) | [Akamai Edge DNS](https://docs.dnscontrol.org/provider/akamaiedgedns) | [Alibaba Cloud DNS](https://docs.dnscontrol.org/provider/alidns) | [Amazon Route 53](https://docs.dnscontrol.org/provider/route53)¹ | [AutoDNS](https://docs.dnscontrol.org/provider/autodns)¹ |
+| [AXFR + DDNS](https://docs.dnscontrol.org/provider/axfrddns) | [Azure DNS](https://docs.dnscontrol.org/provider/azuredns) | [Azure Private DNS](https://docs.dnscontrol.org/provider/azureprivatedns) | [Bunny DNS](https://docs.dnscontrol.org/provider/bunnydns) | [CentralNic Reseller](https://docs.dnscontrol.org/provider/cnr)¹ |
+| [Cloudflare](https://docs.dnscontrol.org/provider/cloudflareapi) | [ClouDNS](https://docs.dnscontrol.org/provider/cloudns)¹ | [CloudPress](https://docs.dnscontrol.org/provider/cloudpress) | [CSC Global](https://docs.dnscontrol.org/provider/cscglobal)¹ | [deSEC](https://docs.dnscontrol.org/provider/desec) |
+| [DigitalOcean](https://docs.dnscontrol.org/provider/digitalocean) | [DNS Made Easy](https://docs.dnscontrol.org/provider/dnsmadeeasy) | [DNS over HTTPS](https://docs.dnscontrol.org/provider/dnsoverhttps)² | [dnscale](https://docs.dnscontrol.org/provider/dnscale) | [DNSimple](https://docs.dnscontrol.org/provider/dnsimple)¹ |
+| [Domainnameshop](https://docs.dnscontrol.org/provider/domainnameshop) | [Dynadot](https://docs.dnscontrol.org/provider/dynadot)² | [Dynu](https://docs.dnscontrol.org/provider/dynu) | [easyname](https://docs.dnscontrol.org/provider/easyname)² | [Exoscale](https://docs.dnscontrol.org/provider/exoscale) |
+| [FortiGate](https://docs.dnscontrol.org/provider/fortigate) | [G-Core Labs](https://docs.dnscontrol.org/provider/gcore) | [Gandi v5](https://docs.dnscontrol.org/provider/gandiv5)¹ | [Gidinet](https://docs.dnscontrol.org/provider/gidinet)¹ | [Gigahost](https://docs.dnscontrol.org/provider/gigahost) |
+| [Google Cloud DNS](https://docs.dnscontrol.org/provider/gcloud) | [Hetzner DNS](https://docs.dnscontrol.org/provider/hetznerv2) | [hosting.de](https://docs.dnscontrol.org/provider/hostingde)¹ | [Huawei Cloud DNS](https://docs.dnscontrol.org/provider/huaweicloud) | [Hurricane Electric DNS](https://docs.dnscontrol.org/provider/hedns) |
+| [Infoblox](https://docs.dnscontrol.org/provider/infoblox) | [Infomaniak](https://docs.dnscontrol.org/provider/infomaniak) | [Internet.bs](https://docs.dnscontrol.org/provider/internetbs)² | [INWX](https://docs.dnscontrol.org/provider/inwx)¹ | [ISC BIND](https://docs.dnscontrol.org/provider/bind) |
+| [Joker.com](https://docs.dnscontrol.org/provider/joker) | [Linode](https://docs.dnscontrol.org/provider/linode) | [Loopia](https://docs.dnscontrol.org/provider/loopia)¹ | [LuaDNS](https://docs.dnscontrol.org/provider/luadns) | [MikroTik RouterOS](https://docs.dnscontrol.org/provider/mikrotik) |
+| [mittwald mStudio](https://docs.dnscontrol.org/provider/mittwald) | [Mythic Beasts](https://docs.dnscontrol.org/provider/mythicbeasts) | [Name.com](https://docs.dnscontrol.org/provider/namedotcom)¹ | [Namecheap](https://docs.dnscontrol.org/provider/namecheap)¹ | [Netbird](https://docs.dnscontrol.org/provider/netbird) |
+| [netcup](https://docs.dnscontrol.org/provider/netcup) | [Netlify](https://docs.dnscontrol.org/provider/netlify) | [Netnod](https://docs.dnscontrol.org/provider/netnod) | [NexDNS](https://docs.dnscontrol.org/provider/nexdns) | [NS1](https://docs.dnscontrol.org/provider/ns1) |
+| [Openprovider](https://docs.dnscontrol.org/provider/openprovider) | [OpenSRS](https://docs.dnscontrol.org/provider/opensrs)² | [OpenWrt](https://docs.dnscontrol.org/provider/openwrt) | [Oracle Cloud Infrastructure](https://docs.dnscontrol.org/provider/oracle) | [OVHcloud](https://docs.dnscontrol.org/provider/ovh)¹ |
+| [Packetframe](https://docs.dnscontrol.org/provider/packetframe) | [Porkbun](https://docs.dnscontrol.org/provider/porkbun)¹ | [PowerDNS](https://docs.dnscontrol.org/provider/powerdns) | [Realtime Register](https://docs.dnscontrol.org/provider/realtimeregister)¹ | [RWTH Aachen](https://docs.dnscontrol.org/provider/rwth) |
+| [Sakura Cloud](https://docs.dnscontrol.org/provider/sakuracloud) | [Scaleway](https://docs.dnscontrol.org/provider/scaleway) | [SoftLayer](https://docs.dnscontrol.org/provider/softlayer) | [Spaceship](https://docs.dnscontrol.org/provider/spaceship)¹ | [Tencent Cloud DNS](https://docs.dnscontrol.org/provider/tencentdns)¹ |
+| [TransIP](https://docs.dnscontrol.org/provider/transip) | [UniFi](https://docs.dnscontrol.org/provider/unifi) | [Vercel](https://docs.dnscontrol.org/provider/vercel) | [Vultr](https://docs.dnscontrol.org/provider/vultr) | [WebSupport](https://docs.dnscontrol.org/provider/websupport) |
 
 ¹also supports registrar functions
 ²registrar only
+
+<!-- provider-table-end -->
 
 ## Benefits
 
@@ -101,18 +110,18 @@ DNSControl supports 66 DNS providers and registrars:
 
 ## Installation
 
-DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://docs.dnscontrol.org/getting-started/getting-started#1-install-the-software).
+DNSControl can be installed via packages for macOS, Linux and Windows, or from source code. See the [official instructions](https://docs.dnscontrol.org/getting-started/getting-started#id-1.-install-the-software).
 
 ## Via GitHub Actions (GHA)
 
-The official Github Action is: [github.com/dnscontrol/dnscontrol-action](https://github.com/dnscontrol/dnscontrol-action)
+The official GitHub Action is: [github.com/dnscontrol/dnscontrol-action](https://github.com/dnscontrol/dnscontrol-action)
 
 Others have been created such as:
 
 * [github.com/metabrainz/dnscontrol-action](https://github.com/metabrainz/dnscontrol-action)
 * [github.com/gacts/install-dnscontrol](https://github.com/gacts/install-dnscontrol)
 
-## Deprecation warnings (updated 2025-11-21)
+## Deprecation warnings (updated 2026-08-17)
 
 - **REV() will switch from RFC2317 to RFC4183 sometime after v5.0 is released.** This is a breaking change. Warnings are output if your configuration is affected. See https://docs.dnscontrol.org/language-reference/top-level-functions/revcompat
 - **NAMEDOTCOM, OPENSRS, and SOFTLAYER need maintainers!** These providers have no maintainer. Maintainers respond to PRs and fix bugs in a timely manner, and try to stay on top of protocol changes. Interested in being a hero and adopting them?  Contact tal at what exit dot org.

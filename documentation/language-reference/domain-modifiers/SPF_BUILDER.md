@@ -39,7 +39,7 @@ Here is an example of how SPF settings are normally done:
 {% code title="dnsconfig.js" %}
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
-  TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
+  TXT("@", "v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
 );
 ```
 {% endcode %}
@@ -56,7 +56,7 @@ This has a few problems:
 ```javascript
 D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
   A("@", "10.2.2.2"),
-  MX("@", "example.com."),
+  MX("@", 10, "example.com."),
   SPF_BUILDER({
     label: "@",
     overflow: "_spf%d",
@@ -132,7 +132,8 @@ The parameters are:
 * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
 * `keepIgnoredRedirects:` Inlining an include can move its `redirect=` modifier into a record that has an `all` mechanism, where [RFC 7208 Section 6.1](https://tools.ietf.org/html/rfc7208#section-6.1) requires it to be ignored. Such modifiers are removed. Set this to `true` to keep them. (Optional. Default: `false`)
 
-[multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3 [record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
+[multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3
+[record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
 
 `SPF_BUILDER()` returns multiple `TXT()` records:
 

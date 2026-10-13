@@ -29,33 +29,52 @@ before:
 changelog:
   sort: asc
   use: github
+  # Groups are matched in order against the Conventional Commits PR title
+  # (type(scope): subject). Provider-specific PRs use scope "p/PROVIDER",
+  # e.g. "fix(p/CLOUDFLAREAPI): ..." or "feat(p/ROUTE53): ...".
   groups:
     - title: 'Breaking changes:'
-      regexp: "(?i)^.*breaking[(\\w)]*:+.*$"
+      regexp: "(?i)^\\w+(\\([^)]+\\))?!:.*$|(?i)^breaking changes?(\\([^)]+\\))?:.*$"
       order: 0
-    - title: 'Major features:'
-      regexp: "(?i)^.*(major|new provider|feature)[(\\w)]*:+.*$"
-      order: 1
     - title: 'Provider-specific changes:'
-      regexp: "(?i)((adguardhome|akamaiedgedns|alidns|autodns|axfrddns|azure_dns|azure_private_dns|azuredns|bind|bunny_dns|bunnydns|cloudflare|cloudflareapi|cloudns|cnr|cscglobal|desec|digitalocean|dnscale|dnsimple|dnsmadeeasy|dnsoverhttps|doh|domainnameshop|dynadot|dynu|easyname|exoscale|fortigate|gandi|gandi_v5|gcloud|gcore|gidinet|gigahost|hedns|hetzner_v2|hexonet|hostingde|huaweicloud|infoblox|infomaniak|internetbs|inwx|joker|linode|loopia|luadns|mikrotik|mythicbeasts|namecheap|namedotcom|netbird|netcup|netlify|netnod|nexdns|ns1|opensrs|openwrt|oracle|ovh|packetframe|porkbun|powerdns|realtimeregister|route53|rwth|sakuracloud|scaleway|softlayer|tencentdns|transip|unifi|vercel|vultr|websupport).*:)+.*"
-      order: 2
-    - title: 'Documentation:'
-      regexp: "(?i)^.*(docs)[(\\w)]*:+.*$"
+      regexp: "(?i)^\\w+\\(p/[^)]+\\):.*$"
+      order: 1
+    - title: 'New features:'
+      regexp: "(?i)^feat(\\([^)]+\\))?:.*$"
       order: 3
-    - title: 'CI/CD:'
-      regexp: "(?i)^.*(build|ci|cicd)[(\\w)]*:+.*$"
+    - title: 'Bug fixes:'
+      regexp: "(?i)^fix(\\([^)]+\\))?:.*$"
       order: 4
-    - title: 'Dependencies:'
-      regexp: "(?i)^.*\\b(deps|dependencies)\\b.*$"
+    - title: 'Documentation:'
+      regexp: "(?i)^docs(\\([^)]+\\))?:.*$"
       order: 5
-    - title: 'Other changes and improvements:'
+    - title: 'Performance improvements:'
+      regexp: "(?i)^perf(\\([^)]+\\))?:.*$"
+      order: 6
+    - title: 'CI/CD:'
+      regexp: "(?i)^(build|ci)(\\([^)]+\\))?:.*$"
+      order: 7
+    - title: 'Refactoring:'
+      regexp: "(?i)^refactor(\\([^)]+\\))?:.*$"
+      order: 8
+    - title: 'Code style:'
+      regexp: "(?i)^style(\\([^)]+\\))?:.*$"
       order: 9
-    - title: 'Deprecation warnings:'
-      regexp: "(?i)^.*Deprecate[(\\w)]*:+.*$"
+    - title: 'Tests:'
+      regexp: "(?i)^test(\\([^)]+\\))?:.*$"
       order: 10
+    - title: 'Chores:'
+      regexp: "(?i)^chore(\\([^)]+\\))?:.*$"
+      order: 11
+    - title: 'Dependencies:'
+      regexp: "(?i)^\\w+\\(deps\\):.*$"
+      order: 80
+    - title: 'Other changes and improvements:'
+      order: 99
   filters:
     exclude:
-    - '^test:'
+    - '^test(\(.+\))?:'
+    - '^chore(\(.+\))?:'
     - Merge pull request
     - Merge branch
 archives:
@@ -159,8 +178,12 @@ release:
 
     ## Monthly video call!
 
-    Everyone is invited to the __Monthly DNSControl Community Video Conference Call__ on the 2nd Tuesday of each  month. Join whether you are a new user with questions or an experienced developer that wants to discuss DNSControl internals... or anything in between! Meeting details on
+    Everyone is invited to the __Monthly DNSControl Community Video Conference Call__ on the 2nd Tuesday of each month. Join whether you are a new user with questions or an experienced developer that wants to discuss DNSControl internals... or anything in between! Meeting details on
     [GitHub Discussions](https://github.com/DNSControl/dnscontrol/discussions?discussions_q=label%3AAnnouncement%3Afuture_vc).
+
+    ## Experimental: Try the new D() syntax!
+
+    Select credential entries directly with REGISTRAR() and SERVICE() in dnsconfig.js. The legacy syntax remains supported; this revision replaces the experimental PROVIDER()/DNS_SERVICE() syntax from v5.3.0. See the examples in the [conversion guide](https://docs.dnscontrol.org/getting-started/converting-dnsconfig). Please test it and share feedback!
 
   footer: |
     ## Deprecation warnings

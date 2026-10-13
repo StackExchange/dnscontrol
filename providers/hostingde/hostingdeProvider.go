@@ -13,48 +13,16 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/models"
 	"github.com/DNSControl/dnscontrol/v5/pkg/diff2"
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
+	"github.com/DNSControl/dnscontrol/v5/pkg/soautil"
 )
 
 var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosting.de"}
 
-var features = providers.DocumentationNotes{
-	// The default for unlisted capabilities is 'Cannot'.
-	// See providers/capabilities.go for the entire list of capabilities.
-	providers.CanAutoDNSSEC:          providers.Can(),
-	providers.CanConcur:              providers.Unimplemented(),
-	providers.CanGetZones:            providers.Can(),
-	providers.CanOnlyDiff1Features:   providers.Can(),
-	providers.CanUseAlias:            providers.Can(),
-	providers.CanUseCAA:              providers.Can(),
-	providers.CanUseDS:               providers.Can(),
-	providers.CanUseLOC:              providers.Cannot(),
-	providers.CanUseNAPTR:            providers.Cannot(),
-	providers.CanUsePTR:              providers.Can(),
-	providers.CanUseSOA:              providers.Can(),
-	providers.CanUseSRV:              providers.Can(),
-	providers.CanUseSSHFP:            providers.Can(),
-	providers.CanUseTLSA:             providers.Can(),
-	providers.DocCreateDomains:       providers.Can(),
-	providers.DocDualHost:            providers.Can(),
-	providers.DocOfficiallySupported: providers.Cannot(),
-}
-
 func init() {
-	const providerName = "HOSTINGDE"
-	const providerMaintainer = "@juliusrickert"
-	providers.RegisterRegistrarType(providerName, newHostingdeReg)
-	fns := providers.DspFuncs{
-		Initializer:   newHostingdeDsp,
-		RecordAuditor: AuditRecords,
-	}
-	providers.RegisterDomainServiceProviderType(providerName, fns, features)
-	providers.RegisterMaintainer(providerName, providerMaintainer)
-	providers.RegisterCredsMetadata(providerName, providers.CredsMetadata{
-		DisplayName: "hosting.de",
-		Kind:        providers.KindDNS | providers.KindRegistrar,
-		DocsURL:     "https://docs.dnscontrol.org/provider/hostingde",
-		PortalURL:   "https://secure.hosting.de/",
-		Fields: []providers.CredsField{
+	providers.Register[*hostingdeProvider]("HOSTINGDE", providers.Definition{
+		FriendlyName: "hosting.de",
+		PortalURL:    "https://secure.hosting.de/",
+		CredFields: []providers.CredsField{
 			{
 				Key:      "authToken",
 				Label:    "Auth token",
@@ -63,6 +31,20 @@ func init() {
 				Required: true,
 			},
 		},
+		Maintainer: "@juliusrickert",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"DS",
+			"PTR",
+			"SOA",
+			"SSHFP",
+			"TLSA",
+		},
+		CanAutoDNSSEC:          providers.Can(),
+		CanConcur:              providers.Unimplemented(),
+		DocDualHost:            providers.Can(),
+		DocOfficiallySupported: providers.Cannot(),
 	})
 }
 
@@ -70,11 +52,12 @@ type providerMeta struct {
 	DefaultNS []string `json:"default_ns"`
 }
 
-func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingdeProvider, error) {
+// Initialize initializes a fresh provider instance.
+func (hp *hostingdeProvider) Initialize(m map[string]string, providermeta json.RawMessage, _ *providers.CreateOptions) error {
 	authToken, ownerAccountID, filterAccountID, baseURL := m["authToken"], m["ownerAccountId"], m["filterAccountId"], m["baseURL"]
 
 	if authToken == "" {
-		return nil, errors.New("hosting.de: authtoken must be provided")
+		return errors.New("hosting.de: authtoken must be provided")
 	}
 
 	if baseURL == "" {
@@ -82,7 +65,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	}
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
-	hp := &hostingdeProvider{
+	*hp = hostingdeProvider{
 		authToken:       authToken,
 		ownerAccountID:  ownerAccountID,
 		filterAccountID: filterAccountID,
@@ -93,7 +76,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 	if len(providermeta) > 0 {
 		var pm providerMeta
 		if err := json.Unmarshal(providermeta, &pm); err != nil {
-			return nil, fmt.Errorf("hosting.de: could not parse providermeta: %w", err)
+			return fmt.Errorf("hosting.de: could not parse providermeta: %w", err)
 		}
 
 		if len(pm.DefaultNS) > 0 {
@@ -101,15 +84,7 @@ func newHostingde(m map[string]string, providermeta json.RawMessage) (*hostingde
 		}
 	}
 
-	return hp, nil
-}
-
-func newHostingdeDsp(m map[string]string, providermeta json.RawMessage) (providers.DNSServiceProvider, error) {
-	return newHostingde(m, providermeta)
-}
-
-func newHostingdeReg(m map[string]string) (providers.Registrar, error) {
-	return newHostingde(m, json.RawMessage{})
+	return nil
 }
 
 func (hp *hostingdeProvider) GetNameservers(domain string) ([]*models.Nameserver, error) {
@@ -144,6 +119,29 @@ func (hp *hostingdeProvider) APIRecordsToStandardRecordsModel(dc *models.DomainC
 
 func soaToString(s soaValues) string {
 	return fmt.Sprintf("refresh=%d retry=%d expire=%d negativettl=%d ttl=%d", s.Refresh, s.Retry, s.Expire, s.NegativeTTL, s.TTL)
+}
+
+// soaMailToEmail turns a SOA mailbox into the address hosting.de keeps in the
+// zone config. A mailbox without a host of its own is qualified with the zone.
+// The address must not end in a period, the API rejects that.
+func soaMailToEmail(mbox, zone string) string {
+	mbox = strings.TrimRight(mbox, ".")
+	if mbox == "" {
+		return ""
+	}
+	if mail := soautil.BindMailToRFC5322(mbox); mail != "" {
+		return mail
+	}
+	// RFC-1035 [Section-8]
+	return strings.ReplaceAll(mbox, "\\.", ".") + "@" + zone
+}
+
+// placeholderSOA stands in for a zone that declares no SOA record. Only the
+// numeric fields are read, and they fall back to the provider's defaults
+// because they are zero. The mailbox must stay empty: a non-empty one makes
+// GetZoneRecordsCorrections rewrite the zone's contact address.
+func placeholderSOA(dc *models.DomainConfig) (*models.RecordConfig, error) {
+	return dc.NewRecordConfig("@", 0, dnsv2.TypeSOA, "ns", "", 0, 0, 0, 0)
 }
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
@@ -219,7 +217,10 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		}
 	}
 	if desiredSoa == nil {
-		desiredSoa = dc.MustNewRecordConfig("@", 0, dnsv2.TypeSOA, "ns", 1, 0, 0, 0, 0)
+		desiredSoa, err = placeholderSOA(dc)
+		if err != nil {
+			return nil, 0, err
+		}
 	}
 
 	defaultSoa := &hp.defaultSoa
@@ -240,16 +241,10 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 		zoneChanged = true
 	}
 
-	if df.Mbox != "" {
-		desiredMail := ""
-		if df.Mbox[len(df.Mbox)-1] != '.' {
-			desiredMail = df.Mbox + "@" + dc.Name
-		}
-		if desiredMail != "" && zone.ZoneConfig.EmailAddress != desiredMail {
-			msg = append(msg, fmt.Sprintf("Changing SOA Mail from %s to %s", zone.ZoneConfig.EmailAddress, desiredMail))
-			zone.ZoneConfig.EmailAddress = desiredMail
-			zoneChanged = true
-		}
+	if desiredMail := soaMailToEmail(df.Mbox, dc.Name); desiredMail != "" && zone.ZoneConfig.EmailAddress != desiredMail {
+		msg = append(msg, fmt.Sprintf("Changing SOA Mail from %s to %s", zone.ZoneConfig.EmailAddress, desiredMail))
+		zone.ZoneConfig.EmailAddress = desiredMail
+		zoneChanged = true
 	}
 
 	existingAutoDNSSecEnabled := zone.ZoneConfig.DNSSECMode == "automatic"
@@ -308,7 +303,7 @@ func (hp *hostingdeProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	corrections = append(corrections, &models.Correction{
-		Msg: "\n" + strings.Join(msg, "\n"),
+		Msg: strings.Join(msg, "\n"),
 		F: func() error {
 			for i := range 10 {
 				err := hp.updateZone(&zone.ZoneConfig, DNSSecOptions, create, del, mod)

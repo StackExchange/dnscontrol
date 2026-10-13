@@ -607,16 +607,24 @@ declare function CF_REDIRECT(source: string, destination: string, ...modifiers: 
  *
  * The fields are:
  *
- * * name: The name (basically a comment)
+ * * name: The name used to match this rule between deployments. Use a unique, stable name for each rule in a zone.
  * * code: Any of 301, 302, 303, 307, 308. May be a number or string.
  * * when: What Cloudflare sometimes calls the "rule expression".
  * * then: The replacement expression.
  *
- * DNSControl does not currently choose the order of the rules.  New rules are added to the end of the list. Use Cloudflare's dashboard to re-order the rule, DNSControl should not change them.  (In the future we hope to add a feature where the order the rules appear in dnsconfig.js is maintained in the dashboard.)
+ * DNSControl does not currently choose the order of the rules. New rules are added to the end of the list. Use Cloudflare's dashboard to reorder them. Editing the status code, condition, or destination of a rule with the same unique name preserves its Cloudflare rule ID and current position. Its enabled state is also preserved. A condition or status edit preserves the existing query-string behavior; changing the destination derives that behavior from the new destination, as for a new rule.
+ *
+ * Changing a rule's name is a replacement: the old rule is deleted and the new rule is appended. Names are case-sensitive. Rules with duplicate names cannot be reliably matched during edits; use unique names when position matters.
+ *
+ * Preserving positions does not restore an already misordered ruleset, enforce declaration order, or detect order-only drift. When conditions overlap, put specific rules before broader fallbacks in Cloudflare's dashboard. In the future we hope to support declarative ordering as a separate feature.
+ *
+ * Single Redirects are HTTP rules and have no DNS TTL. DNSControl normalizes their internal TTL to 1 when planning Cloudflare changes, including when a default TTL or an explicit `TTL()` modifier is present. This does not control browser redirect caching.
  *
  * ## `CF_REDIRECT` and `CF_TEMP_REDIRECT`
  *
  * `CF_REDIRECT` and `CF_TEMP_REDIRECT` used to manage Cloudflare Page Rules. However that feature is going away.  To help with the migration, DNSControl now translates those commands into CF_SINGLE_REDIRECT equivalents.  The conversion process is a transpiler that only understands certain formats. Please submit a Github issue if you find something it can't handle.
+ *
+ * These generated rules share the same ordered list as explicit `CF_SINGLE_REDIRECT` rules. Their generated names include the status code, source pattern, and destination. Changing any of those produces a replacement that is appended. To edit a redirect while retaining its position, use an explicit `CF_SINGLE_REDIRECT` with a stable name.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/service-provider-specific/cloudflare-dns/cf_single_redirect
  */
@@ -697,6 +705,29 @@ declare function CLOUDNS_WR(name: string, target: string, ...modifiers: RecordMo
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/cname
  */
 declare function CNAME(name: string, target: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
+ * `CSYNC` adds a [Child-to-Parent Synchronization record](https://www.rfc-editor.org/rfc/rfc7477) to a domain. The name should be the relative label for the record. A CSYNC record is normally published at the apex (`@`) of a child zone. It tells the parent's operator which records should be copied from the child zone into the parent zone.
+ *
+ * Serial is the SOA serial number of the child zone that the CSYNC record applies to.
+ *
+ * Flags is a bit field:
+ *
+ * - `1` (immediate): the parent may process the record immediately, without first checking the SOA serial.
+ * - `2` (soaminimum): the parent should only process the record if the child's SOA serial is greater than or equal to the CSYNC serial.
+ * - `3` is 1 + 2.
+ *
+ * Types is a space-separated list of the record types to synchronize, such as `"A NS AAAA"`.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   CSYNC("@", 2026101100, 2, "A NS AAAA"),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/csync
+ */
+declare function CSYNC(name: string, serial: number, flags: number, types: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `D` adds a new Domain for DNSControl to manage. The first two arguments are required: the domain name (fully qualified `example.com` without a trailing dot), and the name of the registrar (as previously declared with [NewRegistrar](NewRegistrar.md)). Any number of additional arguments may be included to add DNS Providers with [DNSProvider](NewDnsProvider.md), add records with [A](../domain-modifiers/A.md), [CNAME](../domain-modifiers/CNAME.md), and so forth, or add metadata.
@@ -844,7 +875,7 @@ declare function DEFAULTS(...modifiers: DomainModifier[]): void;
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   DHCID("example.com", "ABCDEFG"),
+ *   DHCID("host", "ABCDEFG"),
  * );
  * ```
  *
@@ -868,6 +899,7 @@ declare function DHCID(name: string, digest: string, ...modifiers: RecordModifie
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),
  *     ...
+ * );
  * ```
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/disable_ignore_safety_check
@@ -1050,7 +1082,7 @@ declare function DKIM_BUILDER(opts: { selector: string; pubkey?: string; label?:
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/dmarc_builder
  */
-declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; nonexistentSubdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; publicSuffixDomain: 'y' | 'n' | 'u'; testMode: 'y' | 'n'; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration | number; ttl?: Duration }): DomainModifier;
+declare function DMARC_BUILDER(opts: { label?: string; version?: string; policy: 'none' | 'quarantine' | 'reject'; subdomainPolicy?: 'none' | 'quarantine' | 'reject'; nonexistentSubdomainPolicy?: 'none' | 'quarantine' | 'reject'; alignmentSPF?: 'strict' | 's' | 'relaxed' | 'r'; alignmentDKIM?: 'strict' | 's' | 'relaxed' | 'r'; percent?: number; rua?: string[]; ruf?: string[]; publicSuffixDomain?: 'y' | 'n' | 'u'; testMode?: 'y' | 'n'; failureOptions?: { SPF: boolean, DKIM: boolean } | string; failureFormat?: string; reportInterval?: Duration | number; ttl?: Duration }): DomainModifier;
 
 /**
  * `DNAME` adds a [Delegation name record](https://www.rfc-editor.org/rfc/rfc6672) to the domain.
@@ -1153,7 +1185,7 @@ declare function DOMAIN_ELSEWHERE_AUTO(name: string, domain: string, registrar: 
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   DS("example.com", 2371, 13, 2, "ABCDEF"),
+ *   DS("@", 2371, 13, 2, "ABCDEF"),
  * );
  * ```
  *
@@ -1370,7 +1402,7 @@ declare const HEDNS_DYNAMIC_ON: RecordModifier;
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   HTTPS("@", 1, ".", "ipv4hint=123.123.123.123 alpn=h3,h2 port=443"),
- *   HTTPS("@", 1, "test.com", ""),
+ *   HTTPS("@", 1, "test.com.", ""),
  * );
  * ```
  *
@@ -1632,6 +1664,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),  // Error!  Ignoring an item we inserted
  *     ...
+ * );
  * ```
  *
  * To disable this safety check, add the `DISABLE_IGNORE_SAFETY_CHECK` statement to the `D()`.
@@ -1643,6 +1676,7 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *     TXT("myhost", "mytext"),
  *     IGNORE("myhost", "*", "*"),
  *     ...
+ * );
  * ```
  *
  * FYI: Previously DNSControl permitted disabling this check on
@@ -1652,7 +1686,8 @@ declare function HTTPS(name: string, priority: number, target: string, params: s
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *     // THIS NO LONGER WORKS! Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
+ *     // This deprecated example intentionally fails validation.
+ *     // Use DISABLE_IGNORE_SAFETY_CHECK instead. See above.
  *     TXT("myhost", "mytext", IGNORE_NAME_DISABLE_SAFETY_CHECK),
  * );
  * ```
@@ -2279,57 +2314,311 @@ declare function LOC_BUILDER_STR(opts: { label?: string; str: string; alt?: numb
 declare function LUA(name: string, rtype: string, contents: string | string[], ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
- * DNSControl offers a `M365_BUILDER` which can be used to simply set up Microsoft 365 for a domain in an opinionated way.
+ * `M365_BUILDER` creates the DNS records that Microsoft 365 requires for one
+ * domain: the [`MX`](MX.md) record for Exchange Online, the Autodiscover
+ * [`CNAME`](CNAME.md), and the two DKIM `CNAME` records. On request it also
+ * creates the domain verification [`TXT`](TXT.md) record, the SIP federation
+ * [`SRV`](SRV.md) record for Microsoft Teams (historically Skype for Business),
+ * and the two `CNAME` records for Microsoft Intune and Microsoft Entra device
+ * registration.
  *
- * It defaults to a setup without support for legacy Skype for Business applications.
- * It doesn't set up SPF or DMARC. See [`SPF_BUILDER`](SPF_BUILDER.md) and [`DMARC_BUILDER`](DMARC_BUILDER.md).
+ * The first parameter is the Microsoft 365 domain name. It must be the name the
+ * records are created under, because the domain token that appears in the `MX` and
+ * DKIM targets is derived from it. That is only checked while a target is actually
+ * derived from it: a call that sets `domainGUID`, or that needs neither a derived
+ * `MX` target nor derived DKIM targets, takes any name.
  *
- * ## Example
+ * `M365_BUILDER` does not create `SPF` or `DMARC` records. A domain may only have
+ * one SPF record, so it cannot be built in isolation from the rest of the domain's
+ * mail senders. See [`SPF_BUILDER`](SPF_BUILDER.md) and
+ * [`DMARC_BUILDER`](DMARC_BUILDER.md).
  *
- * ### Simple example
+ * ## Simple example
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   M365_BUILDER("example.com", {
- *       initialDomain: "example.onmicrosoft.com",
+ *       initialDomain: "contoso.onmicrosoft.com",
+ *   }, TTL("1h")),
+ * );
+ * ```
+ *
+ * This yields the following records:
+ *
+ * ```text
+ * @                     IN  MX     0 example-com.mail.protection.outlook.com.
+ * autodiscover          IN  CNAME  autodiscover.outlook.com.
+ * selector1._domainkey  IN  CNAME  selector1-example-com._domainkey.contoso.onmicrosoft.com.
+ * selector2._domainkey  IN  CNAME  selector2-example-com._domainkey.contoso.onmicrosoft.com.
+ * ```
+ *
+ * ## Parameters
+ *
+ * Every record has a switch that turns it on or off, and exactly one option that
+ * replaces its target completely. Only the values that Microsoft documents as
+ * derivable are derived; every value that Microsoft assigns can be given
+ * literally. An option that belongs to a disabled record is still checked for its
+ * type and its format; it just does not produce a record.
+ *
+ * | Option | Type | Default | Description |
+ * |---|---|---|---|
+ * | `label` | string | `"@"` | The label of the Microsoft 365 domain within the zone. Applies to every record the builder creates. |
+ * | `mx` | boolean | `true` | Create the `MX` record. |
+ * | `mxPriority` | number | `0` | The preference of the `MX` record (0-65535). |
+ * | `autodiscover` | boolean | `true` | Create the Autodiscover `CNAME` record. |
+ * | `dkim` | boolean | `true` | Create both DKIM `CNAME` records. |
+ * | `skypeForBusiness` | boolean | `false` | Create the SIP federation `SRV` record. |
+ * | `mdm` | boolean | `false` | Create the Intune and Entra device registration `CNAME` records. |
+ * | `verificationToken` | string | none | The full value of the domain verification `TXT` record, including the `MS=` prefix, for example `"MS=ms12345678"`. |
+ * | `domainGUID` | string | derived | The token Microsoft assigned to this domain; a single label without dots. Derived from the domain name by replacing every `.` with `-`; there is no default for a domain name that contains a dash, which includes every internationalized name, because its punycode form begins with `xn--`. |
+ * | `initialDomain` | string | none | The initial domain of the tenant, for example `"contoso.onmicrosoft.com"`. Used to derive the DKIM targets. |
+ * | `mxTarget` | string | `<domainGUID>.mail.protection.outlook.com.` | The target of the `MX` record. A domain that Microsoft provisioned with an `mx.microsoft` target needs it set explicitly. |
+ * | `autodiscoverTarget` | string | `autodiscover.outlook.com.` | The target of the Autodiscover `CNAME` record. |
+ * | `dkimSelector1Target` | string | derived | The target of the `selector1._domainkey` record. |
+ * | `dkimSelector2Target` | string | derived | The target of the `selector2._domainkey` record. |
+ * | `sipFederationTarget` | string | `sipfed.online.lync.com.` | The target of the `_sipfederationtls._tcp` record. |
+ * | `mdmEnrollmentTarget` | string | `enterpriseenrollment-s.manage.microsoft.com.` | The target of the `enterpriseenrollment` record. |
+ * | `mdmRegistrationTarget` | string | `enterpriseregistration.windows.net.` | The target of the `enterpriseregistration` record. |
+ *
+ * Target options and `initialDomain` may be written with or without a trailing
+ * dot.
+ *
+ * ## DKIM
+ *
+ * There are two ways to tell the builder where the DKIM records point.
+ *
+ * The exact way works for every domain: set `dkimSelector1Target` and
+ * `dkimSelector2Target` to the values Microsoft publishes for the domain. Both
+ * must be set together. Query them with:
+ *
+ * ```text
+ * Get-DkimSigningConfig -Identity example.com | Format-List Selector1CNAME,Selector2CNAME
+ * ```
+ *
+ * The derived way is a convenience for the legacy target format: set
+ * `initialDomain`, and the targets become
+ * `selector1-<domainGUID>._domainkey.<initialDomain>.` and
+ * `selector2-<domainGUID>._domainkey.<initialDomain>.`.
+ *
+ * Domains that Microsoft created from May 2025 onwards get a target below
+ * `dkim.mail.microsoft` instead, for example
+ * `selector1-example-com._domainkey.contoso.n-v1.dkim.mail.microsoft`. That target
+ * contains a partition character that Microsoft assigns and that is not
+ * configurable, so it cannot be derived. If the Microsoft 365 admin center or
+ * `Get-DkimSigningConfig` shows a target below `dkim.mail.microsoft`, copy both
+ * values into `dkimSelector1Target` and `dkimSelector2Target`; `initialDomain` is
+ * then not needed.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER("example.com", {
+ *       dkimSelector1Target: "selector1-example-com._domainkey.contoso.n-v1.dkim.mail.microsoft",
+ *       dkimSelector2Target: "selector2-example-com._domainkey.contoso.n-v1.dkim.mail.microsoft",
  *   }),
  * );
  * ```
  *
- * This sets up `MX` records, Autodiscover, and DKIM.
+ * ## Subdomains
  *
- * ### Advanced example
+ * A Microsoft 365 domain that is a subdomain of the zone is placed with `label`.
+ * The first parameter stays the full Microsoft 365 domain name, because the domain
+ * token is derived from it.
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   M365_BUILDER("example.com", {
+ *   M365_BUILDER("test.example.com", {
  *       label: "test",
- *       mx: false,
- *       autodiscover: false,
- *       dkim: false,
+ *       initialDomain: "contoso.onmicrosoft.com",
+ *       verificationToken: "MS=ms12345678",
+ *       skypeForBusiness: true,
  *       mdm: true,
- *       domainGUID: "test-example-com", // Can be automatically derived in this case, if example.com is the context.
- *       initialDomain: "example.onmicrosoft.com",
+ *   }, TTL("1h")),
+ * );
+ * ```
+ *
+ * This yields the following records:
+ *
+ * ```text
+ * test                         IN  TXT    "MS=ms12345678"
+ * test                         IN  MX     0 test-example-com.mail.protection.outlook.com.
+ * autodiscover.test            IN  CNAME  autodiscover.outlook.com.
+ * selector1._domainkey.test    IN  CNAME  selector1-test-example-com._domainkey.contoso.onmicrosoft.com.
+ * selector2._domainkey.test    IN  CNAME  selector2-test-example-com._domainkey.contoso.onmicrosoft.com.
+ * _sipfederationtls._tcp.test  IN  SRV    100 1 5061 sipfed.online.lync.com.
+ * enterpriseregistration.test  IN  CNAME  enterpriseregistration.windows.net.
+ * enterpriseenrollment.test    IN  CNAME  enterpriseenrollment-s.manage.microsoft.com.
+ * ```
+ *
+ * Inside a [`D_EXTEND`](../top-level-functions/D_EXTEND.md) the records are placed
+ * below the extended name, so the first parameter is the name of the extended
+ * domain and `label` is not needed.
+ *
+ * ```javascript
+ * D_EXTEND("sub.example.com",
+ *   M365_BUILDER("sub.example.com", {
+ *       initialDomain: "contoso.onmicrosoft.com",
  *   }),
  * );
  * ```
  *
- * This sets up Mobile Device Management only.
+ * ## DANE and DNSSEC for Exchange Online
  *
- * ### Parameters
+ * A tenant that has been switched to DANE and DNSSEC gets a new, opaque `MX`
+ * target from `Enable-DnssecForVerifiedDomain` (the `DnssecMxValue` field), and a
+ * DKIM target in the new format. All three are set explicitly:
  *
- * * `label` The label of the Microsoft 365 domain, useful if it is a subdomain (default: `"@"`)
- * * `mx` Set an `MX` record? (default: `true`)
- * * `autodiscover` Set Autodiscover `CNAME` record? (default: `true`)
- * * `dkim` Set DKIM `CNAME` records? (default: `true`)
- * * `skypeForBusiness` Set Skype for Business/Microsoft Teams records? (default: `false`)
- * * `mdm` Set Mobile Device Management records? (default: `false`)
- * * `domainGUID` The GUID of _this_ Microsoft 365 domain (default: `<label>.<context>` with `.` replaced by `-`, no default if domain contains dashes)
- * * `initialDomain` The initial domain of your Microsoft 365 tenant/account, ends in `onmicrosoft.com`
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER("example.com", {
+ *       mxTarget: "example-com.o-v1.mx.microsoft",
+ *       dkimSelector1Target: "selector1-example-com._domainkey.contoso.o-v1.dkim.mail.microsoft",
+ *       dkimSelector2Target: "selector2-example-com._domainkey.contoso.o-v1.dkim.mail.microsoft",
+ *   }),
+ *   // Microsoft's procedure keeps the legacy record until the new one has been
+ *   // verified: publish the new target with mxPriority 20 first, then give it
+ *   // the preference 0 used here, move the legacy record to 30, and delete it.
+ *   MX("@", 30, "example-com.mail.protection.outlook.com."),
+ * );
+ * ```
+ *
+ * The matching `TLSA` records live in Microsoft's zone, not in yours, so the
+ * builder does not create any. Use [`TLSA`](TLSA.md) if you need one for another
+ * reason.
+ *
+ * A domain added as an accepted domain from 1 July 2026 onwards is provisioned
+ * with an `mx.microsoft` target from the start, without DANE having been requested
+ * for it. The builder keeps deriving the `mail.protection.outlook.com` target,
+ * because that is the one an existing domain keeps; set `mxTarget` to the value
+ * the Microsoft 365 admin center shows for the domain.
+ *
+ * ## Sovereign clouds (GCC High, DoD, 21Vianet)
+ *
+ * The sovereign clouds use different targets. There is no cloud profile; set the
+ * target options instead.
+ *
+ * | | GCC High | DoD | 21Vianet |
+ * |---|---|---|---|
+ * | `mxTarget` | `<tenant>.mail.protection.office365.us` | `<tenant>.mail.protection.office365.us` | copy it from the admin center |
+ * | `autodiscoverTarget` | `autodiscover.office365.us` | `autodiscover-dod.office365.us` | copy it from the admin center |
+ * | `sipFederationTarget` | `sipfed.online.gov.skypeforbusiness.us` | `sipfed.online.dod.skypeforbusiness.us` | copy it from the admin center |
+ * | `mdmEnrollmentTarget` | `enterpriseenrollment-s.manage.microsoft.us` | `enterpriseenrollment-s.manage.microsoft.us` | `enterpriseenrollment-s.manage.microsoftonline.cn` |
+ * | `mdmRegistrationTarget` | `enterpriseregistration.windows.net` | `enterpriseregistration.windows.net` | not documented |
+ *
+ * Microsoft documents the device registration record for GCC High and DoD only,
+ * so 21Vianet has no target to set.
+ *
+ * Microsoft does not document DKIM targets for these clouds. Read the values from
+ * the Microsoft 365 admin center or from `Get-DkimSigningConfig` and set
+ * `dkimSelector1Target` and `dkimSelector2Target`, or set `dkim: false`.
+ *
+ * Microsoft 365 operated by 21Vianet needs one more record that the builder does
+ * not create: a [`CNAME`](CNAME.md) at `msoid` pointing to
+ * `clientconfig.partner.microsoftonline-p.net.cn.`. It belongs to that cloud
+ * alone; in any other cloud an `msoid` record keeps users from activating their
+ * license.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER("example.com", {
+ *       mxTarget: "contoso.mail.protection.office365.us",
+ *       autodiscoverTarget: "autodiscover.office365.us",
+ *       dkim: false, // Microsoft does not document DKIM targets for GCC High.
+ *       skypeForBusiness: true,
+ *       sipFederationTarget: "sipfed.online.gov.skypeforbusiness.us",
+ *       mdm: true,
+ *       mdmEnrollmentTarget: "enterpriseenrollment-s.manage.microsoft.us",
+ *   }),
+ * );
+ * ```
+ *
+ * ## TTL
+ *
+ * The TTL is set with [`TTL`](../record-modifiers/TTL.md) as a further argument to
+ * the call. It applies to every record the builder creates, and it is the only
+ * record modifier the call takes.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER("example.com", {
+ *       initialDomain: "contoso.onmicrosoft.com",
+ *   }, TTL("1h")),
+ * );
+ * ```
+ *
+ * Microsoft documents a TTL of 3600 seconds for the `MX` record and at least 3600
+ * seconds for the two DKIM `CNAME` records, where a shorter TTL causes
+ * `dkim=temperror` results. Without a `TTL()` the zone's
+ * [`DefaultTTL`](DefaultTTL.md) applies, which is 300 seconds unless the
+ * `dnsconfig.js` sets another one.
+ *
+ * ## Complete example
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
+ *   M365_BUILDER("example.com", {
+ *       // Both values come from the Microsoft 365 admin center; see the DKIM
+ *       // section for the older format that `initialDomain` derives.
+ *       dkimSelector1Target: "selector1-example-com._domainkey.contoso.n-v1.dkim.mail.microsoft",
+ *       dkimSelector2Target: "selector2-example-com._domainkey.contoso.n-v1.dkim.mail.microsoft",
+ *       verificationToken: "MS=ms12345678", // Remove this once the domain is verified.
+ *       skypeForBusiness: true,
+ *       mdm: true,
+ *   }, TTL("1h")),
+ *
+ *   SPF_BUILDER({
+ *     label: "@",
+ *     parts: [
+ *       "v=spf1",
+ *       "include:spf.protection.outlook.com", // Microsoft 365
+ *       "-all",
+ *     ],
+ *   }),
+ *
+ *   DMARC_BUILDER({
+ *     policy: "reject",
+ *     rua: [
+ *       "mailto:dmarc-reports@example.com",
+ *     ],
+ *   }),
+ * );
+ * ```
+ *
+ * ## Migrating from earlier versions
+ *
+ * | Change | What to do |
+ * |---|---|
+ * | `label` now applies to the Autodiscover, DKIM, SIP federation and device management records, and the domain token is derived from `label` plus the zone name. | Nothing, if the records were already correct. Otherwise review the diff before pushing. |
+ * | The first parameter must be the name the records are created under, unless `domainGUID` is set, or no target is derived from it. | Set `label`, or pass the name of the zone, or set `domainGUID`. |
+ * | `skypeForBusiness` now creates only the `_sipfederationtls._tcp` record. The `lyncdiscover`, `sip` and `_sip._tls` records are gone; two of their targets no longer resolve. | Nothing. Add the records with `CNAME` and `SRV` if you still need them. |
+ * | `mdm` now uses `enterpriseenrollment-s.manage.microsoft.com.`, which Microsoft calls the preferred name. | Nothing. Set `mdmEnrollmentTarget: "enterpriseenrollment.manage.microsoft.com."` to keep the old value. |
+ * | Unknown option names, wrong types, empty strings, malformed values and more than two arguments are errors. | Fix the spelling or the value named in the error message. |
+ * | Nine option names are new: `mxPriority`, `mxTarget`, `autodiscoverTarget`, `dkimSelector1Target`, `dkimSelector2Target`, `sipFederationTarget`, `mdmEnrollmentTarget`, `mdmRegistrationTarget` and `verificationToken`. A key of one of those names used to be ignored and now takes effect. | Review the diff before pushing if the options object carries any of them. |
+ * | Target options and `initialDomain` must be a full host name. A value that is not fully qualified is an error instead of having the zone name appended to it. | Add the missing part of the name. |
+ * | An internationalized domain name needs `domainGUID`, because its punycode form contains a dash. It used to produce a target built by encoding the unicode form, for example `xn--mnchen-de-q9a.mail.protection.outlook.com.`. | Set `domainGUID` to the value the Microsoft 365 admin center shows. |
+ * | `TTL()` on the call now applies instead of being ignored. | Nothing, unless a stray `TTL()` was left in the call. |
+ * | The options object is no longer modified. Sharing one object between several `D()` blocks used to give every later domain the first domain's MX and DKIM targets. | Nothing, those records were wrong. Review the diff before pushing. |
+ * | A trailing dot in the domain name or in `initialDomain` is removed instead of ending up in the middle of a target. | Nothing, those targets were wrong. |
+ *
+ * ## References
+ *
+ * - [External Domain Name System records for Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/enterprise/external-domain-name-system-records?view=o365-worldwide).
+ *   The records of the worldwide cloud. Change the `view` parameter for GCC High,
+ *   DoD and 21Vianet.
+ * - [How to use DKIM for email in your custom domain](https://learn.microsoft.com/en-us/defender-office-365/email-authentication-dkim-configure).
+ *   The DKIM targets, the format used for domains created from May 2025 onwards,
+ *   and the TTL.
+ * - [Get-DkimSigningConfig](https://learn.microsoft.com/en-us/powershell/module/exchange/get-dkimsigningconfig).
+ *   Reads the two DKIM targets Microsoft assigned to a domain.
+ * - [How SMTP DANE works](https://learn.microsoft.com/en-us/purview/how-smtp-dane-works)
+ *   and [Enable-DnssecForVerifiedDomain](https://learn.microsoft.com/en-us/powershell/module/exchange/enable-dnssecforverifieddomain).
+ *   The `MX` target of a tenant switched to DANE and DNSSEC.
+ * - [Enable autodiscovery of Intune enrollment server](https://learn.microsoft.com/en-us/intune/device-enrollment/windows/create-cname-autodiscovery).
+ *   The `enterpriseenrollment` record, and why `enterpriseenrollment-s` is the
+ *   preferred name.
  *
  * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/m365_builder
  */
-declare function M365_BUILDER(opts: { label?: string; mx?: boolean; autodiscover?: boolean; dkim?: boolean; skypeForBusiness?: boolean; mdm?: boolean; domainGUID?: string; initialDomain?: string }): DomainModifier;
+declare function M365_BUILDER(name: string, opts: { label?: string; mx?: boolean; mxPriority?: number; mxTarget?: string; autodiscover?: boolean; autodiscoverTarget?: string; dkim?: boolean; initialDomain?: string; dkimSelector1Target?: string; dkimSelector2Target?: string; skypeForBusiness?: boolean; sipFederationTarget?: string; mdm?: boolean; mdmEnrollmentTarget?: string; mdmRegistrationTarget?: string; domainGUID?: string; verificationToken?: string }, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
  * `MIKROTIK_FORWARDER` manages a RouterOS DNS forwarder entry (`/ip/dns/forwarders`). The `name` parameter can be a domain name (e.g. `corp.example.com`) or an arbitrary alias (e.g. `my-upstream`). These named entries can then be referenced as the target of [`MIKROTIK_FWD`](MIKROTIK_FWD.md) records.
@@ -3379,7 +3668,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  *
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
- *   TXT("v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
+ *   TXT("@", "v=spf1 ip4:198.252.206.0/24 ip4:192.111.0.0/24 include:_spf.google.com include:mailgun.org include:spf-basic.fogcreek.com include:mail.zendesk.com include:servers.mcsv.net include:sendgrid.net include:450622.spf05.hubspotemail.net ~all"),
  * );
  * ```
  *
@@ -3394,7 +3683,7 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * ```javascript
  * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_MY_PROVIDER),
  *   A("@", "10.2.2.2"),
- *   MX("@", "example.com."),
+ *   MX("@", 10, "example.com."),
  *   SPF_BUILDER({
  *     label: "@",
  *     overflow: "_spf%d",
@@ -3467,7 +3756,8 @@ declare function SOA(name: string, ns: string, mbox: string, refresh: number, re
  * * `flatten:` Which includes should be inlined. For safety purposes the flattening is done on an opt-in basis. If `"*"` is listed, all includes will be flattened... this might create more problems than is solves due to length limitations.
  * * `keepIgnoredRedirects:` Inlining an include can move its `redirect=` modifier into a record that has an `all` mechanism, where [RFC 7208 Section 6.1](https://tools.ietf.org/html/rfc7208#section-6.1) requires it to be ignored. Such modifiers are removed. Set this to `true` to keep them. (Optional. Default: `false`)
  *
- * [multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3 [record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
+ * [multi-string]: https://tools.ietf.org/html/rfc4408#section-3.1.3
+ * [record-size]: https://tools.ietf.org/html/rfc4408#section-3.1.4
  *
  * `SPF_BUILDER()` returns multiple `TXT()` records:
  *
@@ -3730,7 +4020,7 @@ declare function TTL(ttl: Duration): RecordModifier;
  *       TXT("multiple", ["one", "two", "three"]),  // Multiple strings
  *       TXT("quoted", 'any "quotes" and escapes? ugh; no worries!'),
  *       TXT("_domainkey", "t=y; o=-;"), // Escapes are done for you automatically.
- *       TXT("long", "X".repeat(300)), // Long strings are split automatically.
+ *       TXT("long", new Array(301).join("X")), // Long strings are split automatically.
  *     );
  * ```
  *

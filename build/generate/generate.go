@@ -16,10 +16,10 @@ func main() {
 	if err := generateDTSFile(funcs); err != nil {
 		log.Fatal(err)
 	}
-	if err := generateGoreleaserFile(); err != nil {
+	if err := generateLabelerFile(); err != nil {
 		log.Fatal(err)
 	}
-	if err := generateLabelerFile(); err != nil {
+	if err := generateReadmeProvidersTable(); err != nil {
 		log.Fatal(err)
 	}
 }

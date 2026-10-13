@@ -155,6 +155,9 @@ DNSControl depends on a Gcore account API token.
 
 You can obtain your API token on this page: <https://accounts.gcore.com/profile/api-tokens>
 
+## Caveats
+This provider may not work propoerly with SKIP_AUDIT. If you need to use SKIP_AUDIT with this provider, please [file a bug report](https://github.com/DNSControl/dnscontrol/issues/new/choose).
+
 ## Feature Summary
 
 <!-- provider-features-start -->
@@ -169,23 +172,26 @@ You can obtain your API token on this page: <https://accounts.gcore.com/profile/
   - [get-zones](../commands/get-zones.md): ✅
 - DNS extensions
   - [`ALIAS`](../language-reference/domain-modifiers/ALIAS.md): ✅
-  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❔
+  - [`CSYNC`](../language-reference/domain-modifiers/CSYNC.md): ❌
+  - [`DNAME`](../language-reference/domain-modifiers/DNAME.md): ❌
   - [`LOC`](../language-reference/domain-modifiers/LOC.md): ❌
   - [`PTR`](../language-reference/domain-modifiers/PTR.md): ✅
-  - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❔
+  - [`RP`](../language-reference/domain-modifiers/RP.md): ❌
+  - [`SOA`](../language-reference/domain-modifiers/SOA.md): ❌
 - Service discovery
-  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❔
+  - [`DHCID`](../language-reference/domain-modifiers/DHCID.md): ❌
   - [`NAPTR`](../language-reference/domain-modifiers/NAPTR.md): ❌
   - [`SRV`](../language-reference/domain-modifiers/SRV.md): ✅
   - [`SVCB`](../language-reference/domain-modifiers/SVCB.md): ✅
 - Security
   - [`CAA`](../language-reference/domain-modifiers/CAA.md): ✅
   - [`HTTPS`](../language-reference/domain-modifiers/HTTPS.md): ✅
-  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❔
+  - [`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md): ❌
+  - [`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md): ❌
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ❌
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ❌
 - DNSSEC
   - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ✅
-  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❔
+  - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❌
   - [`DS`](../language-reference/domain-modifiers/DS.md): ❌
 <!-- provider-features-end -->

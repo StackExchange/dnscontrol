@@ -12,16 +12,13 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/models"
 	"github.com/DNSControl/dnscontrol/v5/pkg/nameutil"
 	"github.com/DNSControl/dnscontrol/v5/pkg/nrc"
+	"github.com/DNSControl/dnscontrol/v5/pkg/privatetypes"
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
 	"github.com/DNSControl/dnscontrol/v5/pkg/transform"
 )
 
 // make sure target is valid reference for cnames, mx, etc.
 func checkTarget(target string) error {
-	// The target shouldn't be "@". It should be $origin+"."
-	if target == "" {
-		return errors.New("empty target (\"\"). Did you mean \"@\" instead?")
-	}
 	if strings.ContainsAny(target, `'" +,|!£$%&()=?^*ç°§;:<>[]()@`) {
 		return fmt.Errorf("target (%v) includes invalid char", target)
 	}
@@ -31,59 +28,19 @@ func checkTarget(target string) error {
 	return nil
 }
 
-// validateRecordTypes returns an error if this type is incompatible with the provider.
-// FIXME(tlim): Is this needed any more?
-func validateRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
-	switch rec.Type {
-	// RCv3 records do not need this validation step.
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP", "DS":
-		return nil
+// validateSupportedRecordTypes checks catalog recognition and provider support
+// for original types before transformations and resulting types afterwards.
+func validateSupportedRecordTypes(rec *models.RecordConfig, domain string, pTypes []string) error {
+	if _, known := privatetypes.LookupRecordType(rec.Type); !known {
+		return fmt.Errorf("unknown record type %s in domain %s", rec.Type, domain)
 	}
-
-	// #rtype_variations
-	validTypes := map[string]bool{
-		"A":                true,
-		"AAAA":             true,
-		"ALIAS":            false,
-		"CAA":              true,
-		"CNAME":            true,
-		"DHCID":            true,
-		"DNAME":            true,
-		"DS":               true,
-		"DNSKEY":           true,
-		"HTTPS":            true,
-		"IMPORT_TRANSFORM": false,
-		"LOC":              true,
-		"MX":               true,
-		"NAPTR":            true,
-		"NS":               true,
-		"OPENPGPKEY":       true,
-		"PTR":              true,
-		"SMIMEA":           true,
-		"SOA":              true,
-		"SRV":              true,
-		"SSHFP":            true,
-		"SVCB":             true,
-		"TLSA":             true,
-		"TXT":              true,
-	}
-	_, ok := validTypes[rec.Type]
-	if !ok {
-
-		cType := providers.GetCustomRecordType(rec.Type)
-		if cType == nil {
-			return fmt.Errorf("unsupported record type (%v) domain=%v name=%v Type=%s TypeNum=%d", rec.Type, domain, rec.GetLabel(), rec.Type, rec.TypeNum)
+	// rec.TypeNum may be stale after transformations, so derive it from rec.Type.
+	typeNum := dnsv2.StringToType[rec.Type]
+	for _, pType := range pTypes {
+		if providers.RecordTypeSupported(pType, typeNum, rec.GetLabel()) {
+			continue
 		}
-		for _, providerType := range pTypes {
-			if providerType != cType.Provider {
-				return fmt.Errorf("custom record type %s is not compatible with provider type %s", rec.Type, providerType)
-			}
-		}
-		// it is ok. Lets replace the type with real type and add metadata to say we checked it
-		rec.Metadata["orig_custom_type"] = rec.Type
-		if cType.RealType != "" {
-			rec.Type = cType.RealType
-		}
+		return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them at %s", domain, rec.Type, pType, rec.GetLabel())
 	}
 	return nil
 }
@@ -153,20 +110,12 @@ func checkSoa(expire uint32, minttl uint32, refresh uint32, retry uint32, mbox s
 	if mbox == "" {
 		return errors.New("SOA MBox must be specified")
 	}
-	if strings.ContainsRune(mbox, '@') {
-		return errors.New("SOA MBox must have '.' instead of '@'")
-	}
 	return nil
 }
 
 // checkTargets returns zero or more errors when problems are found.
 // FYI: Many of these checks are obsolete since Make*() does the same thing. We'll be removing the duplicate checks over time.
 func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
-	switch rec.Type {
-	case "CLOUDFLAREAPI_SINGLE_REDIRECT", "RP", "DS":
-		return nil
-	}
-
 	label := rec.GetLabel()
 	check := func(e error) {
 		if e != nil {
@@ -179,11 +128,8 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 	}
 	switch rec.Type { // #rtype_variations
 
-	// No longer needed
-	case "A":
-	case "AAAA":
-	case "LOC":
-	case "CAA", "DHCID", "DNSKEY", "DS", "HTTPS", "IMPORT_TRANSFORM", "OPENPGPKEY", "SMIMEA", "SSHFP", "SVCB", "TLSA", "TXT":
+	// IMPORT_TRANSFORM is not in the record catalog, so the default case would reject it.
+	case "IMPORT_TRANSFORM":
 
 	case "ALIAS":
 		check(checkTarget(rec.AsALIAS().Target))
@@ -233,8 +179,9 @@ func checkTargets(rec *models.RecordConfig, domain string) (errs []error) {
 			check(fmt.Errorf("LUA emitted rtype (%s) is not a valid DNS type", f.LuaType))
 		}
 	default:
-		if rec.Metadata["orig_custom_type"] != "" {
-			// it is a valid custom type. We perform no validation on target
+		if _, known := privatetypes.LookupRecordType(rec.Type); known && rec.GetRDATA() != nil {
+			// Catalog records have already been parsed and validated. Provider
+			// support is checked separately.
 			return errs
 		}
 		errs = append(errs, fmt.Errorf("checkTargets: Unimplemented record type (%v) domain=%v name=%v",
@@ -356,28 +303,18 @@ type Warning struct {
 
 // ValidateAndNormalizeConfig performs and normalization and/or validation of the IR.
 func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
+	if err := providers.Finalize(); err != nil {
+		return []error{err}
+	}
 	err := processSplitHorizonDomains(config)
 	if err != nil {
 		return []error{err}
 	}
 
 	for _, domain := range config.Domains {
-		pTypes := []string{}
+		var pTypes []string
 		for _, provider := range domain.DNSProviderInstances {
-			pType := provider.ProviderType
-			if pType == "-" {
-				// "-" indicates that we don't yet know who the provider type
-				// is.  This is probably due to the fact that `dnscontrol
-				// check` doesn't read creds.json, which is where the TYPE is
-				// set.  We will skip this test in this instance.  Later if
-				// `dnscontrol preview` or `push` is used, the full check will
-				// be performed.
-				continue
-			}
-			//			// If NO_PURGE is in use, make sure this *isn't* a provider that *doesn't* support NO_PURGE.
-			//			if domain.KeepUnknown && providers.ProviderHasCapability(pType, providers.CantUseNOPURGE) {
-			//				errs = append(errs, fmt.Errorf("%s uses NO_PURGE which is not supported by %s(%s)", domain.Name, provider.Name, pType))
-			//			}
+			pTypes = append(pTypes, provider.ProviderType)
 		}
 
 		// Normalize Nameservers.
@@ -420,9 +357,12 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				}
 			}
 
-			// Validate the unmodified inputs:
-			if err := validateRecordTypes(rec, domain.Name, pTypes); err != nil {
-				errs = append(errs, err)
+			// IMPORT_TRANSFORM is a deferred command, not a provider record.
+			// It is consumed below; the resulting records are validated afterwards.
+			if rec.Type != "IMPORT_TRANSFORM" {
+				if err := validateSupportedRecordTypes(rec, domain.Name, pTypes); err != nil {
+					errs = append(errs, err)
+				}
 			}
 			if err := checkLabel(rec.GetLabel(), rec.Type, domain.Name, rec.Metadata); err != nil {
 				errs = append(errs, err)
@@ -530,6 +470,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 				if c == nil {
 					err = fmt.Errorf("IMPORT_TRANSFORM mentions non-existent domain %q", targetDomain)
 					errs = append(errs, err)
+					continue
 				}
 				err = importTransform(c, domain, table, ttl, suffixstrip)
 				if err != nil {
@@ -550,8 +491,9 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 	}
 
 	for _, d := range config.Domains {
+		identityFn := domainRecordIdentity(d)
 		// Check that CNAMES don't have to co-exist with any other records
-		errs = append(errs, checkCNAMEs(d)...)
+		errs = append(errs, checkCNAMEs(d, identityFn)...)
 		// Check that only one SOA record exist for a zone
 		errs = append(errs, checkMultipleSOAs(d)...)
 		// Check that if any advanced record types are used in a domain, every provider for that domain supports them
@@ -560,7 +502,7 @@ func ValidateAndNormalizeConfig(config *models.DNSConfig) (errs []error) {
 			errs = append(errs, err)
 		}
 		// Check for duplicates
-		errs = append(errs, checkDuplicates(d.Records)...)
+		errs = append(errs, checkDuplicates(d.Records, identityFn)...)
 		// Check for different TTLs under the same label
 		errs = append(errs, checkRecordSetHasMultipleTTLs(d.Records)...)
 		// Check for inconsistent R53 weighted routing metadata within a group
@@ -632,14 +574,57 @@ func checkAutoDNSSEC(dc *models.DomainConfig) (errs []error) {
 	return
 }
 
-func checkCNAMEs(dc *models.DomainConfig) (errs []error) {
+// recordIdentityString returns the string used to detect duplicate records.
+// It is the label, the rType, the RDATA and any provider-declared identity
+// text (for example DNSPod's record line).
+func recordIdentityString(r *models.RecordConfig, extra func(*models.RecordConfig) string) string {
+	id := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ComparableV3)
+	if x := providerIdentity(r, extra); x != "" {
+		id += " " + x
+	}
+	return id
+}
+
+// domainRecordIdentity returns the identity function declared by one of the
+// domain's DNS providers, or nil if none declares one.
+func domainRecordIdentity(d *models.DomainConfig) func(*models.RecordConfig) string {
+	for _, provider := range d.DNSProviderInstances {
+		if provider.ProviderType == "-" {
+			continue
+		}
+		if f := providers.GetRecordIdentity(provider.ProviderType); f != nil {
+			return f
+		}
+	}
+	return nil
+}
+
+// providerIdentity returns the provider-declared identity text for a record,
+// or "" when no provider declares one.
+func providerIdentity(r *models.RecordConfig, extra func(*models.RecordConfig) string) string {
+	if extra == nil {
+		return ""
+	}
+	return extra(r)
+}
+
+func checkCNAMEs(dc *models.DomainConfig, extra func(*models.RecordConfig) string) (errs []error) {
 	cnames := map[string]bool{}
 	proxiedCnames := map[string]bool{}
+	seenIdentity := map[string]bool{}
 	for _, r := range dc.Records {
 		if r.Type == "CNAME" {
-			if cnames[r.GetLabel()] {
+			// Without a provider-declared identity this is exactly the old
+			// rule: one CNAME per label. With one, two CNAMEs may share a
+			// label as long as the provider treats them as separate objects.
+			id := r.GetLabel()
+			if x := providerIdentity(r, extra); x != "" {
+				id += "|" + x
+			}
+			if seenIdentity[id] {
 				errs = append(errs, fmt.Errorf("%s: cannot have multiple CNAMEs with same name: %s", r.FilePos, r.GetLabelFQDN()))
 			}
+			seenIdentity[id] = true
 			cnames[r.GetLabel()] = true
 			if p, ok := r.Metadata["cloudflare_proxy"]; ok && (p == "on" || p == "full") {
 				proxiedCnames[r.GetLabel()] = true
@@ -677,10 +662,10 @@ func checkMultipleSOAs(dc *models.DomainConfig) (errs []error) {
 	return
 }
 
-func checkDuplicates(records models.Records) (errs []error) {
+func checkDuplicates(records models.Records, extra func(*models.RecordConfig) string) (errs []error) {
 	seen := make(map[string]*models.RecordConfig)
 	for _, r := range records {
-		diffable := fmt.Sprintf("%s %s %s", r.GetLabelFQDN(), r.Type, r.ComparableV3)
+		diffable := recordIdentityString(r, extra)
 
 		if seen[diffable] != nil {
 			errs = append(errs, fmt.Errorf("exact duplicate record found: %s", diffable))
@@ -813,137 +798,33 @@ func checkR53WeightedGroupConsistency(records models.Records) (errs []error) {
 	return errs
 }
 
-// We pull this out of checkProviderCapabilities() so that it's visible within
-// the package elsewhere, so that our test suite can look at the list of
-// capabilities we're checking and make sure that it's up-to-date.
-var providerCapabilityChecks = []pairTypeCapability{
-	// #rtype_variations
-	// If a zone uses rType X, the provider must support capability Y.
-	// {"X", providers.Y},
-	capabilityCheck("AKAMAICDN", providers.CanUseAKAMAICDN),
-	capabilityCheck("AKAMAITLC", providers.CanUseAKAMAITLC),
-	capabilityCheck("ALIAS", providers.CanUseAlias),
-	capabilityCheck("AUTODNSSEC", providers.CanAutoDNSSEC),
-	capabilityCheck("AZURE_ALIAS", providers.CanUseAzureAlias),
-	capabilityCheck("CAA", providers.CanUseCAA),
-	capabilityCheck("DHCID", providers.CanUseDHCID),
-	capabilityCheck("DNAME", providers.CanUseDNAME),
-	capabilityCheck("DNSKEY", providers.CanUseDNSKEY),
-	capabilityCheck("HTTPS", providers.CanUseHTTPS),
-	capabilityCheck("LOC", providers.CanUseLOC),
-	capabilityCheck("NAPTR", providers.CanUseNAPTR),
-	capabilityCheck("OPENPGPKEY", providers.CanUseOPENPGPKEY),
-	capabilityCheck("PTR", providers.CanUsePTR),
-	capabilityCheck("R53_ALIAS", providers.CanUseRoute53Alias),
-	capabilityCheck("RP", providers.CanUseRP),
-	capabilityCheck("SMIMEA", providers.CanUseSMIMEA),
-	capabilityCheck("SOA", providers.CanUseSOA),
-	capabilityCheck("SRV", providers.CanUseSRV),
-	capabilityCheck("SSHFP", providers.CanUseSSHFP),
-	capabilityCheck("SVCB", providers.CanUseSVCB),
-	capabilityCheck("TLSA", providers.CanUseTLSA),
-
-	// DS needs special record-level checks
-	{
-		rType:     "DS",
-		caps:      []providers.Capability{providers.CanUseDS, providers.CanUseDSForChildren},
-		checkFunc: checkProviderDS,
-	},
-}
-
-type pairTypeCapability struct {
-	rType string
-	// Capabilities the provider must implement if any records of type rType are found
-	// in the zonefile. This is a disjunction - implementing at least one of the listed
-	// capabilities is sufficient.
-	caps []providers.Capability
-	// checkFunc provides additional checks of each provider. This function should be
-	// called if records of type rType are found in the zonefile.
-	checkFunc func(pType string, _ models.Records) error
-}
-
-func capabilityCheck(rType string, caps ...providers.Capability) pairTypeCapability {
-	return pairTypeCapability{
-		rType: rType,
-		caps:  caps,
-	}
-}
-
-func providerHasAtLeastOneCapability(pType string, caps ...providers.Capability) bool {
-	for _, cap := range caps {
-		if providers.ProviderHasCapability(pType, cap) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func checkProviderDS(pType string, records models.Records) error {
-	switch {
-	case providers.ProviderHasCapability(pType, providers.CanUseDS):
-		// The provider can use DS records anywhere, including at the root
-		return nil
-	case !providers.ProviderHasCapability(pType, providers.CanUseDSForChildren):
-		// Provider has no support for DS records
-		return fmt.Errorf("provider %s uses DS records but does not support them", pType)
-	default:
-		// Provider supports DS records but not at the root
-		for _, record := range records {
-			if record.Type == "DS" && record.Name == "@" {
-				return fmt.Errorf(
-					"provider %s only supports child DS records, but zone had a record at the root (@)",
-					pType,
-				)
-			}
-		}
-	}
-
-	return nil
-}
-
 func checkProviderCapabilities(dc *models.DomainConfig) error {
-	// Check if the zone uses a capability that the provider doesn't
-	// support.
-	for _, ty := range providerCapabilityChecks {
-		hasAny := false
-		switch ty.rType {
-		case "AUTODNSSEC":
-			if dc.AutoDNSSEC != "" {
-				hasAny = true
-			}
-		default:
-			for _, r := range dc.Records {
-				if r.Type == ty.rType {
-					hasAny = true
-					break
-				}
-			}
+	var pTypes []string
+	for _, provider := range dc.DNSProviderInstances {
+		pTypes = append(pTypes, provider.ProviderType)
+	}
+	for _, rec := range dc.Records {
+		if err := validateSupportedRecordTypes(rec, dc.Name, pTypes); err != nil {
+			return err
 		}
-		if !hasAny {
+	}
+
+	// AUTODNSSEC is not a record type, so SupportedTypes does not cover it.
+	if dc.AutoDNSSEC == "" {
+		return nil
+	}
+	for _, provider := range dc.DNSProviderInstances {
+		if provider.ProviderType == "-" {
+			// "-" indicates that we don't yet know who the provider type
+			// is.  This is probably due to the fact that `dnscontrol
+			// check` doesn't read creds.json, which is where the TYPE is
+			// set.  We will skip this test in this instance.  Later if
+			// `dnscontrol preview` or `push` is used, the full check will
+			// be performed.
 			continue
 		}
-		for _, provider := range dc.DNSProviderInstances {
-			if provider.ProviderType == "-" {
-				// "-" indicates that we don't yet know who the provider type
-				// is.  This is probably due to the fact that `dnscontrol
-				// check` doesn't read creds.json, which is where the TYPE is
-				// set.  We will skip this test in this instance.  Later if
-				// `dnscontrol preview` or `push` is used, the full check will
-				// be performed.
-				continue
-			}
-			// fmt.Printf("  (checking if %q can %q for domain %q)\n", provider.ProviderType, ty.rType, dc.Name)
-			if !providerHasAtLeastOneCapability(provider.ProviderType, ty.caps...) {
-				return fmt.Errorf("domain %s uses %s records, but DNS provider type %s does not support them", dc.Name, ty.rType, provider.ProviderType)
-			}
-
-			if ty.checkFunc != nil {
-				checkErr := ty.checkFunc(provider.ProviderType, dc.Records)
-				if checkErr != nil {
-					return fmt.Errorf("while checking %s records in domain %s: %w", ty.rType, dc.Name, checkErr)
-				}
-			}
+		if !providers.ProviderHasCapability(provider.ProviderType, providers.CanAutoDNSSEC) {
+			return fmt.Errorf("domain %s uses AUTODNSSEC records, but DNS provider type %s does not support them", dc.Name, provider.ProviderType)
 		}
 	}
 	return nil

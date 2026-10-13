@@ -1,5 +1,5 @@
 providers/adguardhome @ishanjain28
-providers/akamaiedgedns @edglynes
+providers/akamaiedgedns @meghanakudua02
 providers/alidns @bytemain
 providers/autodns @arnoschoon
 providers/axfrddns @hnrgrgr
@@ -9,6 +9,7 @@ providers/bind @TomOnTime
 providers/bunnydns @ppmathis
 providers/cloudflare @tresni
 providers/cloudns @pragmaton
+providers/cloudpress @arnoschoon
 providers/cnr @AsifNawaz-cnic
 providers/cscglobal @mikenz
 providers/desec @D3luxee
@@ -31,7 +32,7 @@ providers/hedns @rblenkinsopp
 providers/hetznerv2 @das7pad
 providers/hostingde @juliusrickert
 providers/huaweicloud @huihuimoe
-providers/infoblox @mgamble
+providers/infoblox @matthewmgamble
 providers/infomaniak @jbelien
 providers/internetbs @pragmaton
 providers/inwx @patschi
@@ -40,6 +41,7 @@ providers/linode @koesie10
 providers/loopia @systemcrash
 providers/luadns @riku22
 providers/mikrotik @hedger
+providers/mittwald @twiesing
 providers/mythicbeasts @tomfitzhenry
 providers/namecheap @willpower232
 # providers/namedotcom NEEDS VOLUNTEER
@@ -49,6 +51,7 @@ providers/netlify @SphericalKat
 providers/netnod @Netnod @vilhelmprytz
 providers/nexdns @nexdns
 providers/ns1 @costasd
+providers/openprovider @nvanlaerebeke
 # providers/opensrs NEEDS VOLUNTEER
 providers/openwrt @huskyistaken
 providers/oracle @kallsyms
@@ -62,6 +65,7 @@ providers/rwth @mistererwin
 providers/sakuracloud @ttkzw
 providers/scaleway @alessiopcc
 # providers/softlayer NEEDS VOLUNTEER
+providers/spaceship @rootful
 providers/tencentdns @cylonchau
 providers/transip @blackshadev
 providers/unifi @zupolgec

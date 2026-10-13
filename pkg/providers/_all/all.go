@@ -2,6 +2,8 @@
 package all
 
 import (
+	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
+
 	// Define all known providers here. They should each register themselves with the providers package via init function.
 	_ "github.com/DNSControl/dnscontrol/v5/providers/adguardhome"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/akamaiedgedns"
@@ -15,6 +17,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/cloudflare"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/cloudflare/rtypes/cfsingleredirect"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/cloudns"
+	_ "github.com/DNSControl/dnscontrol/v5/providers/cloudpress"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/cnr"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/cscglobal"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/desec"
@@ -47,6 +50,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/loopia"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/luadns"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/mikrotik"
+	_ "github.com/DNSControl/dnscontrol/v5/providers/mittwald"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/mythicbeasts"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/namecheap"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/namedotcom"
@@ -56,6 +60,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/netnod"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/nexdns"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/ns1"
+	_ "github.com/DNSControl/dnscontrol/v5/providers/openprovider"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/opensrs"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/openwrt"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/oracle"
@@ -69,6 +74,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/sakuracloud"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/scaleway"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/softlayer"
+	_ "github.com/DNSControl/dnscontrol/v5/providers/spaceship"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/tencentdns"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/transip"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/unifi"
@@ -76,3 +82,9 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/vultr"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/websupport"
 )
+
+func init() {
+	if err := providers.Finalize(); err != nil {
+		panic(err)
+	}
+}

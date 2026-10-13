@@ -1,27 +1,27 @@
 # Writing new DNS providers
 
-- [Writing new DNS providers](#writing-new-dns-providers)
-  - [Overview](#overview)
-  - [Step 1: General advice](#step-1-general-advice)
-  - [Step 2: Pick a base provider](#step-2-pick-a-base-provider)
-  - [Step 3: Create the driver skeleton](#step-3-create-the-driver-skeleton)
-  - [Step 4: Activate the driver](#step-4-activate-the-driver)
-  - [Step 5: Onboarding metadata for `dnscontrol init` (optional)](#step-5-onboarding-metadata-for-dnscontrol-init-optional)
-  - [Step 6: Implement the provider](#step-6-implement-the-provider)
-  - [Step 7: Create `auditrecords.go`](#step-7-create-auditrecordsgo)
-  - [Step 8: Unit Test](#step-8-unit-test)
-  - [Step 9: Integration Test](#step-9-integration-test)
-  - [Step 10: Verify TXT records](#step-10-verify-txt-records)
-  - [Step 11: Update docs, CICD and other files](#step-11-update-docs-cicd-and-other-files)
-  - [Step 12: Capabilities](#step-12-capabilities)
-  - [Step 13: Automated code tests](#step-13-automated-code-tests)
-  - [Step 14: Dependencies](#step-14-dependencies)
-  - [Step 15: Update `pr_integration_tests.yml`](#step-15-update-pr_integration_testsyml)
-  - [Step 16: Check your work](#step-16-check-your-work)
-  - [Step 17: Submit a PR](#step-17-submit-a-pr)
-  - [Step 18: After the PR is merged](#step-18-after-the-pr-is-merged)
+- [Overview](#overview)
+- [Step 1: General advice](#step-1-general-advice)
+- [Step 2: Pick a base provider](#step-2-pick-a-base-provider)
+- [Step 3: Create the driver skeleton](#step-3-create-the-driver-skeleton)
+- [Step 4: Activate the driver](#step-4-activate-the-driver)
+- [Step 5: Onboarding metadata for `dnscontrol init` (optional)](#step-5-onboarding-metadata-for-dnscontrol-init-optional)
+- [Step 6: Implement the provider](#step-6-implement-the-provider)
+- [Step 7: Create `auditrecords.go`](#step-7-create-auditrecords.go)
+- [Step 8: Unit Test](#step-8-unit-test)
+- [Step 9: Integration Test](#step-9-integration-test)
+- [Step 10: Verify TXT records](#step-10-verify-txt-records)
+- [Step 11: Update docs, CICD and other files](#step-11-update-docs-cicd-and-other-files)
+- [Step 12: Capabilities](#step-12-capabilities)
+  - [Record identity for providers with per-line records](#record-identity-for-providers-with-per-line-records)
+- [Step 13: Automated code tests](#step-13-automated-code-tests)
+- [Step 14: Dependencies](#step-14-dependencies)
+- [Step 15: Update `pr_integration_tests.yml`](#step-15-update-pr_integration_tests.yml)
+- [Step 16: Check your work](#step-16-check-your-work)
+- [Step 17: Submit a PR](#step-17-submit-a-pr)
+- [Step 18: After the PR is merged](#step-18-after-the-pr-is-merged)
 
-Writing a new DNS provider is a relatively straightforward process. You essentially need to implement the [providers.DNSServiceProvider interface.](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5/pkg/providers#DNSServiceProvider) and the system takes care of the rest.
+Writing a new DNS provider is a relatively straightforward process. You essentially need to implement the [providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5/pkg/providers#DNSServiceProvider) and `providers.InitializableProvider`, and the system takes care of the rest.
 
 Please do note that if you submit a new provider you will be assigned bugs related to the provider in the future (unless you designate someone else as the maintainer). [More details here](../provider/index.md).
 
@@ -35,13 +35,15 @@ So, for example, you'll frequently see code with two variables: `var existing, d
 
 I'll ignore all the small stuff and get to the point.
 
-A typical provider implements 3 methods and DNSControl takes care of the rest:
+A typical DNS provider implements 5 methods and DNSControl takes care of the rest:
 
+- Initialize() -- Initialize a fresh provider instance from credentials and metadata.
 - GetZoneRecords() -- Download the list of DNS records.
 - GetZoneRecordsCorrections() -- Generate a list of corrections.
 - GetNameservers() -- Query the API and return the list of parent nameservers.
+- AuditRecords() -- Validate records without credentials or initialization.
 
-These three functions are all that's needed for `dnscontrol preview` and `dnscontrol push`.
+These methods cover initialization, validation, and the operations needed for `dnscontrol preview` and `dnscontrol push`.
 
 The goal of `GetZoneRecords()` is to download all the DNS records for that zone, convert them to `models.RecordConfig` format, and return them as one big list (`models.Records`).
 
@@ -109,23 +111,37 @@ Directory names should be consistent.  It should be all lowercase and match the 
 
 Edit [providers/\_all/all.go](https://github.com/DNSControl/dnscontrol/blob/main/pkg/providers/_all/all.go). Add the provider list so DNSControl knows it exists.
 
+Register the provider once in its Go `init()` function using
+`providers.Register[*myProvider]("MYPROVIDER", providers.Definition{...})`.
+Some fields are required, such as `FriendlyName`. Some fields are
+optional.  Some fields are generated for you based on things like whether
+or not Go interfaces for DNS and registrar are implemented.
+
 ## Step 5: Onboarding metadata for `dnscontrol init` (optional)
 
 This step allows users of your provider to use the interactive [`dnscontrol init`](../commands/init.md) wizard.
 
-Register a `CredsMetadata` block in the same `init()` function where you call `RegisterDomainServiceProviderType` and `RegisterMaintainer`. A simple provider reduces to a few lines:
+Add the optional onboarding fields to the `providers.Definition` used by
+`providers.Register` in `init()`. A simple provider reduces to a few lines:
 
 ```go
-providers.RegisterCredsMetadata("MYPROVIDER", providers.CredsMetadata{
-    DisplayName: "My Provider",
-    Kind:        providers.KindDNS, // or providers.KindDNS | providers.KindRegistrar
-    DocsURL:     "https://docs.dnscontrol.org/provider/myprovider",
-    PortalURL:   "https://portal.example.com/api-tokens",
-    Fields: []providers.CredsField{
+providers.Register[*myProvider]("MYPROVIDER", providers.Definition{
+    FriendlyName:    "My Provider",
+    Maintainer:      "@yourhandle",
+    VendorAPIDocURL: "https://developer.example.com/api/",
+    PortalURL:       "https://portal.example.com/api-tokens",
+    CredFields: []providers.CredsField{
         {Key: "apitoken", Label: "API Token", Required: true, Secret: true},
     },
 })
 ```
+
+`DocsURL` defaults to `https://docs.dnscontrol.org/provider/` plus the lowercase
+registered provider name. Set it only to preserve a different legacy documentation
+path; an override equal to the default is a registration error. The wizard displays
+this link and the optional `VendorAPIDocURL` alongside the credential portal.
+
+The wizard appends the `creds.json` key and `(required)` or `(optional)` to the `Label` itself, so leave those out of the label text.
 
 A field can carry any of the following flags:
 
@@ -135,13 +151,14 @@ A field can carry any of the following flags:
 | `Secret` | Input is masked. |
 | `Multiline` | Opens `$EDITOR` so PEM blocks and other multi line values can be entered intact. |
 | `Choices` | Input is restricted to a fixed list. |
+| `ConfirmValue` | Asks a yes/no question instead of free text. Yes writes this value to `creds.json`, no leaves the key out. Use it for on/off settings such as a sandbox flag. |
 | `EnvVar` | When the environment variable is set, its value becomes the default. |
 | `Internal` | Marks a selector whose answer only drives `ShowIf` logic. The value is not written to `creds.json`. |
 | `ShowIf` | Only ask this field when earlier field answers match the given key/value map. Used to branch between auth methods. |
 | `Default` | Suggested value shown in the prompt. |
 | `Validator` | Custom function that rejects invalid values with an error message. |
 
-The optional `PostWrite` hook on `CredsMetadata` lets the provider
+The optional `PostWrite` hook on `providers.Definition` lets the provider
 prepare local resources after the wizard writes `creds.json` (BIND uses
 this to create the zone files directory).
 
@@ -150,13 +167,19 @@ The BIND and TransIP registrations in this repository are worked examples mainta
 - [`providers/bind/bindProvider.go`][bind-source]: the simple shape, plus a `PostWrite` hook that creates the zone files directory.
 - [`providers/transip/transipProvider.go`][transip-source]: an auth method selector (`Internal` plus `ShowIf`) that branches between a short lived access token and an account name paired with a PEM private key.
 
-[bind-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/bind/bindProvider.go
-[transip-source]: https://github.com/StackExchange/dnscontrol/blob/main/providers/transip/transipProvider.go
+[bind-source]: https://github.com/DNSControl/dnscontrol/blob/main/providers/bind/bindProvider.go
+[transip-source]: https://github.com/DNSControl/dnscontrol/blob/main/providers/transip/transipProvider.go
 
-Providers without registered metadata still work; users just create the
+Providers without onboarding fields still work; users can create the
 `creds.json` entry manually, using the help of the provider's documentation page.
 
 ## Step 6: Implement the provider
+
+Both DNS providers and registrars implement `providers.InitializableProvider`:
+`Initialize(map[string]string, json.RawMessage, *providers.CreateOptions) error`.
+This method populates a fresh receiver; DNSControl allocates a separate instance
+for each credential entry and role. `CreateOptions.RequestedRole` identifies
+whether the instance is being created for DNS or registrar operations.
 
 **If you are implementing a DNS Registrar:**
 
@@ -166,12 +189,12 @@ The function `GetRegistrarCorrections()` returns a list of corrections to be mad
 
 **If you are implementing a DNS Service Provider:**
 
-Implement all the calls in the [providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5/pkg/providers#DNSServiceProvider).
+Implement all the calls in the [providers.DNSServiceProvider interface](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5/pkg/providers#DNSServiceProvider), which embeds `models.DNSProvider`.
 
 - The function that converts the API's native records to `models.RecordConfig` structs should be called toRC().
 - There are helper functions (factories) for creating `models.RecordConfig`'s. See [The Cookbook](developer-info/cookbook.md) "Create a `models.RecordConfig`" for details.
 
-The function `GetDomainCorrections()` is a bit interesting. It returns a list of corrections to be made. These are in the form of functions that DNSControl can call to actually make the corrections.
+The function `GetZoneRecordsCorrections()` is a bit interesting. It returns a list of corrections to be made. These are in the form of functions that DNSControl can call to actually make the corrections.
 
 - The "create" function will probably need to convert an `models.RecordConfig` to the native API struct. Please name this function toNative()
 - To access or change the RDATA in a field, use `rd := rc.GetRDATA()` and `rc.SetRDATA(rd)`. Full details are in [The Cookbook](developer-info/cookbook.md) "Getters/Setters for RDATA in `models.RecordConfig`".
@@ -182,6 +205,10 @@ The remaining steps assume you're creating a DNS Service Provider.
 ## Step 7: Create `auditrecords.go`
 
 The `auditrecords.go` file lists special cases that a provider doesn't support.
+
+Implement `AuditRecords(models.Records) []error` as a method on the provider.
+It is required by `models.DNSProvider` and runs on an uninitialized instance,
+so it must not depend on credentials or read or mutate receiver state.
 
 For example, the `AXFRDDNS` provider doesn't support empty TXT records.  `providers/axfrddns/auditrecords.go` records that fact. The integration test system will skip any tests with empty TXT records.
 
@@ -264,8 +291,6 @@ There is a potential bug in how TXT records are handled. Sadly we haven't found 
 - Edit `documentation/providers.md`:
   - Remove the provider from the `Requested providers` list (near the end of the doc) (if needed).
   - Add the new provider to the [Providers with "contributor support"](../provider/index.md#providers-with-contributor-support) section.
-- Edit `README.md`:
-  - Add the provider to the list.
 - Edit `documentation/SUMMARY.md`:
   - Add the provider to the "Providers" list.
 - Create `documentation/provider/PROVIDERNAME.md`:
@@ -284,13 +309,93 @@ If a provider doesn't advertise a particular capability, the integration test sy
 
 Don't feel obligated to implement everything at once. In fact, we'd prefer a few small PRs than one big one. Focus on getting the basic provider working well before adding these extras.
 
-Operational features have names like `providers.CanUseSRV` and `providers.CanUseAlias`.  The list of optional "capabilities" are in the file `dnscontrol/pkg/providers/providers.go` (look for `CanUseAlias`).
+Operational features such as `CanConcur` and `CanAutoDNSSEC` are named fields in
+`providers.Definition`. Record support is declared in `SupportedTypes` and also
+exposed through the compatibility capabilities in `pkg/providers/capabilities.go`.
 
 Capabilities are processed early by DNSControl.  For example if a provider doesn't support SRV records, DNSControl will error out when parsing `dnscontrol.js` rather than waiting until the API fails at the very end.
 
 Enable optional capabilities in the `nameProvider.go` file and run the integration tests to see what works and what doesn't.  Fix any bugs and repeat, repeat, repeat until you have all the capabilities you want to implement.
 
+Declare supported record types in `providers.Definition.SupportedTypes`, with
+each string item on its own line to keep future diffs small:
+
+```go
+SupportedTypes: []string{
+    "Basic8",
+    "PTR",
+},
+```
+
+This list is exhaustive:
+`Basic8` contains `A`, `AAAA`, `CAA`, `CNAME`, `MX`, `NS`, `SRV`, and `TXT`.
+Its membership is fixed at these eight types; verify each
+provider's implementation and declare exceptions such as `NS:Cannot` explicitly.
+Specialized providers can supply their own complete list. `RFC` includes all ordinary
+types in DNSControl's record catalog; `*` also includes pseudo-types. Patterns
+such as `BUNNY_*` match whole type names, with `*` matching zero or more characters.
+Unknown concrete type names are errors.
+
+`IMPORT_TRANSFORM` is a deferred configuration command, not a record type or
+pseudo-type. It works with every provider and must not appear in `SupportedTypes`.
+Normalization executes it before providers see records, then checks the copied
+records against each provider's declaration. Custom pseudo-types need a parser
+registered with `privatetypes.Register` and an entry
+in `SupportedTypes`. Multiple providers can support the same pseudo-type.
+
+An entry without a suffix means supported. Use `:Can`, `:Cannot`, or
+`:Unimplemented` on concrete names or patterns, for example
+`[]string{"RFC", "CAA:Cannot"}`. Both negative statuses reject records;
+`Unimplemented` retains a distinct documentation status. `Basic8` and `RFC`
+do not take suffixes. Type names are case-insensitive; status suffixes use the
+spellings shown here.
+
+Precedence is: exact entries, patterns with status suffixes, legacy `Features`,
+then unsuffixed patterns/categories. Conflicting statuses at the winning
+priority are errors, regardless of order. An exact entry can resolve conflicting
+patterns. Nil `SupportedTypes` means `Basic8`; a non-nil empty slice declares
+no support beyond `Features`. Built-in providers all declare `SupportedTypes`
+explicitly; registrar-only providers use `[]string{}`. `Features` remains a
+compatibility input and can retain comments and links for individual types or
+interface-derived capabilities. A non-nil `Features` with nil `SupportedTypes`
+retains legacy capability validation. General `DS` support includes child DS records; `CanUseDSForChildren`
+can independently allow child DS records even with `DS:Cannot`.
+
+Registration retains selectors until the complete catalog is available.
+Importing `pkg/providers/_all` finalizes the registry; definition accessors also
+ensure finalization for programs importing individual providers. Register all
+providers and record types before concurrent reads. Tests registering additional
+types or providers can call `providers.Finalize()` again to rebuild derived data.
+
+Named operational fields such as `CanConcur`
+can be set directly on the definition. Some fields are derived automatically for
+you, such as `CanGetZones` and `DocCreateDomains`
+(set based on the existance or absense of `providers.ZoneLister` and `providers.ZoneCreator`, respectively.)
+
 FYI: If a provider's capabilities changes, run `go generate` to update the documentation.
+
+### Record identity for providers with per-line records
+
+Some providers store the same name and type several times, splitting the answers by record line, region or routing policy. DNSPod lines, Huawei Cloud lines, Gcore GeoDNS and ClouDNS geodns work that way. Those records share a label, type and RDATA, so validation would report them as duplicates.
+
+Such a provider can declare `RecordIdentity` in its `providers.Definition`:
+
+{% code title="nameProvider.go" %}
+```go
+providers.Register[*myProvider]("MYPROVIDER", providers.Definition{
+    FriendlyName:   "My Provider",
+    RecordIdentity: recordIdentity,
+})
+```
+{% endcode %}
+
+`recordIdentity` takes one `models.RecordConfig` and returns the text that makes the record distinct, for example `"line_id=10=1"`. Validation appends that text to the key it uses for duplicate detection. A provider that does not declare it keeps the default rules.
+
+The function runs during validation, before the provider has read the zone, so it must depend only on the record it is given. Anything that needs the live zone belongs in the comparable function that the provider passes to `diff2.ByRecord`, not here. Turning a configured line name into a line ID is an example: only the zone knows the mapping.
+
+When a domain has several providers, the first one that declares an identity function is used. The exception applies to the whole domain, so a second provider on the same domain inherits it; two providers that both store per-line records should declare the same rule.
+
+`dnscontrol check` does not read `creds.json`, so a provider declared as `NewDnsProvider("name")` has no type at that point and its identity function does not run. Use the two-argument form when `check` should see it.
 
 ## Step 13: Automated code tests
 
@@ -374,7 +479,6 @@ These are the things we'll be checking when you submit the PR.  Please try to co
 2. Make sure the following files were created and/or updated:
 
 - `.github/CODEOWNERS`
-- `README.md`
 - `.github/workflows/pr_integration_tests.yml` (env variables for your provider)
 - `documentation/SUMMARY.md`
 - `documentation/provider/index.md` (the autogenerated table + the second one; make sure it is removed from the `requested` list)

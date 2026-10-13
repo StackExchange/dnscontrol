@@ -121,19 +121,33 @@ func ensureTrailingDot(s string) string {
 	return s + "."
 }
 
+// labelFromFQDN extracts the label from an FQDN relative to the domain.
+func labelFromFQDN(fqdn, domain string) string {
+	fqdn = strings.TrimSuffix(fqdn, ".")
+	domain = strings.TrimSuffix(domain, ".")
+	if fqdn == domain {
+		return "@"
+	}
+	suffix := "." + domain
+	if strings.HasSuffix(fqdn, suffix) {
+		return fqdn[:len(fqdn)-len(suffix)]
+	}
+	return fqdn
+}
+
 func convertA(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32) (*models.RecordConfig, error) {
 	var r ibRecordA
 	if err := json.Unmarshal(raw, &r); err != nil {
 		return nil, fmt.Errorf("failed to parse A record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeA, r.IPv4Addr)
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeA, r.IPv4Addr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create A record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -143,13 +157,13 @@ func convertAAAA(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32
 		return nil, fmt.Errorf("failed to parse AAAA record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeAAAA, r.IPv6Addr)
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeAAAA, r.IPv6Addr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create AAAA record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -159,13 +173,13 @@ func convertCNAME(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint3
 		return nil, fmt.Errorf("failed to parse CNAME record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeCNAME, r.Canonical+".")
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeCNAME, ensureTrailingDot(r.Canonical))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create CNAME record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -175,13 +189,13 @@ func convertMX(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32) 
 		return nil, fmt.Errorf("failed to parse MX record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeMX, r.Preference, ensureTrailingDot(r.MailExchanger))
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeMX, r.Preference, ensureTrailingDot(r.MailExchanger))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create MX record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -191,13 +205,13 @@ func convertTXT(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32)
 		return nil, fmt.Errorf("failed to parse TXT record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeTXT, r.Text)
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeTXT, r.Text)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create TXT record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -207,13 +221,13 @@ func convertSRV(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32)
 		return nil, fmt.Errorf("failed to parse SRV record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeSRV, r.Priority, r.Weight, r.Port, ensureTrailingDot(r.Target))
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeSRV, r.Priority, r.Weight, r.Port, ensureTrailingDot(r.Target))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create SRV record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -228,13 +242,12 @@ func convertNS(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32) 
 		return nil, nil
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), defaultTTL,
-		dnsv2.TypeNS, ensureTrailingDot(r.Nameserver))
+	label := labelFromFQDN(r.Name, dc.Name)
+	rc, err := dc.NewRecordConfig(label, defaultTTL, dnsv2.TypeNS, ensureTrailingDot(r.Nameserver))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create NS record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -244,13 +257,13 @@ func convertPTR(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32)
 		return nil, fmt.Errorf("failed to parse PTR record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypePTR, ensureTrailingDot(r.PtrDName))
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypePTR, ensureTrailingDot(r.PtrDName))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create PTR record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -260,13 +273,13 @@ func convertCAA(raw json.RawMessage, dc *models.DomainConfig, defaultTTL uint32)
 		return nil, fmt.Errorf("failed to parse CAA record: %w", err)
 	}
 
-	rc, err := dc.NewRecordConfig(dc.LabelFromFQDNNoDot(r.Name), effectiveTTL(r.UseTTL, r.TTL, defaultTTL),
-		dnsv2.TypeCAA, r.CaFlag, r.CaTag, r.CaValue)
+	label := labelFromFQDN(r.Name, dc.Name)
+	ttl := effectiveTTL(r.UseTTL, r.TTL, defaultTTL)
+	rc, err := dc.NewRecordConfig(label, ttl, dnsv2.TypeCAA, r.CaFlag, r.CaTag, r.CaValue)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create CAA record: %w", err)
 	}
 	rc.Original = r.Ref
-
 	return rc, nil
 }
 
@@ -292,43 +305,43 @@ func buildRecordBody(rc *models.RecordConfig, view string, includeView bool) (st
 	switch rc.Type {
 	case "A":
 		recType = "a"
-		body["ipv4addr"] = rc.AsA().Addr.String()
+		body["ipv4addr"] = rc.GetTargetField()
 	case "AAAA":
 		recType = "aaaa"
-		body["ipv6addr"] = rc.AsAAAA().Addr.String()
+		body["ipv6addr"] = rc.GetTargetField()
 	case "CNAME":
 		recType = "cname"
-		body["canonical"] = strings.TrimSuffix(rc.AsCNAME().Target, ".")
+		body["canonical"] = strings.TrimSuffix(rc.GetTargetField(), ".")
 	case "MX":
 		recType = "mx"
-		rd := rc.AsMX()
-		body["mail_exchanger"] = strings.TrimSuffix(rd.Mx, ".")
-		body["preference"] = rd.Preference
+		mx := rc.AsMX()
+		body["mail_exchanger"] = strings.TrimSuffix(mx.Mx, ".")
+		body["preference"] = mx.Preference
 	case "TXT":
 		recType = "txt"
 		body["text"] = rc.GetTargetTXTJoined()
 	case "SRV":
 		recType = "srv"
-		rd := rc.AsSRV()
-		body["target"] = strings.TrimSuffix(rd.Target, ".")
-		body["priority"] = rd.Priority
-		body["weight"] = rd.Weight
-		body["port"] = rd.Port
+		srv := rc.AsSRV()
+		body["target"] = strings.TrimSuffix(srv.Target, ".")
+		body["priority"] = srv.Priority
+		body["weight"] = srv.Weight
+		body["port"] = srv.Port
 	case "NS":
 		recType = "ns"
-		body["nameserver"] = strings.TrimSuffix(rc.AsNS().Ns, ".")
+		body["nameserver"] = strings.TrimSuffix(rc.GetTargetField(), ".")
 		// NS records in Infoblox don't support ttl/use_ttl fields.
 		delete(body, "use_ttl")
 		delete(body, "ttl")
 	case "PTR":
 		recType = "ptr"
-		body["ptrdname"] = strings.TrimSuffix(rc.AsPTR().Ptr, ".")
+		body["ptrdname"] = strings.TrimSuffix(rc.GetTargetField(), ".")
 	case "CAA":
 		recType = "caa"
-		rd := rc.AsCAA()
-		body["ca_flag"] = rd.Flag
-		body["ca_tag"] = rd.Tag
-		body["ca_value"] = rd.Value
+		caa := rc.AsCAA()
+		body["ca_flag"] = caa.Flag
+		body["ca_tag"] = caa.Tag
+		body["ca_value"] = caa.Value
 	default:
 		return "", nil, fmt.Errorf("unsupported record type for Infoblox: %s", rc.Type)
 	}

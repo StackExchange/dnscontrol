@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
@@ -52,8 +51,9 @@ func generateFeatureMatrix() error {
 func updateProviderDocs() {
 	matrix := matrixData()
 	docDir := "documentation/provider"
-	for _, providerName := range allProviderNames() {
-		docFile := filepath.Join(docDir, strings.ToLower(strings.ReplaceAll(providerName, "_", ""))+".md")
+	for _, def := range publicDefinitions() {
+		providerName := def.TypeName
+		docFile := filepath.Join(docDir, providerDocSlug(def)+".md")
 		if _, err := os.Stat(docFile); os.IsNotExist(err) {
 			fmt.Printf("WARNING: Missing documentation page for provider %s: %s\n", providerName, docFile)
 		} else {
@@ -73,11 +73,19 @@ func buildFeatureList(matrix *FeatureMatrix, providerName string) string {
 	featureMap := matrix.Providers[providerName]
 
 	for i, category := range matrix.FeatureTablesTitles {
-		sb.WriteString("- " + category + "\n")
+		sb.WriteString("- ")
+		sb.WriteString(category)
+		sb.WriteString("\n")
+
 		for _, feature := range matrix.FeatureTables[i] {
 			emoji := featureEmoji(featureMap, feature)
-			sb.WriteString("  - " + feature + ": " + emoji + "\n")
+			sb.WriteString("  - ")
+			sb.WriteString(feature)
+			sb.WriteString(": ")
+			sb.WriteString(emoji)
+			sb.WriteString("\n")
 		}
+
 	}
 
 	return sb.String()
@@ -89,10 +97,11 @@ func markdownTable(matrix *FeatureMatrix, tableNumber int32) (string, error) {
 	tableHeaders = append(tableHeaders, matrix.FeatureTables[tableNumber]...)
 
 	var tableData [][]string
-	for _, providerName := range allProviderNames() {
+	for _, def := range publicDefinitions() {
+		providerName := def.TypeName
 		featureMap := matrix.Providers[providerName]
 
-		var providerLink = strings.ReplaceAll(strings.ToLower(providerName), "_", "")
+		providerLink := providerDocSlug(def)
 
 		var tableDataRow []string
 		tableDataRow = append(tableDataRow, "[`"+providerName+"`]("+providerLink+".md)")
@@ -144,6 +153,7 @@ func matrixData() *FeatureMatrix {
 		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
 		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
+		DomainModifierCsync      = "[`CSYNC`](../language-reference/domain-modifiers/CSYNC.md)"
 		DomainModifierDhcid      = "[`DHCID`](../language-reference/domain-modifiers/DHCID.md)"
 		DomainModifierDname      = "[`DNAME`](../language-reference/domain-modifiers/DNAME.md)"
 		DomainModifierDnskey     = "[`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md)"
@@ -152,7 +162,7 @@ func matrixData() *FeatureMatrix {
 		DomainModifierHTTPS      = "[`HTTPS`](../language-reference/domain-modifiers/HTTPS.md)"
 		DomainModifierLoc        = "[`LOC`](../language-reference/domain-modifiers/LOC.md)"
 		DomainModifierNaptr      = "[`NAPTR`](../language-reference/domain-modifiers/NAPTR.md)"
-		DomainModifierOpenpgpkey = "[`DNSKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
+		DomainModifierOpenpgpkey = "[`OPENPGPKEY`](../language-reference/domain-modifiers/OPENPGPKEY.md)"
 		DomainModifierPtr        = "[`PTR`](../language-reference/domain-modifiers/PTR.md)"
 		DomainModifierRP         = "[`RP`](../language-reference/domain-modifiers/RP.md)"
 		DomainModifierSMIMEA     = "[`SMIMEA`](../language-reference/domain-modifiers/SMIMEA.md)"
@@ -191,9 +201,11 @@ func matrixData() *FeatureMatrix {
 			},
 			{ // DNS extensions
 				DomainModifierAlias,
+				DomainModifierCsync,
 				DomainModifierDname,
 				DomainModifierLoc,
 				DomainModifierPtr,
+				DomainModifierRP,
 				DomainModifierSoa,
 			},
 			{ // service discovery
@@ -205,6 +217,7 @@ func matrixData() *FeatureMatrix {
 			{ // security
 				DomainModifierCaa,
 				DomainModifierHTTPS,
+				DomainModifierOpenpgpkey,
 				DomainModifierSMIMEA,
 				DomainModifierSshfp,
 				DomainModifierTlsa,
@@ -217,9 +230,10 @@ func matrixData() *FeatureMatrix {
 		},
 	}
 
-	for _, providerName := range allProviderNames() {
+	for _, def := range publicDefinitions() {
+		providerName := def.TypeName
 		featureMap := FeatureMap{}
-		providerNotes := providers.Notes[providerName]
+		providerNotes := def.DerivedFeatures
 		if providerNotes == nil {
 			providerNotes = providers.DocumentationNotes{}
 		}
@@ -237,6 +251,16 @@ func matrixData() *FeatureMatrix {
 				true,
 				func() bool { return providers.ProviderHasCapability(providerName, capability) },
 			)
+		}
+
+		// setRecordType reports support for a record type from the provider's
+		// SupportedTypes (including any notes from legacy Features).
+		setRecordType := func(
+			featureName string,
+			typeName string,
+		) {
+			note := def.RecordTypeSupport(typeName)
+			featureMap[featureName] = &note
 		}
 
 		setDocumentation := func(
@@ -261,93 +285,40 @@ func matrixData() *FeatureMatrix {
 		featureMap.SetSimple(
 			ProviderDNSProvider,
 			false,
-			func() bool { return providers.DNSProviderTypes[providerName].Initializer != nil },
+			func() bool { return def.Kind.Has(providers.KindDNS) },
 		)
 		featureMap.SetSimple(
 			ProviderRegistrar,
 			false,
-			func() bool { return providers.RegistrarTypes[providerName] != nil },
+			func() bool { return def.Kind.Has(providers.KindRegistrar) },
 		)
 		setCapability(
 			ProviderThreadSafe,
 			providers.CanConcur,
 		)
-		setCapability(
-			DomainModifierAlias,
-			providers.CanUseAlias,
-		)
+		setRecordType(DomainModifierAlias, "ALIAS")
 		setCapability(
 			DomainModifierDnssec,
 			providers.CanAutoDNSSEC,
 		)
-		setCapability(
-			DomainModifierCaa,
-			providers.CanUseCAA,
-		)
-		setCapability(
-			DomainModifierDhcid,
-			providers.CanUseDHCID,
-		)
-		setCapability(
-			DomainModifierDname,
-			providers.CanUseDNAME,
-		)
-		setCapability(
-			DomainModifierDs,
-			providers.CanUseDS,
-		)
-		setCapability(
-			DomainModifierDnskey,
-			providers.CanUseDNSKEY,
-		)
-		setCapability(
-			DomainModifierHTTPS,
-			providers.CanUseHTTPS,
-		)
-		setCapability(
-			DomainModifierLoc,
-			providers.CanUseLOC,
-		)
-		setCapability(
-			DomainModifierNaptr,
-			providers.CanUseNAPTR,
-		)
-		setCapability(
-			DomainModifierOpenpgpkey,
-			providers.CanUseOPENPGPKEY,
-		)
-		setCapability(
-			DomainModifierPtr,
-			providers.CanUsePTR,
-		)
-		setCapability(
-			DomainModifierRP,
-			providers.CanUseRP,
-		)
-		setCapability(
-			DomainModifierSMIMEA,
-			providers.CanUseSMIMEA,
-		)
-		setCapability(
-			DomainModifierSoa,
-			providers.CanUseSOA,
-		)
-		setCapability(
-			DomainModifierSrv,
-			providers.CanUseSRV,
-		)
-		setCapability(
-			DomainModifierSshfp,
-			providers.CanUseSSHFP,
-		)
-		setCapability(
-			DomainModifierSvcb,
-			providers.CanUseSVCB,
-		)
-		setCapability(
-			DomainModifierTlsa,
-			providers.CanUseTLSA,
-		)
+		setRecordType(DomainModifierCaa, "CAA")
+		setRecordType(DomainModifierCsync, "CSYNC")
+		setRecordType(DomainModifierDhcid, "DHCID")
+		setRecordType(DomainModifierDname, "DNAME")
+		setRecordType(DomainModifierDs, "DS")
+		setRecordType(DomainModifierDnskey, "DNSKEY")
+		setRecordType(DomainModifierHTTPS, "HTTPS")
+		setRecordType(DomainModifierLoc, "LOC")
+		setRecordType(DomainModifierNaptr, "NAPTR")
+		setRecordType(DomainModifierOpenpgpkey, "OPENPGPKEY")
+		setRecordType(DomainModifierPtr, "PTR")
+		setRecordType(DomainModifierRP, "RP")
+		setRecordType(DomainModifierSMIMEA, "SMIMEA")
+		setRecordType(DomainModifierSoa, "SOA")
+		setRecordType(DomainModifierSrv, "SRV")
+		setRecordType(DomainModifierSshfp, "SSHFP")
+		setRecordType(DomainModifierSvcb, "SVCB")
+		setRecordType(DomainModifierTlsa, "TLSA")
 		setCapability(
 			GetZones,
 			providers.CanGetZones,
@@ -377,32 +348,6 @@ func matrixData() *FeatureMatrix {
 		matrix.Providers[providerName] = featureMap
 	}
 	return matrix
-}
-
-func allProviderNames() []string {
-	const ProviderNameNone = "NONE"
-
-	allProviderNames := map[string]bool{}
-	for providerName := range providers.RegistrarTypes {
-		if providerName == ProviderNameNone {
-			continue
-		}
-		allProviderNames[providerName] = true
-	}
-	for providerName := range providers.DNSProviderTypes {
-		if providerName == ProviderNameNone {
-			continue
-		}
-		allProviderNames[providerName] = true
-	}
-
-	var allProviderNamesAsString []string
-	for providerName := range allProviderNames {
-		allProviderNamesAsString = append(allProviderNamesAsString, providerName)
-	}
-	sort.Strings(allProviderNamesAsString)
-
-	return allProviderNamesAsString
 }
 
 // FeatureMap maps provider names to compliance documentation.
