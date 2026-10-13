@@ -3,7 +3,7 @@ name: ALL_NS
 ts_return: "-1"
 ---
 
-`ALL_NS` equals `-1` and selects all nameservers from a DNS service. This is also
+`ALL_NS` selects all nameservers from a DNS service. This is also
 the default when maxNS is omitted from [SERVICE](SERVICE.md).
 
 Use it to supply configuration metadata without limiting nameservers:
@@ -15,4 +15,6 @@ D("example.com", REGISTRAR(),
 );
 ```
 
-`0` means use no nameservers; a positive integer limits the number used.
+In addition to `ALL_NS`, `0` means use no nameservers; a positive integer limits the number used.
+
+FunFact: `ALL_NS` is an alias for `-1` but please don't depend on this. Specifying `-1` to mean "all" may change some day.

@@ -7,25 +7,37 @@ parameter_types:
 ---
 
 `REGISTRAR(credEntry)` selects the registrar using an entry name from creds.json.
-The entry's `TYPE` determines the provider. No `NewRegistrar()` declaration is
-needed. Omit `credEntry` to select `"none"`; `REGISTRAR()` disables registrar
-management. An empty string is an error.
 
-An explicit `REGISTRAR()` must immediately follow the domain name in `D()` or
-`D_EXTEND()`. It accepts no configuration metadata.
+No `NewRegistrar()` declaration is needed.
+
+`REGISTRAR("none")` is the  selects the registrar using an entry name from creds.json.
+
+`REGISTRAR()` is an alias for `REGISTRAR("none")`, which disables registrar management.
+
+`REGISTRAR()` must immediately follow the domain name in `D()`.
+
+`REGISTRAR()` should never appear in `D_EXTEND()`.
 
 ```javascript
-D("example.com", REGISTRAR("gandi_main"), SERVICE("gandi_main"),
+D("example.com", REGISTRAR("gandi_main"),
+    SERVICE("gandi_main"),
+    A("@", "192.0.2.1"),
+);
+
+D("example.net", REGISTRAR(),
+    SERVICE("gandi_main"),
     A("@", "192.0.2.1"),
 );
 ```
 
-It may also appear in `DEFAULTS()`. A domain's explicit registrar overrides the
-default; conflicting explicit selections are errors. A domain needs an explicit
-registrar or a default, even when the DNS service uses the same credential entry.
+`REGISTRAR()` may appear in `DEFAULTS()`, but setting a `REGISTRAR()` in a `D()` will override it.
 
 ```javascript
-DEFAULTS(REGISTRAR(), SERVICE("bind", 0));
+DEFAULTS(
+    REGISTRAR(),
+    SERVICE("bind", 0),
+);
+
 D("example.com", A("@", "192.0.2.1"));
 D("example.net", REGISTRAR("gandi_main"), A("@", "192.0.2.2"));
 ```
