@@ -354,7 +354,7 @@ func toRc(dc *models.DomainConfig, r *domainRecord) (*models.RecordConfig, error
 	case "DS":
 		// SshfpAlgorithm and DS algorithm both use the API's "algorithm" field.
 		rc, err = dc.NewRecordConfig(label, ttl, dnsv2.TypeDS, r.DsKeyTag, r.SshfpAlgorithm, r.DsDigestType, r.Target) // ignore:legacyfield
-	case "CLOUD_WR":
+	case "CLOUD_WR", "WR":
 		rc, err = dc.NewRecordConfig(label, ttl, privatetypes.TypeCLOUDNSWR, r.Target)
 	case "LOC":
 		latSec, err := parseFloat32(r.LocLatSec)

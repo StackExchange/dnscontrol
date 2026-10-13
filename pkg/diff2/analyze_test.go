@@ -596,6 +596,46 @@ func mkTargetConfigMap(x ...*models.RecordConfig) map[string]*targetConfig {
 	return m
 }
 
+func Test_humanDiff(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b *models.RecordConfig
+		want string
+	}{
+		{
+			name: "one field changed",
+			a:    makeRec("laba", "MX", "10 mx.f.com."),
+			b:    makeRec("laba", "MX", "20 mx.f.com."),
+			want: "preference=(10->20) mx=mx.f.com.",
+		},
+		{
+			name: "one field and ttl changed",
+			a:    makeRec("laba", "MX", "10 mx.f.com."),
+			b:    makeRecTTL("laba", "MX", "20 mx.f.com.", 700),
+			want: "preference=(10->20) mx=mx.f.com. ttl=(300->700)",
+		},
+		{
+			name: "every field changed",
+			a:    makeRec("laba", "MX", "10 a.f.com."),
+			b:    makeRec("laba", "MX", "20 b.f.com."),
+			want: "(10 a.f.com. ttl=300) -> (20 b.f.com. ttl=300)",
+		},
+		{
+			name: "only ttl changed",
+			a:    makeRec("laba", "MX", "10 mx.f.com."),
+			b:    makeRecTTL("laba", "MX", "10 mx.f.com.", 700),
+			want: "ttl=(300->700) 10 mx.f.com.",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := humanDiff(mkTargetConfig(tt.a)[0], mkTargetConfig(tt.b)[0]); got != tt.want {
+				t.Errorf("humanDiff() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_diffTargets(t *testing.T) {
 	type args struct {
 		existing []targetConfig
