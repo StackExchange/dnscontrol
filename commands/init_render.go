@@ -78,6 +78,10 @@ func renderDnsconfigJS(choice InitDnsconfigChoice) []byte {
 	if regName == "" {
 		regName = "none"
 	}
+	registrar := "REGISTRAR()"
+	if regName != "none" {
+		registrar = fmt.Sprintf("REGISTRAR(%q)", regName)
+	}
 	dnsName := choice.DNSName
 	buf.WriteString("// Domains:\n\n")
 	domains := choice.Domains
@@ -86,9 +90,9 @@ func renderDnsconfigJS(choice InitDnsconfigChoice) []byte {
 	}
 	for _, domain := range domains {
 		if dnsName != "" {
-			fmt.Fprintf(&buf, "D(%q, REGISTRAR(%q), SERVICE(%q),\n", domain, regName, dnsName)
+			fmt.Fprintf(&buf, "D(%q, %s, SERVICE(%q),\n", domain, registrar, dnsName)
 		} else {
-			fmt.Fprintf(&buf, "D(%q, REGISTRAR(%q),\n", domain, regName)
+			fmt.Fprintf(&buf, "D(%q, %s,\n", domain, registrar)
 		}
 		if imp, ok := choice.DomainRecords[domain]; ok && len(imp.Records) > 0 {
 			if imp.DefaultTTL != 0 && imp.DefaultTTL != models.DefaultTTL {

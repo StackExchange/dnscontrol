@@ -4,7 +4,7 @@
 
 // Domains:
 
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
     A("@", "1.2.3.4")
 );
 

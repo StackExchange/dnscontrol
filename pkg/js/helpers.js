@@ -176,7 +176,7 @@ function _finalizeProviders() {
             throw (
                 'Domain "' +
                 d.name +
-                '" requires a registrar. Use REGISTRAR("none") for no registrar management.'
+                '" requires a registrar. Use REGISTRAR() for no registrar management.'
             );
         }
         var state = d._registrarState;

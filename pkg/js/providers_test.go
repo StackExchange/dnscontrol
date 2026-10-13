@@ -165,13 +165,13 @@ func TestProviderSyntaxErrors(t *testing.T) {
 		{"string count", `SERVICE("dns", "2");`, "maxNS"},
 		{"extra argument", `SERVICE("dns", 0, {}, {});`, "SERVICE accepts"},
 		{"function metadata", `SERVICE("dns", 0, function(){});`, "must be a JSON value"},
-		{"duplicate same metadata", `D("example.com", REGISTRAR("none"), SERVICE("dns", 0, {}), SERVICE("dns", 0, {}));`, "SERVICE() and SERVICE()"},
-		{"duplicate different metadata", `D("example.com", REGISTRAR("none"), SERVICE("dns", 0, {a:1}), SERVICE("dns", 0, {a:2}));`, "duplicate configMetadata error"},
-		{"duplicate default metadata", `DEFAULTS(REGISTRAR("none"), SERVICE("dns", 0, {})); D("example.com", SERVICE("dns", 0, {}));`, "duplicate configMetadata error"},
-		{"duplicate extension metadata", `D("example.com", REGISTRAR("none"), SERVICE("dns", 0, null)); D_EXTEND("example.com", SERVICE("dns", 0, null));`, "duplicate configMetadata error"},
-		{"unused legacy declaration duplicate", `var unused = NewDnsProvider("dns", {}); D("example.com", REGISTRAR("none"), SERVICE("dns", 0, {}));`, "NewDnsProvider() and SERVICE()"},
-		{"null legacy metadata duplicate", `NewDnsProvider("dns", "-", null); D("example.com", REGISTRAR("none"), SERVICE("dns", 0, null));`, "NewDnsProvider() and SERVICE()"},
-		{"late legacy declaration duplicate", `D("example.com", REGISTRAR("none"), SERVICE("dns", 0, {})); NewDnsProvider("dns", {});`, "NewDnsProvider() and SERVICE()"},
+		{"duplicate same metadata", `D("example.com", REGISTRAR(), SERVICE("dns", 0, {}), SERVICE("dns", 0, {}));`, "SERVICE() and SERVICE()"},
+		{"duplicate different metadata", `D("example.com", REGISTRAR(), SERVICE("dns", 0, {a:1}), SERVICE("dns", 0, {a:2}));`, "duplicate configMetadata error"},
+		{"duplicate default metadata", `DEFAULTS(REGISTRAR(), SERVICE("dns", 0, {})); D("example.com", SERVICE("dns", 0, {}));`, "duplicate configMetadata error"},
+		{"duplicate extension metadata", `D("example.com", REGISTRAR(), SERVICE("dns", 0, null)); D_EXTEND("example.com", SERVICE("dns", 0, null));`, "duplicate configMetadata error"},
+		{"unused legacy declaration duplicate", `var unused = NewDnsProvider("dns", {}); D("example.com", REGISTRAR(), SERVICE("dns", 0, {}));`, "NewDnsProvider() and SERVICE()"},
+		{"null legacy metadata duplicate", `NewDnsProvider("dns", "-", null); D("example.com", REGISTRAR(), SERVICE("dns", 0, null));`, "NewDnsProvider() and SERVICE()"},
+		{"late legacy declaration duplicate", `D("example.com", REGISTRAR(), SERVICE("dns", 0, {})); NewDnsProvider("dns", {});`, "NewDnsProvider() and SERVICE()"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -252,7 +252,7 @@ func GetZone(args GetZoneArgs) error {
 				sep = "\n\t, " // Funky comma mode
 			}
 
-			fmt.Fprintf(w, "D(%q, REGISTRAR(\"none\")%s", zoneName, sep)
+			fmt.Fprintf(w, "D(%q, REGISTRAR()%s", zoneName, sep)
 			var o []string
 
 			// If the provider returns no nameservers, emit {no_ns: "true"}
