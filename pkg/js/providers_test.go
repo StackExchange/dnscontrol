@@ -71,22 +71,16 @@ func TestProviderSyntaxCompatibility(t *testing.T) {
 				D("example.com", REGISTRAR("chosen")); D("example.net", "chosen");`,
 		},
 		{
-			name:   "extension overrides default",
+			name:   "extension adds service with default registrar",
 			legacy: `NewRegistrar("chosen"); NewDnsProvider("dns"); D("example.com", "chosen", DnsProvider("dns", 0));`,
-			modern: `DEFAULTS(REGISTRAR("unused"));
-				D("example.com"); D_EXTEND("example.com", REGISTRAR("chosen"), SERVICE("dns", 0));`,
-		},
-		{
-			name:   "registrar supplied after domain declaration",
-			legacy: `NewRegistrar("reg"); D("example.com", "reg", A("@", "192.0.2.1"));`,
-			modern: `D("example.com", A("@", "192.0.2.1"));
-				D_EXTEND("example.com", REGISTRAR("reg"));`,
+			modern: `DEFAULTS(REGISTRAR("chosen"));
+				D("example.com"); D_EXTEND("example.com", SERVICE("dns", 0));`,
 		},
 		{
 			name:   "asynchronous finalization",
 			legacy: `NewRegistrar("reg"); NewDnsProvider("dns"); D("example.com", "reg", DnsProvider("dns"));`,
-			modern: `D("example.com");
-				setTimeout(function () { D_EXTEND("example.com", REGISTRAR("reg"), SERVICE("dns")); }, 1);`,
+			modern: `D("example.com", REGISTRAR("reg"));
+				setTimeout(function () { D_EXTEND("example.com", SERVICE("dns")); }, 1);`,
 		},
 		{
 			name:   "promise finalization",
@@ -148,9 +142,10 @@ func TestProviderSyntaxErrors(t *testing.T) {
 		{"registrar in array", `D("example.com", [REGISTRAR("reg")]);`, "must immediately follow"},
 		{"second registrar", `D("example.com", REGISTRAR("one"), REGISTRAR("two"));`, "must immediately follow"},
 		{"positional conflict", `D("example.com", "one", REGISTRAR("two"));`, "must immediately follow"},
-		{"extension conflict", `D("example.com", REGISTRAR("one")); D_EXTEND("example.com", REGISTRAR("two"));`, "Conflicting registrars"},
-		{"late extension registrar", `D("example.com", REGISTRAR("reg")); D_EXTEND("example.com", A("@","192.0.2.1"), REGISTRAR("reg"));`, "must immediately follow"},
-		{"async conflict", `D("example.com", REGISTRAR("one")); setTimeout(function() {D_EXTEND("example.com", REGISTRAR("two"));},1);`, "Conflicting registrars"},
+		{"extension registrar", `D("example.com", REGISTRAR("one")); D_EXTEND("example.com", REGISTRAR("two"));`, "cannot be used in D_EXTEND"},
+		{"late extension registrar", `D("example.com", REGISTRAR("reg")); D_EXTEND("example.com", A("@","192.0.2.1"), REGISTRAR("reg"));`, "cannot be used in D_EXTEND"},
+		{"nested extension registrar", `D("example.com", REGISTRAR()); D_EXTEND("example.com", [REGISTRAR()]);`, "cannot be used in D_EXTEND"},
+		{"async extension registrar", `D("example.com", REGISTRAR("one")); setTimeout(function() {D_EXTEND("example.com", REGISTRAR("two"));},1);`, "cannot be used in D_EXTEND"},
 		{"conflicting defaults", `DEFAULTS(REGISTRAR("one"), REGISTRAR("two")); D("example.com");`, "Conflicting registrars"},
 		{"empty registrar", `REGISTRAR("");`, "nonempty credential entry name"},
 		{"registrar metadata", `REGISTRAR("reg", {});`, "configMetadata is not supported"},

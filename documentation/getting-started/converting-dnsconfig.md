@@ -77,7 +77,8 @@ Including metadata in both `NewDnsProvider()` and `SERVICE()` is an error.
 
 Leave creds.json unchanged.
 
-These modifiers also work in `DEFAULTS()` and `D_EXTEND()`.
+`REGISTRAR()` and `SERVICE()` also work in `DEFAULTS()`. Only `SERVICE()` works
+in `D_EXTEND()`.
 
 ## Advice
 

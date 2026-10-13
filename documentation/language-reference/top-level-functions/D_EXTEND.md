@@ -12,11 +12,11 @@ parameter_types:
 
 [SERVICE](../domain-modifiers/SERVICE.md) can add a DNS service or its metadata.
 Metadata may be supplied only once per domain and credential entry, including
-across defaults, `D()`, and extensions. An explicit
-[REGISTRAR](../domain-modifiers/REGISTRAR.md) must immediately follow the name;
-it may override a default registrar but cannot conflict with an explicit one.
+across defaults, `D()`, and extensions. Set the
+[REGISTRAR](../domain-modifiers/REGISTRAR.md) in `D()` or `DEFAULTS()`;
+`D_EXTEND()` does not accept it.
 
-The first argument is a domain name. If it exactly matches a previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md), simply adding records as if they had been specified in the original [`D()`](D.md).
+The first argument is a domain name. If it exactly matches a previously defined domain, `D_EXTEND()` adds its records and DNS-service modifiers to that domain.
 
 If the domain name does not match an existing domain, but could be a (non-delegated) subdomain of an existing domain, the new records (and metadata) are added with the subdomain part appended to all record names (labels), and targets (as appropriate). See the examples below.
 

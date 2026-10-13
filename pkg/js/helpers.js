@@ -130,8 +130,11 @@ function REGISTRAR(name) {
     }
     var modifier = function (d) {
         var state = d._registrarState;
+        if (state.inExtension) {
+            throw "REGISTRAR cannot be used in D_EXTEND().";
+        }
         if (!state.applyingDefaults && !state.allowRegistrar) {
-            throw "REGISTRAR must immediately follow the domain name in D() or D_EXTEND().";
+            throw "REGISTRAR must immediately follow the domain name in D().";
         }
         var key = state.applyingDefaults ? "defaultName" : "explicitName";
         if (typeof state[key] !== "undefined" && state[key] !== name) {
@@ -350,13 +353,16 @@ function D_EXTEND(name) {
         name.length - domain.obj.name.length - 1
     );
 
-    for (var i = 1; i < arguments.length; i++) {
-        var m = arguments[i];
-        domain.obj._registrarState.allowRegistrar =
-            i === 1 && m && m._isRegistrar === true;
-        processDargs(m, domain.obj);
+    var state = domain.obj._registrarState;
+    state.inExtension = true;
+    try {
+        for (var i = 1; i < arguments.length; i++) {
+            processDargs(arguments[i], domain.obj);
+        }
+    } finally {
+        state.inExtension = false;
+        state.allowRegistrar = false;
     }
-    domain.obj._registrarState.allowRegistrar = false;
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }
 
