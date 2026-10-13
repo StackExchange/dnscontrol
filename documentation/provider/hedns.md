@@ -123,7 +123,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("hedns"),
+D("example.com", REGISTRAR(), SERVICE("hedns"),
     // Standard static record
     A("test", "1.2.3.4"),
 

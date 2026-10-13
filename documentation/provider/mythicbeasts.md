@@ -29,7 +29,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("mythicbeasts"),
+D("example.com", REGISTRAR(), SERVICE("mythicbeasts"),
     A("test", "1.2.3.4"),
 );
 ```

@@ -23,7 +23,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("netcup"),
+D("example.com", REGISTRAR(), SERVICE("netcup"),
     A("test", "1.2.3.4"),
 );
 ```

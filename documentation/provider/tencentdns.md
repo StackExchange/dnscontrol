@@ -134,7 +134,7 @@ For DNSPod, the provider maps `ALIAS("@")` to a CNAME record on `@` under the ho
 Use `ALIAS("@")` for apex CNAME flattening:
 
 ```js
-D("example.com", REGISTRAR("none"), SERVICE("tencentdns"),
+D("example.com", REGISTRAR(), SERVICE("tencentdns"),
   ALIAS("@", "target.example.net.")
 );
 ```
@@ -143,7 +143,7 @@ D("example.com", REGISTRAR("none"), SERVICE("tencentdns"),
 Avoid writing CNAME("@") directly:
 
 ```js
-D("example.com", REGISTRAR("none"), SERVICE("tencentdns"),
+D("example.com", REGISTRAR(), SERVICE("tencentdns"),
   CNAME("@", "target.example.net.")
 );
 ```

@@ -32,7 +32,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("softlayer"),
+D("example.com", REGISTRAR(), SERVICE("softlayer"),
     A("test", "1.2.3.4"),
 );
 ```
@@ -44,7 +44,7 @@ For compatibility with the pre-generated NAMESERVER fields it's recommended to s
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("softlayer"),
+D("example.com", REGISTRAR(), SERVICE("softlayer"),
     NAMESERVER_TTL(86400),
 
     A("test", "1.2.3.4"),

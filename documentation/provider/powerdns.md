@@ -24,7 +24,7 @@ Following provider metadata are available:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("pdns", ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE("pdns", ALL_NS, {
     "default_ns": [
         "a.example.com.",
         "b.example.com."
@@ -54,7 +54,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("powerdns"),
+D("example.com", REGISTRAR(), SERVICE("powerdns"),
     A("test", "1.2.3.4"),
 );
 ```

@@ -39,7 +39,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("alidns"),
+D("example.com", REGISTRAR(), SERVICE("alidns"),
     A("test", "1.2.3.4"),
     CNAME("www", "example.com."),
     MX("@", 10, "mail.example.com."),

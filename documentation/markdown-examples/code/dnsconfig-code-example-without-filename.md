@@ -1,6 +1,6 @@
 {% code %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("bind"),
+D("example.com", REGISTRAR(), SERVICE("bind"),
     A("@", "1.2.3.4")
 );
 ```

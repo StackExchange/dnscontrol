@@ -68,7 +68,7 @@ Why? You don't have access to the registrar, or the registrar is not supported b
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
   SERVICE("namedotcom_main"),
   A("@", "10.2.3.4"),
 );
@@ -81,7 +81,7 @@ Suppose you don't want to manage a domain, but you want to list the zone in your
 
 ```javascript
 function INVENTORY_ONLY(name) {
-    D(name, REGISTRAR("none"), { no_ns: "true" });
+    D(name, REGISTRAR(), { no_ns: "true" });
 }
 
 INVENTORY_ONLY("example.com");

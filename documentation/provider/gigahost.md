@@ -28,7 +28,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("gigahost"),
+D("example.com", REGISTRAR(), SERVICE("gigahost"),
     A("test", "1.2.3.4"),
 );
 ```

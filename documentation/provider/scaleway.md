@@ -44,7 +44,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("scaleway"),
+D("example.com", REGISTRAR(), SERVICE("scaleway"),
     A("test", "1.2.3.4"),
     MX("@", 10, "mail.example.com."),
 );

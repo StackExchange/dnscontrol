@@ -95,11 +95,11 @@ To differentiate the different domains, specify the domains as `domain.tld!tag`,
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com!inside", REGISTRAR("none"), SERVICE("Cloudflare"),
+D("example.com!inside", REGISTRAR(), SERVICE("Cloudflare"),
   A("www", "10.10.10.10"),
 );
 
-D("example.com!outside", REGISTRAR("none"), SERVICE("bind"),
+D("example.com!outside", REGISTRAR(), SERVICE("bind"),
   A("www", "20.20.20.20"),
 );
 

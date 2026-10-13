@@ -42,7 +42,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("openwrt"),
+D("example.com", REGISTRAR(), SERVICE("openwrt"),
     A("foo", "1.2.3.4"),
     AAAA("another", "2003::1"),
     CNAME("myalias", "www.example.com."),

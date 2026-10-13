@@ -23,7 +23,7 @@ For convenience, both configuration files are shown below.
 {% code title="dnsconfig.js" %}
 ```javascript
 D("cafferata.dev",
-    REGISTRAR("none"),
+    REGISTRAR(),
     SERVICE("transip"),
     DefaultTTL("1d"),
     TXT("spf", [
@@ -104,7 +104,7 @@ Because the above GitLab CI configuration expects a diff, we apply this by (_for
 
 ```diff
 D("cafferata.dev",
-    REGISTRAR("none"),
+    REGISTRAR(),
     SERVICE("transip"),
     DefaultTTL("1d"),
     TXT("spf", [

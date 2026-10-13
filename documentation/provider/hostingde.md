@@ -53,7 +53,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("http.net", ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE("http.net", ALL_NS, {
   "default_ns": [
     "ns1.routing.net.",
     "ns2.routing.net.",

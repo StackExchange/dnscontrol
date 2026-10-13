@@ -193,7 +193,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("azuredns_main"),
+D("example.com", REGISTRAR(), SERVICE("azuredns_main"),
     A("test", "1.2.3.4"),
 );
 ```

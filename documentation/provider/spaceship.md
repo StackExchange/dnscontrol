@@ -31,7 +31,7 @@ This provider does not recognize any special metadata fields unique to Spaceship
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("spaceship"),
+D("example.com", REGISTRAR(), SERVICE("spaceship"),
     A("test", "1.2.3.4"),
 );
 ```

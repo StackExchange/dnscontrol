@@ -86,7 +86,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("gcore"),
+D("example.com", REGISTRAR(), SERVICE("gcore"),
     A("test", "1.2.3.4"),
 );
 ```
@@ -98,7 +98,7 @@ An example configuration with metadata set:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("gcore"),
+D("example.com", REGISTRAR(), SERVICE("gcore"),
     A("@", "1.1.1.1", TTL("1m"), {
         gcore_filters: "geodistance,false;first_n,false,2",
         gcore_failover_protocol: "HTTP",

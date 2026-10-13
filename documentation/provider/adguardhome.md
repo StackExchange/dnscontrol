@@ -41,7 +41,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("adguard_home"),
+D("example.com", REGISTRAR(), SERVICE("adguard_home"),
     A("foo", "1.2.3.4"),
     AAAA("another", "2003::1"),
     ALIAS("@", "www.example.com."),

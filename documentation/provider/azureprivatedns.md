@@ -145,7 +145,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("azure_private_dns_main"),
+D("example.com", REGISTRAR(), SERVICE("azure_private_dns_main"),
     A("test", "1.2.3.4"),
 );
 ```

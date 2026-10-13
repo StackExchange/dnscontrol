@@ -35,7 +35,7 @@ Here's a more complex example:
 ```javascript
 require("kubernetes/clusters.js");
 
-D("example.com", REGISTRAR("none"), SERVICE("my_dns_provider"),
+D("example.com", REGISTRAR(), SERVICE("my_dns_provider"),
     IncludeKubernetes(),
 );
 ```
@@ -81,7 +81,7 @@ Requiring JSON files initializes variables:
 var domains = require("./domain-ip-map.json")
 
 for (var domain in domains) {
-    D(domain, REGISTRAR("none"), SERVICE("my_dns_server"),
+    D(domain, REGISTRAR(), SERVICE("my_dns_server"),
         A("@", domains[domain])
     );
 }

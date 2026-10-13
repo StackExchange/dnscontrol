@@ -25,7 +25,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("luadns"),
+D("example.com", REGISTRAR(), SERVICE("luadns"),
     A("test", "1.2.3.4"),
 );
 ```

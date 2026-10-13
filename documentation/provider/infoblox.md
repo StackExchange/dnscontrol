@@ -37,7 +37,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("infoblox"),
+D("example.com", REGISTRAR(), SERVICE("infoblox"),
     A("test", "1.2.3.4"),
     AAAA("test6", "2001:db8::1"),
     CNAME("www", "test.example.com."),

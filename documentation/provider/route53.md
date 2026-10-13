@@ -111,7 +111,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("r53_main"),
+D("example.com", REGISTRAR(), SERVICE("r53_main"),
     A("test", "1.2.3.4"),
 );
 ```
@@ -125,13 +125,13 @@ In this example the domain `testzone.net` appears in the same account twice, eac
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("testzone.net!private", REGISTRAR("none"),
+D("testzone.net!private", REGISTRAR(),
     SERVICE("r53_main"),
     R53_ZONE("Z111111111JCCCP1V7UW"),
     TXT("me", "private testzone.net"),
 );
 
-D("testzone.net!public", REGISTRAR("none"),
+D("testzone.net!public", REGISTRAR(),
     SERVICE("r53_main"),
     R53_ZONE("Z222222222INNG98SHJQ2"),
     TXT("me", "public testzone.net"),
@@ -145,7 +145,7 @@ Route 53 [weighted routing](https://docs.aws.amazon.com/Route53/latest/Developer
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("r53_main"),
+D("example.com", REGISTRAR(), SERVICE("r53_main"),
   A("www", "1.2.3.4", R53_WEIGHT(70, "web-east")),
   A("www", "5.6.7.8", R53_WEIGHT(30, "web-west")),
 );
@@ -158,7 +158,7 @@ Use the [`R53_HEALTH_CHECK_ID()`](../language-reference/record-modifiers/R53_HEA
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("r53_main"),
+D("example.com", REGISTRAR(), SERVICE("r53_main"),
   A("api", "10.0.1.1", R53_WEIGHT(50, "api-primary"), R53_HEALTH_CHECK_ID("12345678-1234-1234-1234-123456789012")),
   A("api", "10.0.2.1", R53_WEIGHT(50, "api-secondary"), R53_HEALTH_CHECK_ID("87654321-4321-4321-4321-210987654321")),
 );
@@ -234,7 +234,7 @@ Error getting corrections: AccessDeniedException: User: arn:aws:iam::86839973084
 Done. 1 corrections.
 ```
 
-If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or use `REGISTRAR("none")` for now.
+If this happens to you, we'd appreciate it if you could help us fix the code. In the meanwhile, you can give the account additional IAM permissions so that it can do DNS-related actions, or use `REGISTRAR()` for now.
 
 ### Bug when converting new zones
 

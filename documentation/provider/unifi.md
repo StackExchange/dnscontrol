@@ -110,7 +110,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.lan", REGISTRAR("none"), SERVICE("unifi"),
+D("example.lan", REGISTRAR(), SERVICE("unifi"),
     A("server", "192.168.1.10"),
     AAAA("server", "fd00::10"),
     CNAME("www", "server.example.lan."),

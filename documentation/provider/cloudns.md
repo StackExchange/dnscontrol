@@ -37,7 +37,7 @@ Simply use the `CLOUDNS_WR` functions to make redirects like any other record:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("cloudns"),
+D("example.com", REGISTRAR(), SERVICE("cloudns"),
   CLOUDNS_WR("@", "http://example.com/"),
   CLOUDNS_WR("www", "http://example.com/"),
 );
@@ -49,7 +49,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("cloudns"),
+D("example.com", REGISTRAR(), SERVICE("cloudns"),
     A("test", "1.2.3.4"),
 );
 ```

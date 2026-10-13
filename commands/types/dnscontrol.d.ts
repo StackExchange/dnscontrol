@@ -346,7 +346,7 @@ declare function ALIAS(name: string, target: string, ...modifiers: RecordModifie
  * Use it to supply configuration metadata without limiting nameservers:
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"),
+ * D("example.com", REGISTRAR(),
  *     SERVICE("bind", ALL_NS, {default_ns: ["ns1.example.net.", "ns2.example.net."]}),
  *     A("@", "192.0.2.1"),
  * );
@@ -836,11 +836,11 @@ declare function CSYNC(name: string, serial: number, flags: number, types: strin
  * To differentiate the different domains, specify the domains as `domain.tld!tag`, such as `example.com!inside` and `example.com!outside`.
  *
  * ```javascript
- * D("example.com!inside", REGISTRAR("none"), SERVICE("Cloudflare"),
+ * D("example.com!inside", REGISTRAR(), SERVICE("Cloudflare"),
  *   A("www", "10.10.10.10"),
  * );
  *
- * D("example.com!outside", REGISTRAR("none"), SERVICE("bind"),
+ * D("example.com!outside", REGISTRAR(), SERVICE("bind"),
  *   A("www", "20.20.20.20"),
  * );
  *
@@ -1398,7 +1398,7 @@ declare function HASH(algorithm: "SHA1" | "SHA256" | "SHA512", value: string): s
  * **Note:** DDNS keys are **write-only**. dnscontrol sets the key on the provider but cannot read back the current key. This means a key-only change (same record data, new key) will not be detected as a difference. To force an update, also change another field such as the TTL.
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"), SERVICE("hedns"),
+ * D("example.com", REGISTRAR(), SERVICE("hedns"),
  *     A("dyn", "0.0.0.0", HEDNS_DDNS_KEY("my-secret-token")),
  *     AAAA("dyn6", "::1", HEDNS_DDNS_KEY("another-token")),
  * );
@@ -1414,7 +1414,7 @@ declare function HEDNS_DDNS_KEY(key: string): RecordModifier;
  * Use this modifier when you want to ensure a record that was previously dynamic is returned to a static state.
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"), SERVICE("hedns"),
+ * D("example.com", REGISTRAR(), SERVICE("hedns"),
  *     A("static", "5.6.7.8", HEDNS_DYNAMIC_OFF),
  * );
  * ```
@@ -1431,7 +1431,7 @@ declare const HEDNS_DYNAMIC_OFF: RecordModifier;
  * To set a specific DDNS key, use [`HEDNS_DDNS_KEY()`](HEDNS_DDNS_KEY.md) instead.
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"), SERVICE("hedns"),
+ * D("example.com", REGISTRAR(), SERVICE("hedns"),
  *     A("dyn", "0.0.0.0", HEDNS_DYNAMIC_ON),
  *     AAAA("dyn6", "::1", HEDNS_DYNAMIC_ON),
  * );
@@ -2825,7 +2825,7 @@ declare function MX(name: string, priority: number, target: string, ...modifiers
  * It looks like this:
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"),
+ * D("example.com", REGISTRAR(),
  *   ...
  * );
  * ```
@@ -3335,7 +3335,7 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  * All magic is RFC2317-aware. We use the first format listed in the RFC for both [`REV()`](../top-level-functions/REV.md) and `PTR()`. The format is `FIRST/MASK.C.B.A.in-addr.arpa` where `FIRST` is the first IP address of the zone, `MASK` is the netmask of the zone (25-31 inclusive), and A, B, C are the first 3 octets of the IP address. For example `172.20.18.130/27` is located in a zone named `128/27.18.20.172.in-addr.arpa`
  *
  * ```javascript
- * D(REV("1.2.3.0/24"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("1.2.3.0/24"), REGISTRAR(), SERVICE("bind"),
  *   PTR("1", "foo.example.com."),
  *   PTR("2", "bar.example.com."),
  *   PTR("3", "baz.example.com."),
@@ -3345,13 +3345,13 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  * ```
  *
  * ```javascript
- * D(REV("9.9.9.128/25"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("9.9.9.128/25"), REGISTRAR(), SERVICE("bind"),
  *   PTR("9.9.9.129", "first.example.com."),
  * );
  * ```
  *
  * ```javascript
- * D(REV("2001:db8:302::/48"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("2001:db8:302::/48"), REGISTRAR(), SERVICE("bind"),
  *   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
  *   // If the first parameter is a valid IP address, DNSControl will generate the correct name:
  *   PTR("2001:db8:302::2", "two.example.com."),                          // "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
@@ -3373,10 +3373,10 @@ declare function PORKBUN_URLFWD(name: string, target: string, ...modifiers: Reco
  *     );
  * }
  *
- * D("example.com", REGISTRAR("none"), SERVICE("bind"),
+ * D("example.com", REGISTRAR(), SERVICE("bind"),
  *     ...,
  * );
- * D(REV("10.20.30.0/24"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("10.20.30.0/24"), REGISTRAR(), SERVICE("bind"),
  *     ...,
  * );
  *
@@ -3539,8 +3539,8 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
 /**
  * `REGISTRAR(credEntry)` selects the registrar using an entry name from creds.json.
  * The entry's `TYPE` determines the provider. No `NewRegistrar()` declaration is
- * needed. Omit `credEntry` to select `"none"`, so `REGISTRAR()` and
- * `REGISTRAR("none")` both disable registrar management. An empty string is an error.
+ * needed. Omit `credEntry` to select `"none"`; `REGISTRAR()` disables registrar
+ * management. An empty string is an error.
  *
  * An explicit `REGISTRAR()` must immediately follow the domain name in `D()` or
  * `D_EXTEND()`. It accepts no configuration metadata.
@@ -3604,7 +3604,7 @@ declare function REGISTRAR(credEntry?: string): DomainModifier;
  * Here's an example reverse lookup domain:
  *
  * ```javascript
- * D(REV("1.2.3.0/24"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("1.2.3.0/24"), REGISTRAR(), SERVICE("bind"),
  *   PTR("1", "foo.example.com."),
  *   PTR("2", "bar.example.com."),
  *   PTR("3", "baz.example.com."),
@@ -3612,7 +3612,7 @@ declare function REGISTRAR(credEntry?: string): DomainModifier;
  *   PTR("1.2.3.10", "ten.example.com."),
  * );
  *
- * D(REV("2001:db8:302::/48"), REGISTRAR("none"), SERVICE("bind"),
+ * D(REV("2001:db8:302::/48"), REGISTRAR(), SERVICE("bind"),
  *   PTR("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0", "foo.example.com."),  // 2001:db8:302::1
  *   // If the first parameter is an IP address, DNSControl automatically calls REV() for you.
  *   PTR("2001:db8:302::2", "two.example.com."),                          // 2.0.0...
@@ -3695,7 +3695,7 @@ declare function RP(name: string, mbox: string, txt: string, ...modifiers: Recor
  * DNS services' nameservers are combined and sent to the registrar.
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"),
+ * D("example.com", REGISTRAR(),
  *     SERVICE("cloudflare_main"),
  *     SERVICE("bind", 0),
  *     A("@", "192.0.2.1"),
@@ -3708,7 +3708,7 @@ declare function RP(name: string, mbox: string, txt: string, ...modifiers: Recor
  * different domains may supply different values for the same entry.
  *
  * ```javascript
- * D("example.com", REGISTRAR("none"),
+ * D("example.com", REGISTRAR(),
  *     SERVICE("bind", ALL_NS, {default_ns: ["ns1.example.net.", "ns2.example.net."]}),
  *     A("@", "192.0.2.1"),
  * );

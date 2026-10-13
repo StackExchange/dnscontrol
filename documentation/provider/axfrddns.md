@@ -75,7 +75,7 @@ This list can be provided either as metadata or in `creds.json`. Only the later 
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("axfrddns", ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE("axfrddns", ALL_NS, {
         "default_ns": [
             "ns1.example.com.",
             "ns2.example.com.",
@@ -151,7 +151,7 @@ When testing `dnscontrol` against a local nameserver, you might use the followin
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("axfrddns", ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE("axfrddns", ALL_NS, {
     default_ns: [
         "ns.example.com.",
     ],

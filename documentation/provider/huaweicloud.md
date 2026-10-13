@@ -30,7 +30,7 @@ The following example shows how to use the metadata:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("huaweicloud"),
+D("example.com", REGISTRAR(), SERVICE("huaweicloud"),
     // this example will create 4 rrsets with the same name "test"
     A("test", "8.8.8.8"),
     A("test", "8.8.4.4"),
@@ -54,7 +54,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("huaweicloud"),
+D("example.com", REGISTRAR(), SERVICE("huaweicloud"),
     A("test", "1.2.3.4"),
 );
 ```

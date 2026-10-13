@@ -9,7 +9,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("opensrs"),
+D("example.com", REGISTRAR(), SERVICE("opensrs"),
     A("test", "1.2.3.4"),
 );
 ```

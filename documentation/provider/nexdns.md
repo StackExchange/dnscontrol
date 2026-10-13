@@ -46,7 +46,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("nexdns"),
+D("example.com", REGISTRAR(), SERVICE("nexdns"),
     A("@", "203.0.113.10"),
     A("www", "203.0.113.10"),
     AAAA("@", "2001:db8::1"),

@@ -34,7 +34,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("oracle"),
+D("example.com", REGISTRAR(), SERVICE("oracle"),
     NAMESERVER_TTL(86400),
 
     A("test", "1.2.3.4"),

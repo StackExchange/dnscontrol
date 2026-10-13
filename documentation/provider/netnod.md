@@ -25,7 +25,7 @@ The following provider metadata is available:
 {% code title="dnsconfig.js" %}
 
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE('netnod', ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE('netnod', ALL_NS, {
     default_ns: ['a.example.com.', 'b.example.com.'],
     also_notify: ['192.36.148.17', '2001:7fe::53'],
     allow_transfer_keys: ['netnod-key1.'],
@@ -46,7 +46,7 @@ An example configuration:
 {% code title="dnsconfig.js" %}
 
 ```javascript
-D('example.com', REGISTRAR('none'), SERVICE('netnod'), A('test', '1.2.3.4'));
+D('example.com', REGISTRAR(), SERVICE('netnod'), A('test', '1.2.3.4'));
 ```
 
 {% endcode %}

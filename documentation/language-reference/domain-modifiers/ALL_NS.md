@@ -9,7 +9,7 @@ the default when maxNS is omitted from [SERVICE](SERVICE.md).
 Use it to supply configuration metadata without limiting nameservers:
 
 ```javascript
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
     SERVICE("bind", ALL_NS, {default_ns: ["ns1.example.net.", "ns2.example.net."]}),
     A("@", "192.0.2.1"),
 );

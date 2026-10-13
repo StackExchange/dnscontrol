@@ -8,8 +8,8 @@ parameter_types:
 
 `REGISTRAR(credEntry)` selects the registrar using an entry name from creds.json.
 The entry's `TYPE` determines the provider. No `NewRegistrar()` declaration is
-needed. Omit `credEntry` to select `"none"`, so `REGISTRAR()` and
-`REGISTRAR("none")` both disable registrar management. An empty string is an error.
+needed. Omit `credEntry` to select `"none"`; `REGISTRAR()` disables registrar
+management. An empty string is an error.
 
 An explicit `REGISTRAR()` must immediately follow the domain name in `D()` or
 `D_EXTEND()`. It accepts no configuration metadata.

@@ -86,7 +86,7 @@ Additional metadata keys for forwarders:
 | `comment`          | string | Comment stored on the RouterOS forwarder entry.    |
 
 ```javascript
-D("_forwarders.mikrotik", REGISTRAR("none"),
+D("_forwarders.mikrotik", REGISTRAR(),
   SERVICE("mikrotik"),
   MIKROTIK_FORWARDER("corp.example.com", "10.0.0.53,10.0.0.54"),
   MIKROTIK_FORWARDER("my-upstream", "1.1.1.1"),  // arbitrary alias
@@ -99,13 +99,13 @@ D("_forwarders.mikrotik", REGISTRAR("none"),
 
 ```javascript
 // Define forwarders first so they exist before being referenced.
-D("_forwarders.mikrotik", REGISTRAR("none"),
+D("_forwarders.mikrotik", REGISTRAR(),
   SERVICE("mikrotik"),
   MIKROTIK_FORWARDER("corp.internal", "10.0.0.53,10.0.0.54"),
   MIKROTIK_FORWARDER("doh-upstream", "1.1.1.1", {doh_servers: "https://cloudflare-dns.com/dns-query", verify_doh_cert: "true"}),
 )
 
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
   {no_ns: "true"},
   SERVICE("mikrotik"),
   A("www", "192.0.2.1"),

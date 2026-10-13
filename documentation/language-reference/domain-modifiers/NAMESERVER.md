@@ -58,7 +58,7 @@ It looks like this:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
   ...
 );
 ```

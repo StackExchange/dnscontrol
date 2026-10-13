@@ -26,7 +26,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("dnscale"),
+D("example.com", REGISTRAR(), SERVICE("dnscale"),
     A("@", "192.0.2.1"),
     A("www", "192.0.2.1"),
     AAAA("@", "2001:db8::1"),

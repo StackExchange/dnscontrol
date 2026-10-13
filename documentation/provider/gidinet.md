@@ -31,7 +31,7 @@ If you manage your domain registration elsewhere but want to use Gidinet for DNS
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("gidinet"),
+D("example.com", REGISTRAR(), SERVICE("gidinet"),
     A("test", "1.2.3.4"),
 );
 ```

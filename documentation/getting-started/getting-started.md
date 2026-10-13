@@ -107,7 +107,7 @@ The file looks like:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("bind"),
+D("example.com", REGISTRAR(), SERVICE("bind"),
     A("@", "1.2.3.4"),    // "@" means the domain's apex.
 );
 ```

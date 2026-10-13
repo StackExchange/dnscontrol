@@ -22,7 +22,7 @@ See [nameserver management](../../advanced-features/nameservers.md) for how the
 DNS services' nameservers are combined and sent to the registrar.
 
 ```javascript
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
     SERVICE("cloudflare_main"),
     SERVICE("bind", 0),
     A("@", "192.0.2.1"),
@@ -35,7 +35,7 @@ nameserver limit. Metadata is specific to the domain and credential entry;
 different domains may supply different values for the same entry.
 
 ```javascript
-D("example.com", REGISTRAR("none"),
+D("example.com", REGISTRAR(),
     SERVICE("bind", ALL_NS, {default_ns: ["ns1.example.net.", "ns2.example.net."]}),
     A("@", "192.0.2.1"),
 );

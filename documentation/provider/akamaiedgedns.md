@@ -93,7 +93,7 @@ Example `dnsconfig.js`:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
@@ -119,7 +119,7 @@ Example:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
@@ -143,7 +143,7 @@ Example:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
@@ -209,7 +209,7 @@ Example:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example_2.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example_2.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured_2.edgesuite.net.", TTL(20)),
@@ -254,7 +254,7 @@ Example 1
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
@@ -287,7 +287,7 @@ In this example the A record is updated to have the IP **1.2.3.10** from **1.2.3
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured.edgesuite.net.", TTL(20)),
@@ -318,7 +318,7 @@ Example:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example_3.com", REGISTRAR("none"), SERVICE("akamaiedgedns"),
+D("example_3.com", REGISTRAR(), SERVICE("akamaiedgedns"),
   NAMESERVER_TTL(86400),
   AUTODNSSEC_ON,
   AKAMAICDN("@", "www.preconfigured_3.edgesuite.net.", TTL(20)),

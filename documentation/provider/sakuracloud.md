@@ -55,7 +55,7 @@ An example configuration:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("sakuracloud"),
+D("example.com", REGISTRAR(), SERVICE("sakuracloud"),
   A("test", "192.0.2.1"),
 );
 ```

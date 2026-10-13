@@ -42,7 +42,7 @@ In this example we set the default SOA settings and NS records.
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("bind", ALL_NS, {
+D("example.com", REGISTRAR(), SERVICE("bind", ALL_NS, {
     "default_soa": {
         "master": "ns1.example.com.",
         "mbox": "spamtrap.example.com.",
@@ -106,7 +106,7 @@ The filenameformat is a string with a few printf-like `%` verbs:
 * `%?x` is typically used to generate an optional `!` or `_` if there is a tag.
 * `%r` is considered "risky" because it can produce a domain name that is not canonical. For example, if you use `D("FOO.com")` and later change it to `D("foo.com")`, your file names will change.
 * Format strings must not end with an incomplete `%` or `%?`
-* Generating a filename without a tag is risky. For example, if the same `dnsconfig.js` has `D("example.com!inside", REGISTRAR("none"), SERVICE("bind"))` and `D("example.com!outside", REGISTRAR("none"), SERVICE("bind"))`, both will use the same filename. DNSControl will write both zone files to the same file, flapping between the two. No error or warning will be output.
+* Generating a filename without a tag is risky. For example, if the same `dnsconfig.js` has `D("example.com!inside", REGISTRAR(), SERVICE("bind"))` and `D("example.com!outside", REGISTRAR(), SERVICE("bind"))`, both will use the same filename. DNSControl will write both zone files to the same file, flapping between the two. No error or warning will be output.
 
 Useful examples:
 

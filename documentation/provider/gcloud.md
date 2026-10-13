@@ -123,7 +123,7 @@ Example:
 
 {% code title="dnsconfig.js" %}
 ```javascript
-D("example.com", REGISTRAR("none"), SERVICE("gcloud"),
+D("example.com", REGISTRAR(), SERVICE("gcloud"),
   {
     DnssecConfig: JSON.stringify(
     {
