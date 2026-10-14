@@ -823,7 +823,8 @@ func checkProviderCapabilities(dc *models.DomainConfig) error {
 			// be performed.
 			continue
 		}
-		if !providers.ProviderHasCapability(provider.ProviderType, providers.CanAutoDNSSEC) {
+		def, ok := providers.GetDefinition(provider.ProviderType)
+		if !ok || !def.CanAutoDNSSEC.HasFeature {
 			return fmt.Errorf("domain %s uses AUTODNSSEC records, but DNS provider type %s does not support them", dc.Name, provider.ProviderType)
 		}
 	}
