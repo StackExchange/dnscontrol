@@ -2,7 +2,6 @@ package providers
 
 import (
 	"fmt"
-	"maps"
 	"net/url"
 	"regexp"
 	"strings"
@@ -154,7 +153,8 @@ func RecordTypeSupported(pType string, typeNum uint16, label string) bool {
 	if name, ok := dnsv2.TypeToString[typeNum]; ok && def.RecordTypeSupport(name).HasFeature {
 		return true
 	}
-	return typeNum == dnsv2.TypeDS && label != "@" && ProviderHasCapability(pType, CanUseDSForChildren)
+	return typeNum == dnsv2.TypeDS && label != "@" &&
+		def.CanUseDSForChildren != nil && def.CanUseDSForChildren.HasFeature
 }
 
 var (
@@ -164,10 +164,10 @@ var (
 	finalizedCatalog     uint64
 )
 
-// Finalize validates selectors against the complete record catalog and derives
-// compatibility capabilities. Call after package registration and before
-// concurrent reads. The _all package does this at startup; accessors also ensure
-// finalization for programs/tests importing individual providers.
+// Finalize validates selectors against the complete record catalog. Call after
+// package registration and before concurrent reads. The _all package does this
+// at startup; accessors also ensure finalization for programs/tests importing
+// individual providers.
 //
 // Register and private-type registration invalidate the result. Tests adding
 // either must finish registration before reading again. Repeated calls without
@@ -181,7 +181,6 @@ func Finalize() error {
 		return nil
 	}
 	catalog := privatetypes.RecordTypes()
-	updates := map[*Definition]DocumentationNotes{}
 	for _, d := range allDefinitions() {
 		for _, s := range d.typeSelectors {
 			if s.priority == 1 {
@@ -190,29 +189,11 @@ func Finalize() error {
 				}
 			}
 		}
-		features := maps.Clone(d.DerivedFeatures)
 		for _, typ := range catalog {
 			if _, err := d.resolveType(typ); err != nil {
 				return err
 			}
 		}
-		// General DS support implies child support. Rebuild from the original
-		// inputs so later catalog registrations never retain stale notes.
-		child := d.CanUseDSForChildren
-		if d.RecordTypeSupport("DS").HasFeature {
-			if child == nil || !child.HasFeature {
-				child = Can()
-			}
-		}
-		delete(features, CanUseDSForChildren)
-		if child != nil {
-			features[CanUseDSForChildren] = child
-		}
-		updates[d] = features
-	}
-	// Publish only after every declaration is valid.
-	for d, features := range updates {
-		d.DerivedFeatures = features
 	}
 	finalizedGeneration, finalizedCatalog = definitionGeneration, catalogVersion
 	return nil
