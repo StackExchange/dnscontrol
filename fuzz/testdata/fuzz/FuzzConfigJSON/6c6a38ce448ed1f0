@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("{\"domAins\":[{\"nAme\":\"000.\",\"rAwreCords\":[{\"tYpe\":\"A\",\"Args\":[\"0\",\"0.0.0.0\"]}]}]}")
