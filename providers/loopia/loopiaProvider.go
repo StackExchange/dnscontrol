@@ -57,18 +57,15 @@ func init() {
 			"NAPTR",
 			"SSHFP",
 			"TLSA",
+			"DS:Cannot:Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end.",
+			"SOA:Cannot:💩",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Unimplemented(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDS:         providers.Cannot("Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end."),
-			providers.CanUseSOA:        providers.Cannot("💩"),
-			providers.DocCreateDomains: providers.Cannot("Can only manage domains registered through their service"),
-		},
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Unimplemented(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Can only manage domains registered through their service",
 	})
 }
 

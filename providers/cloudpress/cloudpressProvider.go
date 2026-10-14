@@ -52,10 +52,10 @@ func init() {
 			"Basic8",
 			"PTR",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

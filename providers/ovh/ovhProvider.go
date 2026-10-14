@@ -60,13 +60,10 @@ func init() {
 			"TLSA",
 			"LOC:Unimplemented",
 		},
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("New domains require registration"),
-		},
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "New domains require registration",
 	})
 }
 

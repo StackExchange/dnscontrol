@@ -60,8 +60,8 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		DocDualHost:            providers.Can("Tencent Cloud allows full management of apex NS records"),
-		DocOfficiallySupported: providers.Cannot(),
+		CanDualHost:         providers.Can("Tencent Cloud allows full management of apex NS records"),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

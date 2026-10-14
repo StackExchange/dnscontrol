@@ -167,7 +167,8 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 		PostWrite:  func(map[string]string) error { postWrites++; return nil },
 		Features:   DocumentationNotes{CanConcur: Can("legacy"), CanUseCAA: Can("CAA", "link"), CanGetZones: Can("enumerate"), DocCreateDomains: Can()},
 		CanConcur:  Cannot("explicit"), CanAutoDNSSEC: Unimplemented("pending"),
-		CanUseDSForChildren: Can(), DocDualHost: Cannot(), DocOfficiallySupported: Can(),
+		CanGetZonesReason: "zone listing unavailable", CreateDomainsReason: "zone creation unavailable",
+		CanUseDSForChildren: Can(), CanDualHost: Cannot(), OfficiallySupported: Can(),
 		RecordIdentity: func(*models.RecordConfig) string { return "identity" },
 	}
 	Register[*definitionDNS]("ZZZ", input)
@@ -194,12 +195,16 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 		def.Aliases[0] != "ALIAS" || def.CredFields[0].Choices[0] != "one" || def.CredFields[0].ShowIf["mode"] != "one" ||
 		def.Features[CanUseCAA].Comment != "CAA" || def.DerivedFeatures[CanUseCAA].Link != "link" ||
 		def.CanConcur.Comment != "explicit" || def.CanAutoDNSSEC.Comment != "pending" ||
-		!def.CanUseDSForChildren.HasFeature || def.DocDualHost.HasFeature || !def.DocOfficiallySupported.HasFeature {
+		!def.CanUseDSForChildren.HasFeature || def.CanDualHost.HasFeature || !def.OfficiallySupported.HasFeature {
 		t.Fatalf("registration did not retain supplied metadata: %+v", def)
 	}
 	if !input.Features[CanGetZones].HasFeature || !input.Features[DocCreateDomains].HasFeature ||
 		!def.Features[CanGetZones].HasFeature || !def.Features[DocCreateDomains].HasFeature {
 		t.Fatal("deriving interface capabilities overwrote the supplied feature notes")
+	}
+	if def.DerivedFeatures[CanGetZones].Comment != "zone listing unavailable" ||
+		def.DerivedFeatures[DocCreateDomains].Comment != "zone creation unavailable" {
+		t.Fatal("named interface reasons did not override legacy comments")
 	}
 	if ProviderHasCapability("ALIAS", CanConcur) || !ProviderHasCapability("ALIAS", CanUseCAA) ||
 		ProviderHasCapability("ALIAS", CanAutoDNSSEC) || !def.DerivedFeatures[CanAutoDNSSEC].Unimplemented ||

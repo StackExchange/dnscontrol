@@ -85,18 +85,14 @@ func init() {
 			"PTR",
 			"SSHFP",
 			"TLSA",
-			"SOA:Unimplemented",
+			"SOA:Unimplemented:Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet",
+			"DS:Cannot:Not supported for root, only for children",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseSOA: providers.Unimplemented("Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet"),
-			providers.CanUseDS:  providers.Cannot("Not supported for root, only for children"),
-		},
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

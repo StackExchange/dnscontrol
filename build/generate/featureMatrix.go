@@ -279,7 +279,7 @@ func matrixData() *FeatureMatrix {
 
 		setDocumentation(
 			OfficialSupport,
-			providers.DocOfficiallySupported,
+			providers.OfficiallySupported,
 			true,
 		)
 		featureMap.SetSimple(
@@ -330,7 +330,7 @@ func matrixData() *FeatureMatrix {
 		)
 		setDocumentation(
 			DualHost,
-			providers.DocDualHost,
+			providers.CanDualHost,
 			false,
 		)
 

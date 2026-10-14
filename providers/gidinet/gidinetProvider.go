@@ -53,17 +53,13 @@ func init() {
 		Maintainer: "@zupolgec",
 		SupportedTypes: []string{
 			"Basic8",
-			"CAA:Cannot",
+			"CAA:Cannot:Only premium service",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseCAA:        providers.Cannot("Only premium service"),
-			providers.DocCreateDomains: providers.Cannot("Must be created via web UI"),
-		},
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Must be created via web UI",
 	})
 }
 

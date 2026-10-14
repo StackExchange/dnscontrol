@@ -57,6 +57,14 @@ func TestSupportedTypesResolution(t *testing.T) {
 		{"whole name", []string{"BUNNY*:Can"}, nil, "A", Cannot()},
 		{"no match", []string{"FUTURE_*"}, nil, "A", Cannot()},
 		{"lowercase type", []string{"caa:Can"}, nil, "caa", Can()},
+		{"exact reason", []string{"Basic8", "SOA:Cannot:Vendor promises this in 2027"}, nil, "SOA", Cannot("Vendor promises this in 2027")},
+		{"supported reason", []string{"CAA:Can:API ready"}, nil, "CAA", Can("API ready")},
+		{"unimplemented reason", []string{"SOA:Unimplemented:Awaiting API support"}, nil, "SOA", Unimplemented("Awaiting API support")},
+		{"pattern reason", []string{"BUNNY_*:Cannot:Needs vendor support"}, nil, "BUNNY_DNS_PZ", Cannot("Needs vendor support")},
+		{"reason containing colon", []string{"SOA:Cannot:ETA: 2027"}, nil, "SOA", Cannot("ETA: 2027")},
+		{"reason with URL", []string{"CAA:Can:Read the API guide: https://example.com/docs"}, nil, "CAA", Can("Read the API guide", "https://example.com/docs")},
+		{"HTTP URL", []string{"SOA:Cannot:API limitation: http://example.com/docs"}, nil, "SOA", Cannot("API limitation", "http://example.com/docs")},
+		{"URL must be last word", []string{"CAA:Can:Read: https://example.com/docs before using"}, nil, "CAA", Can("Read: https://example.com/docs before using")},
 		{"exact exclusion", []string{"RFC", "CAA:Cannot"}, nil, "CAA", Cannot()},
 		{"Basic8 exclusion", []string{"Basic8", "CAA:Cannot"}, nil, "CAA", Cannot()},
 		{"Basic8 legacy exception", []string{"Basic8"}, DocumentationNotes{CanUseCAA: Cannot("legacy limit")}, "CAA", Cannot("legacy limit")},
@@ -70,6 +78,8 @@ func TestSupportedTypesResolution(t *testing.T) {
 		{"annotated pattern beats legacy", []string{"C*:Can"}, DocumentationNotes{CanUseCAA: Cannot("obsolete")}, "CAA", Can()},
 		{"exact beats legacy", []string{"CAA:Cannot"}, DocumentationNotes{CanUseCAA: Can("obsolete")}, "CAA", Cannot()},
 		{"keep compatible note", []string{"CAA"}, DocumentationNotes{CanUseCAA: Can("API note", "https://example.com/api")}, "CAA", Can("API note", "https://example.com/api")},
+		{"inline reason and legacy link", []string{"CAA:Cannot:new reason"}, DocumentationNotes{CanUseCAA: Cannot("old reason", "https://example.com/api")}, "CAA", Cannot("new reason", "https://example.com/api")},
+		{"inline URL beats legacy URL", []string{"CAA:Can:new reason: https://example.com/new"}, DocumentationNotes{CanUseCAA: Can("old reason", "https://example.com/old")}, "CAA", Can("new reason", "https://example.com/new")},
 		{"replace distinct status", []string{"CAA:Cannot"}, DocumentationNotes{CanUseCAA: Unimplemented("obsolete")}, "CAA", Cannot()},
 		{"duplicates", []string{"CAA", "caa:Can"}, nil, "CAA", Can()},
 		{"resolve patterns", []string{"CA*:Cannot", "*AA:Unimplemented", "CAA"}, nil, "CAA", Can()},
@@ -98,7 +108,7 @@ func TestSupportedTypesResolution(t *testing.T) {
 }
 
 func TestSupportedTypesErrors(t *testing.T) {
-	for _, selector := range []string{"", " CAA", "CAA ", "CA?", "[A]", "A,B", "CAA:", "CAA:can", "CAA:cAn", "CAA:Can:Cannot", "RFC:Cannot", "Basic8:Can"} {
+	for _, selector := range []string{"", " CAA", "CAA ", "CA?", "[A]", "A,B", "CAA:", "CAA:can", "CAA:cAn", "CAA::reason", "CAA:Cannot:", "CAA:Cannot:   ", "CAA:Can:: https://example.com", "CAA:Can:See docs: httpbad", "RFC:Cannot", "Basic8:Can"} {
 		t.Run(selector, func(t *testing.T) {
 			isolateDefinitions(t)
 			assertRegistrationPanics(t, "provider \"INVALID\"", func() {
@@ -206,7 +216,7 @@ func TestSupportedTypesOperationalCapabilities(t *testing.T) {
 	if !ProviderHasCapability("ALL", CanUseDSForChildren) || d.DerivedFeatures[CanUseDSForChildren].Comment != "" {
 		t.Fatal("general DS support must imply child support without contradictory notes")
 	}
-	for _, capability := range []Capability{CanAutoDNSSEC, CanConcur, DocDualHost, DocOfficiallySupported} {
+	for _, capability := range []Capability{CanAutoDNSSEC, CanConcur, CanDualHost, OfficiallySupported} {
 		if ProviderHasCapability("ALL", capability) {
 			t.Fatalf("wildcard enabled operational capability %s", capability)
 		}

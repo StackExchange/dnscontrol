@@ -348,7 +348,14 @@ An entry without a suffix means supported. Use `:Can`, `:Cannot`, or
 `[]string{"RFC", "CAA:Cannot"}`. Both negative statuses reject records;
 `Unimplemented` retains a distinct documentation status. `Basic8` and `RFC`
 do not take suffixes. Type names are case-insensitive; status suffixes use the
-spellings shown here.
+spellings shown here. Add `:reason` after a status to record an explanatory
+comment, for example `"SOA:Cannot:Vendor promises this in 2027"`. The reason
+must be nonempty and may contain colons. To include a link, end the reason
+with `: https://...` (or `: http://...`), for example
+`"ALIAS:Can:Needs enabling: https://example.com/docs"`. The separator space
+must be the last space in the string. The preceding text becomes the
+`DocumentationNote.Comment` and the URL becomes its `Link`; generated feature
+tables currently show only status.
 
 Precedence is: exact entries, patterns with status suffixes, legacy `Features`,
 then unsuffixed patterns/categories. Conflicting statuses at the winning
@@ -361,6 +368,10 @@ interface-derived capabilities. A non-nil `Features` with nil `SupportedTypes`
 retains legacy capability validation. General `DS` support includes child DS records; `CanUseDSForChildren`
 can independently allow child DS records even with `DS:Cannot`.
 
+When an inline reason and a legacy `Features` note describe the same status,
+the inline reason wins. A link from `Features` is retained if the selector has
+no link of its own.
+
 Registration retains selectors until the complete catalog is available.
 Importing `pkg/providers/_all` finalizes the registry; definition accessors also
 ensure finalization for programs importing individual providers. Register all
@@ -370,7 +381,8 @@ types or providers can call `providers.Finalize()` again to rebuild derived data
 Named operational fields such as `CanConcur`
 can be set directly on the definition. Some fields are derived automatically for
 you, such as `CanGetZones` and `DocCreateDomains`
-(set based on the existance or absense of `providers.ZoneLister` and `providers.ZoneCreator`, respectively.)
+(set based on the existence or absence of `providers.ZoneLister` and `providers.ZoneCreator`, respectively.)
+Use `CanGetZonesReason` and `CreateDomainsReason` to explain those derived results.
 
 FYI: If a provider's capabilities changes, run `go generate` to update the documentation.
 

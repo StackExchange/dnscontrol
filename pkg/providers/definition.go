@@ -56,18 +56,25 @@ type Definition struct {
 	// PostWrite prepares local resources after the wizard writes creds.json.
 	PostWrite func(map[string]string) error
 
-	// Nil capability notes fall back to Features. Explicit notes take precedence.
-	CanAutoDNSSEC          *DocumentationNote
-	CanConcur              *DocumentationNote
-	CanUseDSForChildren    *DocumentationNote
-	DocDualHost            *DocumentationNote
-	DocOfficiallySupported *DocumentationNote
-	RecordIdentity         RecordIdentityFunc
-	Features               DocumentationNotes
+	// Nil capability notes fall back to legacy Features. Explicit notes take precedence.
+	CanAutoDNSSEC       *DocumentationNote
+	CanConcur           *DocumentationNote
+	CanUseDSForChildren *DocumentationNote
+	CanDualHost         *DocumentationNote
+	OfficiallySupported *DocumentationNote
+	// Interface discovery sets these capabilities; the reasons only explain the result.
+	CanGetZonesReason   string
+	CreateDomainsReason string
+	RecordIdentity      RecordIdentityFunc
+	// Features remains for external providers using the legacy registration API.
+	// Deprecated: use the named fields and SupportedTypes.
+	Features DocumentationNotes
 
 	// SupportedTypes is an exhaustive declaration of record support. Nil means
 	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no support beyond Features.
+	// declares no support beyond legacy Features. Entries may use TYPE:Status:Reason
+	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
+	// ": http(s)://..." in Reason supplies a link.
 	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
 	SupportedTypes []string
 
@@ -170,22 +177,29 @@ func Register[T InitializableProvider](name string, definition Definition) {
 	}
 	for capability, note := range map[Capability]*DocumentationNote{
 		CanAutoDNSSEC: def.CanAutoDNSSEC, CanConcur: def.CanConcur,
-		CanUseDSForChildren: def.CanUseDSForChildren, DocDualHost: def.DocDualHost,
-		DocOfficiallySupported: def.DocOfficiallySupported,
+		CanUseDSForChildren: def.CanUseDSForChildren, CanDualHost: def.CanDualHost,
+		OfficiallySupported: def.OfficiallySupported,
 	} {
 		if note != nil {
 			def.DerivedFeatures[capability] = note
 		}
 	}
-	for capability, supported := range map[Capability]bool{
-		CanGetZones: def.CanGetZones, DocCreateDomains: def.DocCreateDomains,
+	for capability, derived := range map[Capability]struct {
+		supported bool
+		reason    string
+	}{
+		CanGetZones:      {def.CanGetZones, def.CanGetZonesReason},
+		DocCreateDomains: {def.DocCreateDomains, def.CreateDomainsReason},
 	} {
 		// Preserve annotations without overwriting the supplied feature note.
 		var note DocumentationNote
 		if legacy := def.DerivedFeatures[capability]; legacy != nil {
 			note = *legacy
 		}
-		note.HasFeature = supported
+		if derived.reason != "" {
+			note.Comment = derived.reason
+		}
+		note.HasFeature = derived.supported
 		note.Unimplemented = false
 		def.DerivedFeatures[capability] = &note
 	}

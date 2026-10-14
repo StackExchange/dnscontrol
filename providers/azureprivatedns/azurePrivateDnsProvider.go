@@ -134,18 +134,14 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 			"PTR",
-			"CAA:Cannot",
+			"CAA:Cannot:Azure Private DNS does not support CAA records",
 			"NS:Cannot",
+			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
 		},
-		CanConcur:              providers.Can(),
-		CanAutoDNSSEC:          providers.Cannot(),
-		DocDualHost:            providers.Cannot("Private zones can not change NS records"),
-		DocOfficiallySupported: providers.Can(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
-			providers.CanUseCAA:   providers.Cannot("Azure Private DNS does not support CAA records"),
-		},
+		CanConcur:           providers.Can(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanDualHost:         providers.Cannot("Private zones can not change NS records"),
+		OfficiallySupported: providers.Can(),
 	})
 }
 

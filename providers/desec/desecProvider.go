@@ -59,17 +59,13 @@ func init() {
 			"SSHFP",
 			"SVCB",
 			"TLSA",
-			"ALIAS:Unimplemented",
+			"ALIAS:Unimplemented:Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs.",
 		},
-		CanAutoDNSSEC:          providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Unimplemented(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Unimplemented("Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs."),
-		},
+		CanAutoDNSSEC:       providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Unimplemented(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

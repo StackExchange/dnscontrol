@@ -55,15 +55,12 @@ func init() {
 			"PTR",
 			"SSHFP",
 			"TLSA",
+			"SOA:Cannot:Managed by Misaka.io",
 		},
-		CanAutoDNSSEC:          providers.Unimplemented("DNSSEC endpoints exist; not wired up yet"),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Cannot("The NS records at the zone apex are managed by Misaka.io"),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseSOA: providers.Cannot("The SOA record is managed by Misaka.io (zone settings)"),
-		},
+		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC endpoints exist; not wired up yet"),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot("The NS records at the zone apex are managed by Misaka.io"),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

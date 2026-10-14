@@ -50,19 +50,15 @@ func init() {
 		Maintainer: "@mtmn",
 		SupportedTypes: []string{
 			"Basic8",
-			"CAA:Cannot",
+			"CAA:Cannot:The v2 API does not return CAA tag/flags on read, so records cannot be managed without churn.",
 			"NS:Cannot",
+			"ALIAS:Cannot:WebSupport's ANAME is apex-only and conflicts with other apex records.",
 		},
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanGetZones:      providers.Cannot("WebSupport has no list-all-zones endpoint."),
-			providers.CanUseAlias:      providers.Cannot("WebSupport's ANAME is apex-only and conflicts with other apex records."),
-			providers.CanUseCAA:        providers.Cannot("The v2 API does not return CAA tag/flags on read, so records cannot be managed without churn."),
-			providers.DocCreateDomains: providers.Cannot("Zones must be created via the WebSupport portal."),
-		},
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
+		CanGetZonesReason:   "WebSupport has no list-all-zones endpoint.",
+		CreateDomainsReason: "Zones must be created via the WebSupport portal.",
 	})
 }
 

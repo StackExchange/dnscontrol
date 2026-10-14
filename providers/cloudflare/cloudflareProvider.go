@@ -50,7 +50,7 @@ func init() {
 		Maintainer:   "@tresni",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS",
+			"ALIAS:Can:CF automatically flattens CNAME records into A records dynamically",
 			"CF_WORKER_ROUTE",
 			"CLOUDFLAREAPI_SINGLE_REDIRECT",
 			"DS",
@@ -62,16 +62,12 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-		DocOfficiallySupported: providers.Can(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Can("CF automatically flattens CNAME records into A records dynamically"),
-		},
-		PortalURL: "https://dash.cloudflare.com/profile/api-tokens", // TODO: Verify
-		Notes:     "Cloudflare supports two auth methods: a scoped API token (recommended) or the legacy global API key paired with the account email.",
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+		OfficiallySupported: providers.Can(),
+		PortalURL:           "https://dash.cloudflare.com/profile/api-tokens", // TODO: Verify
+		Notes:               "Cloudflare supports two auth methods: a scoped API token (recommended) or the legacy global API key paired with the account email.",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",
