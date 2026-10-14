@@ -14,7 +14,7 @@ func TestRegisteredDefinition(t *testing.T) {
 	if !ok || def.Kind != providers.KindDNS || !def.CanGetZones || !def.DocCreateDomains {
 		t.Fatalf("BIND definition = %+v", def)
 	}
-	if !providers.ProviderHasCapability("BIND", providers.CanUseAKAMAITLC) {
+	if !def.RecordTypeSupport("AKAMAITLC").HasFeature {
 		t.Fatal("BIND wildcard must enable exhaustive support, including pseudo-types")
 	}
 	if errors := providers.AuditRecords("BIND", nil); len(errors) != 0 {

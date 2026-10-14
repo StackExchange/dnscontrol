@@ -8,7 +8,6 @@ import (
 
 	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v5/models"
-	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
 	_ "github.com/DNSControl/dnscontrol/v5/pkg/providers/_all"
 )
 
@@ -49,8 +48,7 @@ func makeTests() []*TestGroup {
 
 	// Filters:
 
-	// Only apply to providers that CanUseAlias.
-	//      requires(providers.CanUseAlias),
+	// Groups containing unsupported record types are skipped automatically.
 	// Only apply to ROUTE53 + GANDI_V5:
 	//      only("ROUTE53", "GANDI_V5")
 	// Only apply to all providers except ROUTE53 + GANDI_V5:
@@ -59,7 +57,7 @@ func makeTests() []*TestGroup {
 	//     alltrue(*enableCFWorkers, *anotherFlag, myBoolValue)
 	// NOTE: You can't mix not() and only()
 	//     not("ROUTE53"), only("GCLOUD"),  // ERROR!
-	// NOTE: All requires()/not()/only() must appear before any tc().
+	// NOTE: All not()/only() filters must appear before any tc().
 
 	// tc()
 	// Each tc() indicates a set of records.  The testgroup tries to
@@ -195,13 +193,11 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("RP",
-			requires(providers.CanUseRP),
 			tc("Create RP", rp("foo", "user.example.com.", "bar.com.")),
 			tc("Create RP", rp("foo", "other.example.com.", "bar.com.")),
 			tc("Create RP", rp("foo", "other.example.com.", "example.com.")),
 		),
 		testgroup("RP",
-			requires(providers.CanUseRP),
 			tc("Create RP", rp("foo", "user", "server")),
 			tc("Create RP", rp("foo", "user2", "server")),
 			tc("Create RP", rp("foo", "user2", "waiter")),
@@ -322,7 +318,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("HTTPS",
-			requires(providers.CanUseHTTPS),
 			tc("Create a HTTPS record", https("@", 0, "test.com.", "")),
 			tc("Change HTTPS add pri+params", https("@", 1, "test.com.", "port=80")),
 			tc("Change HTTPS change param", https("@", 1, "test.com.", "port=99")),
@@ -331,7 +326,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("HTTPS-Ech",
-			requires(providers.CanUseHTTPS),
 			not(
 				"SAKURACLOUD", // NB(tlim): rejectif code is broken.
 				// Last tested in 2025-12-04. Turns out that Vercel implements an unknown validation
@@ -361,7 +355,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SVCB",
-			requires(providers.CanUseSVCB),
 			tc("Create a SVCB record", svcb("@", 0, "test.com.", "")),
 			tc("Change SVCB add pri+params", svcb("@", 1, "test.com.", "port=80")),
 			tc("Change SVCB change param", svcb("@", 1, "test.com.", "port=99")),
@@ -370,7 +363,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SVCB-Ech",
-			requires(providers.CanUseSVCB),
 			not(
 				"SAKURACLOUD", // NB(tlim): rejectif code is broken.
 				// Last tested in 2025-12-04. Turns out that Vercel implements an unknown validation
@@ -541,7 +533,7 @@ func makeTests() []*TestGroup {
 		// "dnscontrol check" phase.)
 
 		testgroup("complex TXT",
-			// Do not use only()/not()/requires() in this section.
+			// Do not use only()/not() in this section.
 			// If your provider needs to skip one of these tests, update
 			// "provider/*/recordaudit.AuditRecords()" to reject that kind
 			// of record.
@@ -810,17 +802,16 @@ func makeTests() []*TestGroup {
 				manyA("batch-zrec%04d", "1.2.3.4", 1200)...)...),
 		),
 
-		//// CanUse* types:
+		//// Optional record types:
 
 		// Narrative: Many DNS record types are optional.  If the provider
-		// supports them, there's a CanUse* variable that flags that
-		// feature.  Here we test those.  Each of these should (1) create
+		// supports them, SupportedTypes declares that support. Here we test
+		// those records. Each of these should (1) create
 		// the record, (2) test changing additional fields one at a time,
 		// maybe 2 at a time, (3) delete the record. If you can do those 3
 		// things, we're pretty sure you've implemented it correctly.
 
 		testgroup("CAA",
-			requires(providers.CanUseCAA),
 			tc("CAA record", caa("@", 0, "issue", "letsencrypt.org")),
 			tc("CAA change tag", caa("@", 0, "issuewild", "letsencrypt.org")),
 			tc("CAA change target", caa("@", 0, "issuewild", "example.com")),
@@ -831,7 +822,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("CAA",
-			requires(providers.CanUseCAA),
 			not(
 				"NAMECHEAP",
 			),
@@ -841,7 +831,6 @@ func makeTests() []*TestGroup {
 
 		// LOCation records. // No.47
 		testgroup("LOC",
-			requires(providers.CanUseLOC),
 			// 42 21 54     N  71 06  18     W -24m 30m
 			tc("Single LOC record", loc("@", 42, 21, 54, "N", 71, 6, 18, "W", -24.05, 30, 0, 0)),
 			// 42 21 54     N  71 06  18     W -24m 30m
@@ -867,7 +856,6 @@ func makeTests() []*TestGroup {
 		// https://www.devever.net/~hl/sip-victory
 
 		testgroup("NAPTR",
-			requires(providers.CanUseNAPTR),
 			not("GANDI_V5"),
 			tc("NAPTR record", naptr("test", 100, 10, "U", "E2U+sip", "!^.*$!sip:customer-service@example.com!", ".")),
 			tc("NAPTR second record",
@@ -889,7 +877,6 @@ func makeTests() []*TestGroup {
 
 		// ClouDNS provider can work with PTR records, but you need to create special type of zone
 		testgroup("PTR",
-			requires(providers.CanUsePTR),
 			not("CLOUDNS",
 				"FORTIGATE", // FortiGate does not really support ARPA Zones and handles PTR records really weired
 			),
@@ -904,7 +891,6 @@ func makeTests() []*TestGroup {
 
 		// SOA
 		testgroup("SOA",
-			requires(providers.CanUseSOA),
 			not("HOSTINGDE"), // Has its own group below.
 			tcEmptyZone(),    // Required or only the first run passes.
 			// Providers such as Route53 cannot delete the mandatory SOA during
@@ -936,7 +922,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SRV",
-			requires(providers.CanUseSRV),
 			tc("SRV record", srv("_sip._tcp", 5, 6, 7, "foo.com.")),
 			tc("Second SRV record, same prio", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com.")),
 			tc("3 SRV", srv("_sip._tcp", 5, 6, 7, "foo.com."), srv("_sip._tcp", 5, 60, 70, "foo2.com."), srv("_sip._tcp", 15, 65, 75, "foo3.com.")),
@@ -951,7 +936,6 @@ func makeTests() []*TestGroup {
 
 		// https://github.com/DNSControl/dnscontrol/issues/2066
 		testgroup("SRV",
-			requires(providers.CanUseSRV),
 			not(
 				"NETCUP",    // NETCUP does not support per record TTL
 				"OPENWRT",   // OpenWRT does not support per record TTL
@@ -964,7 +948,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SSHFP",
-			requires(providers.CanUseSSHFP),
 			tc("SSHFP record",
 				sshfp("@", 1, 1, "66c7d5540b7d75a1fb4c84febfa178ad99bdd67c")),
 			tc("SSHFP change algorithm",
@@ -974,7 +957,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("TLSA",
-			requires(providers.CanUseTLSA),
 			tc("TLSA record", tlsa("_443._tcp", 3, 1, 1, sha256hash)),
 			tc("TLSA change usage", tlsa("_443._tcp", 2, 1, 1, sha256hash)),
 			tc("TLSA change selector", tlsa("_443._tcp", 2, 0, 1, sha256hash)),
@@ -983,7 +965,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("DS",
-			requires(providers.CanUseDS),
 			not("CLOUDFLAREAPI", "POWERDNS"), // PowerDNS: DS records are not supported for the apex domain.
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
@@ -1010,7 +991,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("DS (children only)",
-			requires(providers.CanUseDSForChildren),
 			not("CLOUDNS", "CLOUDFLAREAPI"),
 			// Use a valid digest value here.  Some providers verify that a valid digest is in use.  See RFC 4034 and
 			// https://www.iana.org/assignments/dns-sec-alg-numbers/dns-sec-alg-numbers.xhtml
@@ -1030,7 +1010,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("DS (children only) CLOUDNS",
-			requires(providers.CanUseDSForChildren),
 			only("CLOUDNS", "CLOUDFLAREAPI"),
 			// Cloudns requires NS records before creating DS Record. Verify
 			// they are done in the right order, even if they are listed in
@@ -1074,20 +1053,17 @@ func makeTests() []*TestGroup {
 			//),
 		),
 		testgroup("DHCID",
-			requires(providers.CanUseDHCID),
 			tc("Create DHCID record", dhcid("test", "AAIBY2/AuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 			tc("Modify DHCID record", dhcid("test", "AAAAAAAAuCccgoJbsaxcQc9TUapptP69lOjxfNuVAA2kjEA=")),
 		),
 
 		testgroup("DNAME",
-			requires(providers.CanUseDNAME),
 			tc("Create DNAME record", dname("test", "example.com.")),
 			tc("Modify DNAME record", dname("test", "example.net.")),
 			tc("Create DNAME record in non-FQDN", dname("a", "b")),
 		),
 
 		testgroup("DNSKEY",
-			requires(providers.CanUseDNSKEY),
 			tc("Create DNSKEY record", dnskey("test", 257, 3, 13, "fRnjbeUVyKvz1bDx2lPmu3KY1k64T358t8kP6Hjveos=")),
 			tc("Modify DNSKEY record 1", dnskey("test", 256, 3, 13, "fRnjbeUVyKvz1bDx2lPmu3KY1k64T358t8kP6Hjveos=")),
 			tc("Modify DNSKEY record 2", dnskey("test", 256, 3, 13, "whjtMiJP9C86l0oTJUxemuYtQ0RIZePWt6QETC2kkKM=")),
@@ -1102,13 +1078,11 @@ func makeTests() []*TestGroup {
 		// news: These don't apply to you!
 
 		testgroup("ALIAS on apex",
-			requires(providers.CanUseAlias),
 			tc("ALIAS at root", alias("@", "foo.com.")),
 			tc("change it", alias("@", "foo2.com.")),
 		),
 
 		testgroup("ALIAS to nonfqdn",
-			requires(providers.CanUseAlias),
 			not("DNSMADEEASY"), // DME validates ANAME target resolvability at create time; an unpublished in-zone target can't resolve
 			tc("ALIAS at root",
 				a("foo", "1.2.3.4"),
@@ -1117,7 +1091,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("ALIAS on subdomain",
-			requires(providers.CanUseAlias),
 			not("TRANSIP"), // TransIP does support ALIAS records, but only for apex records (@)
 			tc("ALIAS at subdomain", alias("test", "foo.com.")),
 			tc("change it", alias("test", "foo2.com.")),
@@ -1126,7 +1099,6 @@ func makeTests() []*TestGroup {
 		// AZURE features
 
 		testgroup("AZURE_ALIAS_A",
-			requires(providers.CanUseAzureAlias),
 			tc("create dependent A records",
 				a("foo.a", "1.2.3.4"),
 				a("quux.a", "2.3.4.5"),
@@ -1149,7 +1121,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("AZURE_ALIAS_CNAME",
-			requires(providers.CanUseAzureAlias),
 			tc("create dependent CNAME records",
 				cname("foo.cname", "google.com."),
 				cname("quux.cname", "google2.com."),
@@ -1174,7 +1145,6 @@ func makeTests() []*TestGroup {
 		// ROUTE53 features
 
 		testgroup("R53_ALIAS2",
-			requires(providers.CanUseRoute53Alias),
 			tc("create dependent records",
 				a("kyle", "1.2.3.4"),
 				a("cartman", "2.3.4.5"),
@@ -1192,7 +1162,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("R53_ALIAS_ORDER",
-			requires(providers.CanUseRoute53Alias),
 			tc("create target cnames",
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
 				cname("dev-system19", "ec2-54-91-99-999.compute-1.amazonaws.com."),
@@ -1222,7 +1191,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("R53_ALIAS_CNAME",
-			requires(providers.CanUseRoute53Alias),
 			tc("create alias+cname in one step",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1233,7 +1201,6 @@ func makeTests() []*TestGroup {
 			// This will always be skipped because rejectifTargetEqualsLabel
 			// will always flag it as not permitted.
 			// See https://github.com/DNSControl/dnscontrol/issues/2107
-			requires(providers.CanUseRoute53Alias),
 			tc("loop should fail",
 				r53alias("test-islandora", "CNAME", "test-islandora.**current-domain**.", "false"),
 			),
@@ -1241,7 +1208,6 @@ func makeTests() []*TestGroup {
 
 		// Bug https://github.com/DNSControl/dnscontrol/issues/2285
 		testgroup("R53_alias pre-existing",
-			requires(providers.CanUseRoute53Alias),
 			tc("Create some records",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
 				cname("dev-system18", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1253,7 +1219,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("R53_alias evaluate_target_health",
-			requires(providers.CanUseRoute53Alias),
 			tc("Create alias and cname",
 				r53alias("test-record", "CNAME", "test-record-1.**current-domain**.", "false"),
 				cname("test-record-1", "ec2-54-91-33-155.compute-1.amazonaws.com."),
@@ -1267,7 +1232,6 @@ func makeTests() []*TestGroup {
 		// Bug https://github.com/DNSControl/dnscontrol/issues/3493
 		// Summary: R53_ALIAS -> CNAME conversion doesn't work.
 		testgroup("R53_B3493",
-			requires(providers.CanUseRoute53Alias),
 			// Create the R53_ALIAS:
 			tc("b3493 create alias+cname in one step",
 				r53alias("dev-system", "CNAME", "dev-system18.**current-domain**.", "false"),
@@ -1281,7 +1245,6 @@ func makeTests() []*TestGroup {
 		),
 		// Verify CNAME -> R53_ALIAS works too. (not part of the bug, but worth verifying)
 		testgroup("R53_B3493_REV",
-			requires(providers.CanUseRoute53Alias),
 			// Create the CNAME
 			tc("b3493 create cnames",
 				cname("dev-system", "dev-system18.**current-domain**."),
@@ -2356,7 +2319,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("OPENPGPKEY",
-			requires(providers.CanUseOPENPGPKEY),
 			tc("OPENPGPKEY records",
 				openpgpkey("bb7d0cf1ee44aca0bcc0f739b77b935f13aec2fd537f5c29dedd883d._openpgpkey", "9833040000000116092b06010401da470f010107403b6b9ff1ad0c524356507cdecbc1616093f6492fb4eb5a45f8614adb77a057d2b4244578616d706c652031203c6578616d706c652d3140646e73636f6e74726f6c2e6f72673e887e0413160a0026162104c0fe77c20fe349b863cda9980bfe1cf3d96e34ce050200000001021b01021e05021780000a09100bfe1cf3d96e34ce3f2e0100f00463e222747d5ae94519e1ad3b651b0a2cd7bd130e14ee65f3e818cab0792d00ff5196b60ebfcb047810fb51bbea7d5a882c4263b51ce9376a0dc8e5dee23f5f02"),
 				openpgpkey("6c9b19cb967b563d9d96b341ad4a89a74444c6f18e9530f4623817fe._openpgpkey", "mDMEAAAAARYJKwYBBAHaRw8BAQdAxCQnAKBDmA75+73+3lYVXDwrMUbaR61fNZgGeOHwmDq0JEV4YW1wbGUgMiA8ZXhhbXBsZS0yQGRuc2NvbnRyb2wub3JnPoh+BBMWCgAmFiEEYZ3PIZnaOWQrPxj6VX+9VdC3r4wFAgAAAAECGwECHgUCF4AACgkQVX+9VdC3r4xq6wEAl2ujFSqWwc2wQuHedpFrSTN9Gh7cIziKCZ3f8BGSRTgBAIvjKlWLLLBu0FPpCVlcfkpsZMV5YRrg90k+D+O4zZ4M"),
@@ -2372,7 +2334,6 @@ func makeTests() []*TestGroup {
 		),
 
 		testgroup("SMIMEA",
-			requires(providers.CanUseSMIMEA),
 			tc("SMIMEA record", smimea("_443._tcp", 3, 1, 1, sha256hash)),
 			tc("SMIMEA change usage", smimea("_443._tcp", 2, 1, 1, sha256hash)),
 			tc("SMIMEA change selector", smimea("_443._tcp", 2, 0, 1, sha256hash)),

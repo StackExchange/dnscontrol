@@ -322,7 +322,7 @@ to recognize the new type.
 
 This is different for every provider. Usually the steps are:
 
-1. Add `CanUseTYPENAME` to the init() function
+1. Add the record type to the provider's `SupportedTypes` declaration.
 2. Update the toNative() function to support the type when `GetZoneRecords()` runs.
 3. Update `GetZoneRecordsCorrections()`'s create/update/delete functions to support the type.
 4. Run [the integration tests](https://docs.dnscontrol.org/developer-info/integration-tests) until they all pass.

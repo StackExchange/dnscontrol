@@ -84,9 +84,6 @@ func TestSupportedTypesResolution(t *testing.T) {
 					if got != *tc.want {
 						t.Fatalf("got %+v, want %+v", got, *tc.want)
 					}
-					if capability, ok := RecordTypeCapabilities[strings.ToUpper(tc.rtype)]; ok && *d.DerivedFeatures[capability] != got {
-						t.Fatal("derived capability disagrees with type support")
-					}
 				})
 			}
 		})
@@ -170,7 +167,7 @@ func TestSupportedTypesFinalization(t *testing.T) {
 			for range 10 {
 				def, _ := GetDefinition("WILDCARD")
 				_ = def.RecordTypeSupport("AKAMAITLC")
-				_ = ProviderHasCapability("WILDCARD", CanUseCAA)
+				_ = def.RecordTypeSupport("CAA")
 				_ = AllDefinitions()
 			}
 		})
