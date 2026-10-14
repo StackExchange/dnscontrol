@@ -35,12 +35,12 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
-		DocOfficiallySupported: providers.Cannot(),
-		PortalURL:              "https://dnsimple.com/user",
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
+		OfficiallySupported: providers.Cannot(),
+		PortalURL:           "https://dnsimple.com/user",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "token",

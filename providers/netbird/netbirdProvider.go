@@ -85,10 +85,10 @@ func init() {
 			"AAAA",
 			"CNAME",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

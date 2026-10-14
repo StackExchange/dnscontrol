@@ -17,15 +17,8 @@ func TestAllProvidersUseDefinitions(t *testing.T) {
 		if def.SupportedTypes == nil {
 			t.Errorf("%s: missing exhaustive SupportedTypes declaration", def.TypeName)
 		}
-		for capability, note := range def.Features {
-			switch capability {
-			case providers.CanAutoDNSSEC, providers.CanConcur, providers.CanUseDSForChildren,
-				providers.DocDualHost, providers.DocOfficiallySupported:
-				t.Errorf("%s: %s belongs in its named field", def.TypeName, capability)
-			}
-			if note.Comment == "" && note.Link == "" {
-				t.Errorf("%s: Features[%s] has no annotation to retain", def.TypeName, capability)
-			}
+		if len(def.Features) != 0 {
+			t.Errorf("%s: built-in provider still uses legacy Features", def.TypeName)
 		}
 		if !def.Kind.Has(providers.KindDNS) {
 			if len(def.SupportedTypes) != 0 {

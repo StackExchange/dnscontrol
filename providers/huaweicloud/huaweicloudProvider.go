@@ -118,9 +118,9 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

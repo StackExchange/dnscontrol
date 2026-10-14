@@ -44,10 +44,10 @@ func init() {
 			"ALIAS",
 			"PTR",
 		},
-		CanConcur:              providers.Unimplemented(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
-		DocOfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Unimplemented(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

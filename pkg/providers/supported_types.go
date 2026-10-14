@@ -3,6 +3,7 @@ package providers
 import (
 	"fmt"
 	"maps"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -49,6 +50,15 @@ func (d *Definition) compileTypeSelectors() error {
 			var hasReason bool
 			status, reason, hasReason = strings.Cut(status, ":")
 			if hasReason {
+				if i := strings.LastIndex(reason, ": http"); i >= 0 && strings.LastIndexByte(reason, ' ') == i+1 {
+					link := reason[i+2:]
+					parsed, err := url.Parse(link)
+					if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+						return fmt.Errorf("provider %q: invalid SupportedTypes URL in %q", d.TypeName, source)
+					}
+					s.note.Link = link
+					reason = reason[:i]
+				}
 				s.note.Comment = strings.TrimSpace(reason)
 				if s.note.Comment == "" {
 					return fmt.Errorf("provider %q: empty SupportedTypes reason in %q", d.TypeName, source)

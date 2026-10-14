@@ -36,14 +36,11 @@ func init() {
 			"Basic8",
 			"NS:Cannot",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Cannot(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("A domain's zone exists once the domain is in an mStudio project"),
-		},
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Cannot(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "A domain's zone exists once the domain is in an mStudio project",
 	})
 }
 

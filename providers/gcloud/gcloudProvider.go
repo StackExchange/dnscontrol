@@ -69,11 +69,11 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Can(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Can(),
 	})
 }
 

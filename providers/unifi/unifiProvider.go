@@ -26,13 +26,10 @@ func init() {
 			"CAA:Cannot",
 			"NS:Cannot",
 		},
-		CanConcur:              providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanGetZones:      providers.Cannot("UniFi stores records flat, not by zone"),
-			providers.DocCreateDomains: providers.Cannot("UniFi does not have zone concept"),
-		},
+		CanConcur:           providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
+		CanGetZonesReason:   "UniFi stores records flat, not by zone",
+		CreateDomainsReason: "UniFi does not have zone concept",
 	})
 }
 

@@ -91,11 +91,11 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Unimplemented(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Unimplemented(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

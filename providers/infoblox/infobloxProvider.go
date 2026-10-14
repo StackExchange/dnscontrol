@@ -17,13 +17,10 @@ func init() {
 			"PTR",
 			"NS:Cannot",
 		},
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("zones must be pre-created"),
-		},
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "zones must be pre-created",
 	})
 }
 
