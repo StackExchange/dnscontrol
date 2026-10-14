@@ -24,7 +24,7 @@ type Initializer func(map[string]string, json.RawMessage, *CreateOptions) (any, 
 // providers.Register is the main entry point. It registers the provider, generates
 // the derived fields, and cross-checks for errors.
 // Definitions and their nested metadata are read-only to callers. Framework
-// finalization completes derived type capabilities before concurrent reads.
+// finalization validates type selectors before concurrent reads.
 type Definition struct {
 	// FriendlyName is the brand name ("Google", not "GCLOUD")
 	FriendlyName string
@@ -105,7 +105,6 @@ type Definition struct {
 	RecordAuditor      RecordAuditor
 	CanGetZones        bool
 	DocCreateDomains   bool
-	DerivedFeatures    DocumentationNotes
 }
 
 // Provider implementations register here.
@@ -141,7 +140,7 @@ func Register[T InitializableProvider](name string, definition Definition) {
 	// Make sure caller didn't set fields that are generated.
 	if definition.TypeName != "" || definition.ImplementationType != nil || definition.Kind != 0 ||
 		definition.Initializer != nil || definition.RecordAuditor != nil || definition.CanGetZones ||
-		definition.DocCreateDomains || definition.DerivedFeatures != nil {
+		definition.DocCreateDomains {
 		panic(fmt.Sprintf("provider %q: derived definition fields must be left unset", name))
 	}
 
@@ -194,29 +193,6 @@ func Register[T InitializableProvider](name string, definition Definition) {
 		}
 		return instance, nil
 	}
-	def.DerivedFeatures = DocumentationNotes{}
-	for capability, note := range map[Capability]*DocumentationNote{
-		CanAutoDNSSEC: def.CanAutoDNSSEC, CanConcur: def.CanConcur,
-		CanUseDSForChildren: def.CanUseDSForChildren, CanDualHost: def.CanDualHost,
-		OfficiallySupported: def.OfficiallySupported,
-	} {
-		if note != nil {
-			def.DerivedFeatures[capability] = note
-		}
-	}
-	for capability, derived := range map[Capability]struct {
-		supported bool
-		reason    string
-	}{
-		CanGetZones:      {def.CanGetZones, def.CanGetZonesReason},
-		DocCreateDomains: {def.DocCreateDomains, def.CreateDomainsReason},
-	} {
-		def.DerivedFeatures[capability] = &DocumentationNote{
-			HasFeature: derived.supported,
-			Comment:    derived.reason,
-		}
-	}
-
 	for _, n := range names {
 		definitions[n] = def
 	}

@@ -6,6 +6,11 @@ on:
       - opened
       - synchronize
 
+# Read-only by default; the label job grants itself the extra
+# pull-requests: write it needs to apply labels.
+permissions:
+  contents: read
+
 jobs:
   label:
     runs-on: ubuntu-latest
