@@ -28,7 +28,7 @@ func init() {
 		Maintainer:   "@SimenBai",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS:Unimplemented",
+			"ALIAS:Unimplemented:Needs custom implementation",
 			"DS:Unimplemented",
 			"TLSA:Unimplemented",
 		},
@@ -39,7 +39,6 @@ func init() {
 		DocOfficiallySupported: providers.Cannot(),
 		// Features retains annotations for record types and interface-derived facts.
 		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Unimplemented("Needs custom implementation"),
 			providers.CanUseNAPTR: providers.Cannot("According to Domainnameshop this will probably never be supported"),
 			providers.CanUsePTR:   providers.Cannot("According to Domainnameshop this will probably never be supported"),
 			providers.CanUseSSHFP: providers.Cannot("Might be supported in the future"),
