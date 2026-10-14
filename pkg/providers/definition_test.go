@@ -196,7 +196,7 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 	}
 	if def.TypeName != "ZZZ" || def.ImplementationType != reflect.TypeFor[*definitionDNS]() ||
 		def.Aliases[0] != "ALIAS" || def.CredFields[0].Choices[0] != "one" || def.CredFields[0].ShowIf["mode"] != "one" ||
-		def.DerivedFeatures[CanUseCAA].Comment != "CAA" || def.DerivedFeatures[CanUseCAA].Link != "https://example.com/docs" ||
+		def.RecordTypeSupport("CAA").Comment != "CAA" || def.RecordTypeSupport("CAA").Link != "https://example.com/docs" ||
 		def.CanConcur.Comment != "explicit" || def.CanAutoDNSSEC.Comment != "pending" ||
 		!def.CanUseDSForChildren.HasFeature || def.CanDualHost.HasFeature || !def.OfficiallySupported.HasFeature {
 		t.Fatalf("registration did not retain supplied metadata: %+v", def)
@@ -205,7 +205,7 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 		def.DerivedFeatures[DocCreateDomains].Comment != "zone creation unavailable" {
 		t.Fatal("interface reasons were not derived")
 	}
-	if ProviderHasCapability("ALIAS", CanConcur) || !ProviderHasCapability("ALIAS", CanUseCAA) ||
+	if ProviderHasCapability("ALIAS", CanConcur) || !def.RecordTypeSupport("CAA").HasFeature ||
 		ProviderHasCapability("ALIAS", CanAutoDNSSEC) || !def.DerivedFeatures[CanAutoDNSSEC].Unimplemented ||
 		ProviderHasCapability("ALIAS", CanGetZones) || ProviderHasCapability("ALIAS", DocCreateDomains) {
 		t.Fatal("capabilities did not match their declarations or interfaces")

@@ -180,15 +180,6 @@ func testPermitted(p string, f TestGroup) error {
 		}
 	}
 
-	// If there are any required capabilities, make sure they all exist.
-	if len(f.required) != 0 {
-		for _, c := range f.required {
-			if !providers.ProviderHasCapability(*providerFlag, c) {
-				return fmt.Errorf("%s not supported", c)
-			}
-		}
-	}
-
 	// Every record type used in the group must be supported by the provider.
 	// The whole group is skipped, since skipping individual steps would leave
 	// the zone in an unexpected state for the steps that follow.
@@ -416,7 +407,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 type TestGroup struct {
 	Desc       string
-	required   []providers.Capability
 	only       []string
 	not        []string
 	trueflags  []bool
@@ -761,12 +751,6 @@ func testgroup(desc string, items ...any) *TestGroup {
 	group := &TestGroup{Desc: desc}
 	for _, item := range items {
 		switch v := item.(type) {
-		case requiresFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: requires() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.required = append(group.required, v.caps...)
 		case notFilter:
 			if len(group.tests) != 0 {
 				fmt.Printf("ERROR: not() must be before all tc(): %v\n", desc)
@@ -873,14 +857,6 @@ func frame(name, target string) *models.RecordConfig {
 
 func tcEmptyZone() *TestCase {
 	return tc("Empty")
-}
-
-type requiresFilter struct {
-	caps []providers.Capability
-}
-
-func requires(c ...providers.Capability) requiresFilter {
-	return requiresFilter{caps: c}
 }
 
 type notFilter struct {

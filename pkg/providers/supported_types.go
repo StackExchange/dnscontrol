@@ -12,19 +12,6 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/pkg/privatetypes"
 )
 
-// RecordTypeCapabilities bridges SupportedTypes and legacy feature consumers.
-// Treat this map as read-only. Operational capabilities do not belong here.
-var RecordTypeCapabilities = map[string]Capability{
-	"AKAMAICDN": CanUseAKAMAICDN, "AKAMAITLC": CanUseAKAMAITLC,
-	"ALIAS": CanUseAlias, "AZURE_ALIAS": CanUseAzureAlias,
-	"CAA": CanUseCAA, "DHCID": CanUseDHCID, "DNAME": CanUseDNAME,
-	"DNSKEY": CanUseDNSKEY, "DS": CanUseDS, "HTTPS": CanUseHTTPS,
-	"LOC": CanUseLOC, "NAPTR": CanUseNAPTR, "OPENPGPKEY": CanUseOPENPGPKEY,
-	"PTR": CanUsePTR, "R53_ALIAS": CanUseRoute53Alias, "RP": CanUseRP,
-	"SMIMEA": CanUseSMIMEA, "SOA": CanUseSOA, "SRV": CanUseSRV,
-	"SSHFP": CanUseSSHFP, "SVCB": CanUseSVCB, "TLSA": CanUseTLSA,
-}
-
 type typeSelector struct {
 	source   string
 	name     string
@@ -205,22 +192,19 @@ func Finalize() error {
 		}
 		features := maps.Clone(d.DerivedFeatures)
 		for _, typ := range catalog {
-			note, err := d.resolveType(typ)
-			if err != nil {
+			if _, err := d.resolveType(typ); err != nil {
 				return err
-			}
-			if capability, ok := RecordTypeCapabilities[typ.Name]; ok {
-				features[capability] = &note
 			}
 		}
 		// General DS support implies child support. Rebuild from the original
 		// inputs so later catalog registrations never retain stale notes.
 		child := d.CanUseDSForChildren
-		if features[CanUseDS].HasFeature {
+		if d.RecordTypeSupport("DS").HasFeature {
 			if child == nil || !child.HasFeature {
 				child = Can()
 			}
 		}
+		delete(features, CanUseDSForChildren)
 		if child != nil {
 			features[CanUseDSForChildren] = child
 		}
