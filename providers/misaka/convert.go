@@ -9,8 +9,13 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/pkg/privatetypes"
 )
 
-// apexLabel is how both DNSControl and the API name the zone apex.
-const apexLabel = "@"
+const (
+	// apexLabel is how both DNSControl and the API name the zone apex.
+	apexLabel = "@"
+
+	// maxTTL is the largest TTL the API accepts.
+	maxTTL = 2147483647
+)
 
 // toRC converts a record set to one RecordConfig per value.
 //
@@ -69,4 +74,9 @@ func toNative(records models.Records) recordSetRequest {
 		req.Records = append(req.Records, apiRecord{Value: rc.GetRDATA().String()})
 	}
 	return req
+}
+
+// fixTTL lowers a TTL the API would refuse to the largest one it accepts.
+func fixTTL(ttl uint32) uint32 {
+	return min(ttl, maxTTL)
 }

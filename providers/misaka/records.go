@@ -102,6 +102,13 @@ func checkRecordSet(rs apiRecordSet) error {
 func (p *misakaProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
 	filterApexNS(dc)
 
+	// Lowered before the diff, not when the request is built: otherwise the
+	// stored TTL would never match the desired one and every run would offer
+	// the same change again.
+	for _, rec := range dc.Records {
+		rec.TTL = fixTTL(rec.TTL)
+	}
+
 	instructions, actualChangeCount, err := diff2.ByRecordSet(existing, dc, nil)
 	if err != nil {
 		return nil, 0, err

@@ -148,8 +148,7 @@ again.
 
 ### TTL
 
-Misaka.io accepts TTLs up to 2147483647. A larger TTL is rejected by
-`dnscontrol check`.
+Misaka.io accepts TTLs up to 2147483647. A larger TTL is lowered to 2147483647.
 
 ### DNSSEC
 

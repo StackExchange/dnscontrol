@@ -281,3 +281,64 @@ func TestFilterApexNS(t *testing.T) {
 		t.Errorf("records after filterApexNS = %v, want only the sub delegation", dc.Records)
 	}
 }
+
+func TestGetZoneRecordsCorrectionsLowersTTL(t *testing.T) {
+	var seen []request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		seen = append(seen, request{Method: r.Method, Path: r.URL.EscapedPath(), Body: string(body)})
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer server.Close()
+	p := testProvider(server.URL)
+
+	for _, tt := range []struct {
+		name        string
+		existingTTL uint32
+		wantBody    string
+	}{
+		{
+			name:        "too large a TTL is written as the maximum",
+			existingTTL: 300,
+			wantBody:    `{"ttl":2147483647,"records":[{"value":"192.0.2.1"}],"filters":[]}`,
+		},
+		{
+			name:        "the maximum already stored is no change",
+			existingTTL: maxTTL,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			seen = nil
+			dc := models.MustNewDomainConfig(testOrigin)
+			existing, err := dc.NewRecordConfigParse("big", tt.existingTTL, "A", "192.0.2.1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			desired, err := dc.NewRecordConfigParse("big", 4294967295, "A", "192.0.2.1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			dc.Records = models.Records{desired}
+
+			corrections, _, err := p.GetZoneRecordsCorrections(dc, models.Records{existing})
+			if err != nil {
+				t.Fatalf("GetZoneRecordsCorrections() error = %v", err)
+			}
+			if tt.wantBody == "" {
+				if len(corrections) != 0 {
+					t.Fatalf("corrections = %v, want none", corrections)
+				}
+				return
+			}
+			if len(corrections) != 1 {
+				t.Fatalf("corrections = %v, want one", corrections)
+			}
+			if err := corrections[0].F(); err != nil {
+				t.Fatal(err)
+			}
+			if len(seen) != 1 || seen[0].Method != http.MethodPut || seen[0].Body != tt.wantBody {
+				t.Errorf("requests = %+v, want one PUT with %s", seen, tt.wantBody)
+			}
+		})
+	}
+}
