@@ -20,11 +20,6 @@ func TestRegisteredDefinition(t *testing.T) {
 		def.DocsURL != "https://docs.dnscontrol.org/provider/cloudflareapi" || !def.CanGetZones || !def.DocCreateDomains {
 		t.Fatalf("Cloudflare definition = %+v", def)
 	}
-	for capability, note := range def.Features {
-		if !reflect.DeepEqual(def.DerivedFeatures[capability], note) {
-			t.Fatalf("migration changed annotation for %s", capability)
-		}
-	}
 	if errors := providers.AuditRecords("CLOUDFLAREAPI", nil); len(errors) != 0 {
 		t.Fatal(errors)
 	}

@@ -357,20 +357,13 @@ must be the last space in the string. The preceding text becomes the
 `DocumentationNote.Comment` and the URL becomes its `Link`; generated feature
 tables currently show only status.
 
-Precedence is: exact entries, patterns with status suffixes, legacy `Features`,
-then unsuffixed patterns/categories. Conflicting statuses at the winning
+Precedence is: exact entries, patterns with status suffixes, then unsuffixed
+patterns/categories. Conflicting statuses at the winning
 priority are errors, regardless of order. An exact entry can resolve conflicting
 patterns. Nil `SupportedTypes` means `Basic8`; a non-nil empty slice declares
-no support beyond `Features`. Built-in providers all declare `SupportedTypes`
-explicitly; registrar-only providers use `[]string{}`. `Features` remains a
-compatibility input and can retain comments and links for individual types or
-interface-derived capabilities. A non-nil `Features` with nil `SupportedTypes`
-retains legacy capability validation. General `DS` support includes child DS records; `CanUseDSForChildren`
+no record support. Built-in providers all declare `SupportedTypes`
+explicitly; registrar-only providers use `[]string{}`. General `DS` support includes child DS records; `CanUseDSForChildren`
 can independently allow child DS records even with `DS:Cannot`.
-
-When an inline reason and a legacy `Features` note describe the same status,
-the inline reason wins. A link from `Features` is retained if the selector has
-no link of its own.
 
 Registration retains selectors until the complete catalog is available.
 Importing `pkg/providers/_all` finalizes the registry; definition accessors also

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
@@ -14,11 +13,6 @@ func TestRegisteredDefinition(t *testing.T) {
 	def, ok := providers.GetDefinition("BIND")
 	if !ok || def.Kind != providers.KindDNS || !def.CanGetZones || !def.DocCreateDomains {
 		t.Fatalf("BIND definition = %+v", def)
-	}
-	for capability, note := range def.Features {
-		if !reflect.DeepEqual(def.DerivedFeatures[capability], note) {
-			t.Fatalf("migration changed legacy capability or note: %s", capability)
-		}
 	}
 	if !providers.ProviderHasCapability("BIND", providers.CanUseAKAMAITLC) {
 		t.Fatal("BIND wildcard must enable exhaustive support, including pseudo-types")

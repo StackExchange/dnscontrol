@@ -165,8 +165,11 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 		DocsURL: "docs", VendorAPIDocURL: "https://api.example.test/docs", PortalURL: "portal", Notes: "notes",
 		CredFields: []CredsField{{Key: "key", Choices: []string{"one"}, ShowIf: map[string]string{"mode": "one"}, Validator: func(string) error { return nil }}},
 		PostWrite:  func(map[string]string) error { postWrites++; return nil },
-		Features:   DocumentationNotes{CanConcur: Can("legacy"), CanUseCAA: Can("CAA", "link"), CanGetZones: Can("enumerate"), DocCreateDomains: Can()},
-		CanConcur:  Cannot("explicit"), CanAutoDNSSEC: Unimplemented("pending"),
+		SupportedTypes: []string{
+			"Basic8",
+			"CAA:Can:CAA: https://example.com/docs",
+		},
+		CanConcur: Cannot("explicit"), CanAutoDNSSEC: Unimplemented("pending"),
 		CanGetZonesReason: "zone listing unavailable", CreateDomainsReason: "zone creation unavailable",
 		CanUseDSForChildren: Can(), CanDualHost: Cannot(), OfficiallySupported: Can(),
 		RecordIdentity: func(*models.RecordConfig) string { return "identity" },
@@ -193,23 +196,19 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 	}
 	if def.TypeName != "ZZZ" || def.ImplementationType != reflect.TypeFor[*definitionDNS]() ||
 		def.Aliases[0] != "ALIAS" || def.CredFields[0].Choices[0] != "one" || def.CredFields[0].ShowIf["mode"] != "one" ||
-		def.Features[CanUseCAA].Comment != "CAA" || def.DerivedFeatures[CanUseCAA].Link != "link" ||
+		def.DerivedFeatures[CanUseCAA].Comment != "CAA" || def.DerivedFeatures[CanUseCAA].Link != "https://example.com/docs" ||
 		def.CanConcur.Comment != "explicit" || def.CanAutoDNSSEC.Comment != "pending" ||
 		!def.CanUseDSForChildren.HasFeature || def.CanDualHost.HasFeature || !def.OfficiallySupported.HasFeature {
 		t.Fatalf("registration did not retain supplied metadata: %+v", def)
 	}
-	if !input.Features[CanGetZones].HasFeature || !input.Features[DocCreateDomains].HasFeature ||
-		!def.Features[CanGetZones].HasFeature || !def.Features[DocCreateDomains].HasFeature {
-		t.Fatal("deriving interface capabilities overwrote the supplied feature notes")
-	}
 	if def.DerivedFeatures[CanGetZones].Comment != "zone listing unavailable" ||
 		def.DerivedFeatures[DocCreateDomains].Comment != "zone creation unavailable" {
-		t.Fatal("named interface reasons did not override legacy comments")
+		t.Fatal("interface reasons were not derived")
 	}
 	if ProviderHasCapability("ALIAS", CanConcur) || !ProviderHasCapability("ALIAS", CanUseCAA) ||
 		ProviderHasCapability("ALIAS", CanAutoDNSSEC) || !def.DerivedFeatures[CanAutoDNSSEC].Unimplemented ||
 		ProviderHasCapability("ALIAS", CanGetZones) || ProviderHasCapability("ALIAS", DocCreateDomains) {
-		t.Fatal("explicit or interface-derived capabilities did not override legacy features")
+		t.Fatal("capabilities did not match their declarations or interfaces")
 	}
 	if GetDefaultTTL("ALIAS") != 300 || GetRecordIdentity("ALIAS")(&models.RecordConfig{}) != "identity" {
 		t.Fatal("alias accessors lost metadata")
@@ -244,9 +243,6 @@ func TestRegisterRejectsInvalidDefinitions(t *testing.T) {
 		{"no roles", func() { Register[*valueInitializer]("BAD", valid) }, "neither DNS nor registrar"},
 		{"no auditor", func() { Register[*missingAuditor]("BAD", valid) }, "neither DNS nor registrar"},
 		{"no friendly name", func() { Register[*None]("BAD", Definition{}) }, "FriendlyName"},
-		{"nil feature note", func() {
-			Register[*None]("BAD", Definition{FriendlyName: "Bad", Features: DocumentationNotes{CanConcur: nil}})
-		}, "must not be nil"},
 		{"empty name", func() { Register[*None]("", valid) }, "invalid"},
 		{"placeholder name", func() { Register[*None]("-", valid) }, "invalid"},
 		{"derived field", func() { Register[*None]("BAD", Definition{FriendlyName: "Bad", Kind: KindDNS}) }, "derived"},
