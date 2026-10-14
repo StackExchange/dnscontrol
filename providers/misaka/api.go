@@ -27,14 +27,16 @@ const (
 	// document (a Cloudflare block page, for example) goes into an error.
 	maxErrorBody = 512
 
-	// The API occasionally drops a connection in the middle of a request.
-	// The client then sees "unexpected EOF" and no HTTP status, or, when the
-	// response is lost between Cloudflare and the origin, a 502 "The origin
-	// web server returned an invalid or incomplete response". Both happened
-	// during the integration runs, on GET, PUT and DELETE requests. A request
-	// that cannot create anything twice is sent once more after a short
-	// pause; a POST is not, because the first one may have been applied.
-	maxAttempts = 2
+	// The API occasionally drops a connection in the middle of a request,
+	// mostly around writes. The client then sees "unexpected EOF" and no HTTP
+	// status, or, when the response is lost between Cloudflare and the
+	// origin, a 502 "The origin web server returned an invalid or incomplete
+	// response". Both happened during the integration runs, on every method,
+	// and once twice in a row. A request that cannot create anything twice is
+	// sent up to maxAttempts times with a short pause in between. A POST is
+	// not repeated, because the first one may have been applied; the next
+	// push creates what is still missing.
+	maxAttempts = 3
 	retryPause  = time.Second
 )
 
@@ -98,6 +100,21 @@ type apiError struct {
 
 func (e *apiError) Error() string {
 	return fmt.Sprintf("MISAKA: %s %s: HTTP %d: %s", e.Method, e.Path, e.StatusCode, e.Detail)
+}
+
+// isDropped reports whether err means the request may simply not have
+// arrived: any transport error without an HTTP status (a dropped connection,
+// a timeout), or a 502 from Cloudflare for a response the origin did not
+// finish.
+func isDropped(err error) bool {
+	if err == nil {
+		return false
+	}
+	var apiErr *apiError
+	if errors.As(err, &apiErr) {
+		return apiErr.StatusCode == http.StatusBadGateway
+	}
+	return true
 }
 
 // isNotFound reports whether err is the API saying the zone or record set does not exist.
@@ -232,12 +249,8 @@ func (c *apiClient) doRequest(method, path string, query url.Values, body, resul
 			return nil
 		}
 
-		dropped := status == 0 || status == http.StatusBadGateway
-		if !dropped || method == http.MethodPost || attempt == maxAttempts {
+		if !isDropped(err) || method == http.MethodPost || attempt == maxAttempts {
 			return err
-		}
-		if status == 0 {
-			err = fmt.Errorf("MISAKA: %w", err)
 		}
 		printer.Warnf("%v; retrying %s %s\n", err, method, path)
 		c.sleep(retryPause)
@@ -253,7 +266,7 @@ func (c *apiClient) send(method, u string, payload []byte) (int, []byte, error) 
 
 	req, err := http.NewRequest(method, u, bodyReader)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("MISAKA: %w", err)
 	}
 	req.Header.Set("Authorization", "Token "+c.apiToken)
 	req.Header.Set("User-Agent", c.userAgent)
@@ -264,13 +277,13 @@ func (c *apiClient) send(method, u string, payload []byte) (int, []byte, error) 
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("MISAKA: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, fmt.Errorf("MISAKA: %s %s: %w", method, req.URL.Path, err)
 	}
 	return resp.StatusCode, respBody, nil
 }
