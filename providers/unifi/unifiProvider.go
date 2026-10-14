@@ -26,8 +26,8 @@ func init() {
 			"CAA:Cannot",
 			"NS:Cannot",
 		},
-		CanConcur:           providers.Cannot(),
 		OfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Cannot(),
 		CanGetZonesReason:   "UniFi stores records flat, not by zone",
 		CreateDomainsReason: "UniFi does not have zone concept",
 	})

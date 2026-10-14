@@ -17,7 +17,15 @@ import (
 func init() {
 	providers.Register[*aliDNSDsp]("ALIDNS", providers.Definition{
 		FriendlyName: "Alibaba Cloud DNS",
-		PortalURL:    "https://ram.console.aliyun.com/manage/ak", // TODO: Verify
+		Maintainer:   "@bytemain",
+		SupportedTypes: []string{
+			"Basic8",
+		},
+		OfficiallySupported: providers.Cannot(),
+		DefaultTTL:          600,
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "access_key_id",
@@ -33,15 +41,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@bytemain",
-		DefaultTTL: 600,
-		SupportedTypes: []string{
-			"Basic8",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CanDualHost:         providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
+		PortalURL: "https://ram.console.aliyun.com/manage/ak", // TODO: Verify
 	})
 }
 

@@ -26,7 +26,15 @@ func (c *cloudpressProvider) SetConversionObserver(observer providers.Conversion
 func init() {
 	providers.Register[*cloudpressProvider]("CLOUDPRESS", providers.Definition{
 		FriendlyName: "CloudPress",
-		PortalURL:    "https://docs.cloudpress.com/API/api-keys/",
+		Maintainer:   "@arnoschoon",
+		SupportedTypes: []string{
+			"Basic8",
+			"PTR",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "base_url",
@@ -47,15 +55,7 @@ func init() {
 				Help:  "Account ID sent as the X-Auth-Account header. Required when creating new zones with a user API key.",
 			},
 		},
-		Maintainer: "@arnoschoon",
-		SupportedTypes: []string{
-			"Basic8",
-			"PTR",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://docs.cloudpress.com/API/api-keys/",
 	})
 }
 

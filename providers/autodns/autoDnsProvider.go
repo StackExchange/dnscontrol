@@ -32,7 +32,15 @@ type autoDNSProvider struct {
 func init() {
 	providers.Register[*autoDNSProvider]("AUTODNS", providers.Definition{
 		FriendlyName: "AutoDNS",
-		PortalURL:    "https://login.autodns.com/", // TODO: Verify
+		Maintainer:   "@arnoschoon",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"PTR",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -65,15 +73,7 @@ func init() {
 				Help:  "Set to \"true\" so get-zones also lists zones owned by sub-users (master/admin accounts). Optional; defaults to off.",
 			},
 		},
-		Maintainer: "@arnoschoon",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"PTR",
-		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://login.autodns.com/", // TODO: Verify
 	})
 }
 

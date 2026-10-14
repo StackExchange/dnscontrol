@@ -36,17 +36,7 @@ var defaultNameServerNames = []string{
 func init() {
 	providers.Register[*desecProvider]("DESEC", providers.Definition{
 		FriendlyName: "deSEC",
-		PortalURL:    "https://desec.io/tokens", // TODO: Verify
-		CredFields: []providers.CredsField{
-			{
-				Key:      "auth-token",
-				Label:    "Auth token",
-				Help:     "Your deSEC API auth token.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@D3luxee",
+		Maintainer:   "@D3luxee",
 		SupportedTypes: []string{
 			"Basic8",
 			"DNSKEY",
@@ -61,11 +51,21 @@ func init() {
 			"TLSA",
 			"ALIAS:Unimplemented:Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs.",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
 		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Can(),
 		CanDualHost:         providers.Unimplemented(),
-		OfficiallySupported: providers.Cannot(),
+		CanUseDSForChildren: providers.Can(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "auth-token",
+				Label:    "Auth token",
+				Help:     "Your deSEC API auth token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		PortalURL: "https://desec.io/tokens", // TODO: Verify
 	})
 }
 

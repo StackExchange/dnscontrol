@@ -31,17 +31,7 @@ Info required in `creds.json`:
 func init() {
 	providers.Register[*dnscaleProvider]("DNSCALE", providers.Definition{
 		FriendlyName: "dnscale",
-		PortalURL:    "https://dnscale.net/", // TODO: Verify
-		CredFields: []providers.CredsField{
-			{
-				Key:      "api_key",
-				Label:    "API key",
-				Help:     "Your dnscale API key.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@dnscale-ops",
+		Maintainer:   "@dnscale-ops",
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS",
@@ -51,8 +41,18 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanConcur:           providers.Cannot(),
 		OfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "api_key",
+				Label:    "API key",
+				Help:     "Your dnscale API key.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		PortalURL: "https://dnscale.net/", // TODO: Verify
 	})
 }
 

@@ -54,9 +54,9 @@ func init() {
 			"PTR",
 			"CAA:Cannot",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

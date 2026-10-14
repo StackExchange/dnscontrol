@@ -38,9 +38,25 @@ import (
 func init() {
 	providers.Register[*gandiv5Provider]("GANDI_V5", providers.Definition{
 		FriendlyName: "Gandi v5",
-		DocsURL:      "https://docs.dnscontrol.org/provider/gandiv5",
-		PortalURL:    "https://admin.gandi.net/dashboard/",
-		Notes:        "Gandi supports two auth methods: the newer Personal Access Token (recommended) or the legacy API key.",
+		Maintainer:   "@TomOnTime",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS:Can:Only on the bare domain. Otherwise CNAME will be substituted",
+			"HTTPS",
+			"LOC",
+			"NAPTR",
+			"OPENPGPKEY",
+			"PTR",
+			"RP",
+			"SSHFP",
+			"SVCB",
+			"TLSA",
+			"DS:Cannot:Only supports DS records at the apex",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CreateDomainsReason: "Can only manage domains registered through their service",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",
@@ -67,25 +83,9 @@ func init() {
 				ShowIf:   map[string]string{"_authMethod": "API key (deprecated)"},
 			},
 		},
-		Maintainer: "@TomOnTime",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS:Can:Only on the bare domain. Otherwise CNAME will be substituted",
-			"HTTPS",
-			"LOC",
-			"NAPTR",
-			"OPENPGPKEY",
-			"PTR",
-			"RP",
-			"SSHFP",
-			"SVCB",
-			"TLSA",
-			"DS:Cannot:Only supports DS records at the apex",
-		},
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "Can only manage domains registered through their service",
+		DocsURL:   "https://docs.dnscontrol.org/provider/gandiv5",
+		PortalURL: "https://admin.gandi.net/dashboard/",
+		Notes:     "Gandi supports two auth methods: the newer Personal Access Token (recommended) or the legacy API key.",
 	})
 }
 

@@ -16,7 +16,19 @@ type openproviderProvider struct {
 func init() {
 	providers.Register[*openproviderProvider]("OPENPROVIDER", providers.Definition{
 		FriendlyName: "Openprovider",
-		PortalURL:    "https://cp.openprovider.eu/",
+		Maintainer:   "@nvanlaerebeke",
+		SupportedTypes: []string{
+			"Basic8",
+			"TLSA",
+			"NS:Cannot",
+			"DNSKEY:Cannot:DNSSEC keys are managed by Openprovider",
+			"SOA:Cannot:The SOA record is managed by Openprovider",
+		},
+		OfficiallySupported: providers.Cannot(),
+		DefaultTTL:          minimumTTL,
+		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC can be enabled outside DNSControl"),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot("Openprovider manages the authoritative NS records"),
 		CredFields: []providers.CredsField{
 			{Key: "username", Label: "Username", Required: true},
 			{Key: "password", Label: "Password", Required: true, Secret: true},
@@ -27,19 +39,7 @@ func init() {
 				Default: defaultAPIURL,
 			},
 		},
-		Maintainer: "@nvanlaerebeke",
-		DefaultTTL: minimumTTL,
-		SupportedTypes: []string{
-			"Basic8",
-			"TLSA",
-			"NS:Cannot",
-			"DNSKEY:Cannot:DNSSEC keys are managed by Openprovider",
-			"SOA:Cannot:The SOA record is managed by Openprovider",
-		},
-		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC can be enabled outside DNSControl"),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot("Openprovider manages the authoritative NS records"),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://cp.openprovider.eu/",
 	})
 }
 

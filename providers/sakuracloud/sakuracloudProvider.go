@@ -22,11 +22,11 @@ func init() {
 			"PTR",
 			"SVCB",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Cannot(),
 		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Cannot(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 	})
 }
 

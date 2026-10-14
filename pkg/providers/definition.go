@@ -29,16 +29,39 @@ type Definition struct {
 	// FriendlyName is the brand name ("Google", not "GCLOUD")
 	FriendlyName string
 
+	// Maintainer is the github username of the maintainer.
+	Maintainer string
+
 	// Aliases (optional) is an optional list of aliases. For example, if
 	// we rename CLOUDFLAREAPI to CLOUDFLARE, we would make CLOUDFLAREAPI an alias to
 	// support legacy configurations.
 	Aliases []string
 
-	// Maintainer is the github username of the maintainer.
-	Maintainer string
+	// SupportedTypes is an exhaustive declaration of record support. Nil means
+	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
+	// declares no record support. Entries may use TYPE:Status:Reason
+	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
+	// ": http(s)://..." in Reason supplies a link.
+	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
+	SupportedTypes []string
+
+	// Capabilities that can't be deduced automatically
+
+	// OfficiallySupported documents if the provider has official support.
+	OfficiallySupported *DocumentationNote
 
 	// DefaultTTL (optional) minimum TTL when `get-zone` writes .js files
 	DefaultTTL uint32
+
+	CanAutoDNSSEC       *DocumentationNote
+	CanConcur           *DocumentationNote
+	CanDualHost         *DocumentationNote
+	CanUseDSForChildren *DocumentationNote
+
+	CanGetZonesReason   string
+	CreateDomainsReason string
+
+	// "init" fields:
 
 	// CredFields is a description of the creds.json fields for this provider. Used by "init".
 	CredFields []CredsField
@@ -56,30 +79,14 @@ type Definition struct {
 	// PostWrite prepares local resources after the wizard writes creds.json.
 	PostWrite func(map[string]string) error
 
-	CanAutoDNSSEC       *DocumentationNote
-	CanConcur           *DocumentationNote
-	CanUseDSForChildren *DocumentationNote
-	CanDualHost         *DocumentationNote
-	OfficiallySupported *DocumentationNote
-	// Interface discovery sets these capabilities; the reasons only explain the result.
-	CanGetZonesReason   string
-	CreateDomainsReason string
-	RecordIdentity      RecordIdentityFunc
-	// SupportedTypes is an exhaustive declaration of record support. Nil means
-	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no record support. Entries may use TYPE:Status:Reason
-	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
-	// ": http(s)://..." in Reason supplies a link.
-	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
-	SupportedTypes []string
-
 	typeSelectors []typeSelector
 
 	// Calculated by Register and Finalize. Providers must leave these fields unset.
-	TypeName           string
+	TypeName           string // ex. "BIND"
 	ImplementationType reflect.Type
-	Kind               ProviderKind
-	Initializer        Initializer
+	Initializer        Initializer  // Function called to initialize a client
+	Kind               ProviderKind // Are we initializing a REgistrar or DNS Provider?
+	RecordIdentity     RecordIdentityFunc
 	RecordAuditor      RecordAuditor
 	CanGetZones        bool
 	DocCreateDomains   bool

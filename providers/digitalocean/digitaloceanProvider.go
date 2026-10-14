@@ -81,17 +81,7 @@ retry:
 func init() {
 	providers.Register[*digitaloceanProvider]("DIGITALOCEAN", providers.Definition{
 		FriendlyName: "DigitalOcean",
-		PortalURL:    "https://cloud.digitalocean.com/account/api/tokens",
-		CredFields: []providers.CredsField{
-			{
-				Key:      "token",
-				Label:    "API token",
-				Help:     "Your DigitalOcean personal access token.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@chicks-net",
+		Maintainer:   "@chicks-net",
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS:Cannot:Digital Ocean documents that this is not supported.",
@@ -108,10 +98,20 @@ func init() {
 			"SVCB:Cannot:Digital Ocean documents that this is not supported.",
 			"TLSA:Cannot:Digital Ocean documents that this is not supported.",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Cannot("Digital Ocean documents that this is not supported."),
 		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "token",
+				Label:    "API token",
+				Help:     "Your DigitalOcean personal access token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		PortalURL: "https://cloud.digitalocean.com/account/api/tokens",
 	})
 }
 

@@ -49,7 +49,23 @@ Additionally
 func init() {
 	providers.Register[*hednsProvider]("HEDNS", providers.Definition{
 		FriendlyName: "Hurricane Electric DNS",
-		PortalURL:    "https://dns.he.net/",
+		Maintainer:   "@rblenkinsopp",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"LOC",
+			"NAPTR",
+			"PTR",
+			"RP",
+			"SSHFP",
+			"SVCB",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -77,23 +93,7 @@ func init() {
 				Default: ".",
 			},
 		},
-		Maintainer: "@rblenkinsopp",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"LOC",
-			"NAPTR",
-			"PTR",
-			"RP",
-			"SSHFP",
-			"SVCB",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://dns.he.net/",
 	})
 }
 

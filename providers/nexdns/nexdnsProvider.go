@@ -36,8 +36,22 @@ type nexdnsProvider struct {
 func init() {
 	providers.Register[*nexdnsProvider]("NEXDNS", providers.Definition{
 		FriendlyName: "NexDNS",
-		PortalURL:    "https://nexdns.tech/settings/api-keys",
-		Notes:        "The API is available on a plan that includes API access. See https://nexdns.tech/pricing.",
+		Maintainer:   "@nexdns",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"DNAME",
+			"PTR",
+			"TLSA",
+			"DS:Cannot:DS at the zone apex belongs in the parent zone",
+			"SOA:Cannot:The SOA record is maintained by the platform",
+		},
+		OfficiallySupported: providers.Cannot(),
+		DefaultTTL:          defaultTTL,
+		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC is switched on per zone outside of DNSControl"),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot("The NS records at the zone apex cannot be changed through the API"),
+		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_token",
@@ -53,22 +67,8 @@ func init() {
 				Default: defaultAPIURL,
 			},
 		},
-		Maintainer: "@nexdns",
-		DefaultTTL: defaultTTL,
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"DNAME",
-			"PTR",
-			"TLSA",
-			"DS:Cannot:DS at the zone apex belongs in the parent zone",
-			"SOA:Cannot:The SOA record is maintained by the platform",
-		},
-		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC is switched on per zone outside of DNSControl"),
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Cannot("The NS records at the zone apex cannot be changed through the API"),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://nexdns.tech/settings/api-keys",
+		Notes:     "The API is available on a plan that includes API access. See https://nexdns.tech/pricing.",
 	})
 }
 

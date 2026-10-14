@@ -29,8 +29,21 @@ var (
 func init() {
 	providers.Register[*gcloudProvider]("GCLOUD", providers.Definition{
 		FriendlyName: "Google Cloud DNS",
-		PortalURL:    "https://console.cloud.google.com/iam-admin/serviceaccounts", // TODO: Verify
-		Notes:        "These values come from a Google Cloud service account JSON key file.",
+		Maintainer:   "@riyadhalnur",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"PTR",
+			"SSHFP",
+			"SVCB",
+			"TLSA",
+		},
+		OfficiallySupported: providers.Can(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "project_id",
@@ -59,21 +72,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@riyadhalnur",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"PTR",
-			"SSHFP",
-			"SVCB",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Can(),
+		PortalURL: "https://console.cloud.google.com/iam-admin/serviceaccounts", // TODO: Verify
+		Notes:     "These values come from a Google Cloud service account JSON key file.",
 	})
 }
 

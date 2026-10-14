@@ -40,11 +40,11 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Cannot(),
 		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Cannot(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 		CreateDomainsReason: "Zones must already exist in the Scaleway console.",
 	})
 }
