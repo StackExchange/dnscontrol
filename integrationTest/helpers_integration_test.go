@@ -477,12 +477,6 @@ func azureAlias(name, aliasType, target string) *models.RecordConfig {
 	return r
 }
 
-func caa(name string, flag uint8, tag string, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeCAA, flag, tag, target)
-	panicOnErr(err)
-	return r
-}
-
 func cfProxyA(name, target, status string) *models.RecordConfig {
 	r := a(name, target)
 	r.Metadata = make(map[string]string)
@@ -565,33 +559,10 @@ func mikrotikNxdomain(name string) *models.RecordConfig {
 	return r
 }
 
+// cname converts Unicode targets to punycode; tr's zone parser does not.
 func cname(name, target string) *models.RecordConfig {
 	target = fillTemplate(target)
 	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeCNAME, target)
-	panicOnErr(err)
-	return r
-}
-
-func dhcid(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDHCID, target)
-	panicOnErr(err)
-	return r
-}
-
-func dname(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDNAME, target)
-	panicOnErr(err)
-	return r
-}
-
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDS, keyTag, algorithm, digestType, digest)
-	panicOnErr(err)
-	return r
-}
-
-func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDNSKEY, flags, protocol, algorithm, publicKey)
 	panicOnErr(err)
 	return r
 }
@@ -642,34 +613,8 @@ func manyA(namePattern, target string, n int) models.Records {
 	return recs
 }
 
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeMX, prio, target)
-	panicOnErr(err)
-	return r
-}
-
-func ns(name, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeNS, target)
-	panicOnErr(err)
-	return r
-}
-
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeNAPTR, order, preference, flags, service, regexp, target)
-	panicOnErr(err)
-	return r
-}
-
 func openpgpkey(name, target string) *models.RecordConfig {
 	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeOPENPGPKEY, target)
-	panicOnErr(err)
-	return r
-}
-
-func ptr(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypePTR, target)
 	panicOnErr(err)
 	return r
 }
@@ -688,36 +633,6 @@ func r53weighted(name, target, rtype string, weight int, setID string) *models.R
 		"r53_weight":         fmt.Sprintf("%d", weight),
 		"r53_set_identifier": setID,
 	}
-	return r
-}
-
-func rp(name string, m, t string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeRP, m, t)
-	panicOnErr(err)
-	return r
-}
-
-func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSMIMEA, usage, selector, matchingtype, target)
-	panicOnErr(err)
-	return r
-}
-
-func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSOA, ns, mbox, serial, refresh, retry, expire, minttl)
-	panicOnErr(err)
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSRV, priority, weight, port, target)
-	panicOnErr(err)
-	return r
-}
-
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSSHFP, algorithm, fingerprint, target)
-	panicOnErr(err)
 	return r
 }
 
@@ -815,18 +730,6 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 
 func txt(name, target string) *models.RecordConfig {
 	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeTXT, target)
-	panicOnErr(err)
-	return r
-}
-
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {.
-func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
-	r.TTL = t
-	return r
-}
-
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeTLSA, usage, selector, matchingtype, target)
 	panicOnErr(err)
 	return r
 }
