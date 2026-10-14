@@ -41,7 +41,7 @@ func (d *Definition) compileTypeSelectors() error {
 	for _, source := range selectors {
 		name, status, suffixed := strings.Cut(source, ":")
 		name = strings.ToUpper(name)
-		s := typeSelector{source: source, name: name, priority: 4, note: DocumentationNote{HasFeature: true}}
+		s := typeSelector{source: source, name: name, priority: 3, note: DocumentationNote{HasFeature: true}}
 		if name == "" || strings.Trim(name, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_*") != "" {
 			return fmt.Errorf("provider %q: malformed SupportedTypes selector %q", d.TypeName, source)
 		}
@@ -116,15 +116,8 @@ func sameTypeStatus(a, b DocumentationNote) bool {
 }
 
 func (d *Definition) resolveType(typ privatetypes.RecordType) (DocumentationNote, error) {
-	priority := 5
+	priority := 4
 	var result DocumentationNote
-	var legacy *DocumentationNote
-	if capability, ok := RecordTypeCapabilities[typ.Name]; ok {
-		legacy = d.Features[capability]
-		if legacy != nil {
-			priority, result = 3, *legacy
-		}
-	}
 	// Find the winning priority first. An exact declaration may resolve
 	// conflicts between lower-priority patterns, regardless of input order.
 	for _, s := range d.typeSelectors {
@@ -142,18 +135,10 @@ func (d *Definition) resolveType(typ privatetypes.RecordType) (DocumentationNote
 		}
 		previous, result = s.source, s.note
 	}
-	if legacy != nil && sameTypeStatus(result, *legacy) {
-		if result.Comment == "" {
-			result.Comment = legacy.Comment
-		}
-		if result.Link == "" {
-			result.Link = legacy.Link
-		}
-	}
 	return result, nil
 }
 
-// RecordTypeSupport returns the effective status and compatible legacy notes.
+// RecordTypeSupport returns the effective status and annotation.
 // Unknown types are unsupported, including when '*' is declared.
 func (d *Definition) RecordTypeSupport(name string) DocumentationNote {
 	typ, ok := privatetypes.LookupRecordType(strings.ToUpper(name))
@@ -231,9 +216,6 @@ func Finalize() error {
 		// General DS support implies child support. Rebuild from the original
 		// inputs so later catalog registrations never retain stale notes.
 		child := d.CanUseDSForChildren
-		if child == nil {
-			child = d.Features[CanUseDSForChildren]
-		}
 		if features[CanUseDS].HasFeature {
 			if child == nil || !child.HasFeature {
 				child = Can()

@@ -56,7 +56,6 @@ type Definition struct {
 	// PostWrite prepares local resources after the wizard writes creds.json.
 	PostWrite func(map[string]string) error
 
-	// Nil capability notes fall back to legacy Features. Explicit notes take precedence.
 	CanAutoDNSSEC       *DocumentationNote
 	CanConcur           *DocumentationNote
 	CanUseDSForChildren *DocumentationNote
@@ -66,13 +65,9 @@ type Definition struct {
 	CanGetZonesReason   string
 	CreateDomainsReason string
 	RecordIdentity      RecordIdentityFunc
-	// Features remains for external providers using the legacy registration API.
-	// Deprecated: use the named fields and SupportedTypes.
-	Features DocumentationNotes
-
 	// SupportedTypes is an exhaustive declaration of record support. Nil means
 	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no support beyond legacy Features. Entries may use TYPE:Status:Reason
+	// declares no record support. Entries may use TYPE:Status:Reason
 	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
 	// ": http(s)://..." in Reason supplies a link.
 	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
@@ -108,12 +103,6 @@ func Register[T InitializableProvider](name string, definition Definition) {
 	// Validate FriendlyName
 	if strings.TrimSpace(definition.FriendlyName) == "" {
 		panic(fmt.Sprintf("provider %q: FriendlyName is required", name))
-	}
-	// Validate Features
-	for capability, note := range definition.Features {
-		if note == nil {
-			panic(fmt.Sprintf("provider %q: Features[%v] must not be nil", name, capability))
-		}
 	}
 	// Make sure caller didn't set fields that are generated.
 	if definition.TypeName != "" || definition.ImplementationType != nil || definition.Kind != 0 ||
@@ -171,10 +160,7 @@ func Register[T InitializableProvider](name string, definition Definition) {
 		}
 		return instance, nil
 	}
-	def.DerivedFeatures = maps.Clone(def.Features)
-	if def.DerivedFeatures == nil {
-		def.DerivedFeatures = DocumentationNotes{}
-	}
+	def.DerivedFeatures = DocumentationNotes{}
 	for capability, note := range map[Capability]*DocumentationNote{
 		CanAutoDNSSEC: def.CanAutoDNSSEC, CanConcur: def.CanConcur,
 		CanUseDSForChildren: def.CanUseDSForChildren, CanDualHost: def.CanDualHost,
@@ -191,17 +177,10 @@ func Register[T InitializableProvider](name string, definition Definition) {
 		CanGetZones:      {def.CanGetZones, def.CanGetZonesReason},
 		DocCreateDomains: {def.DocCreateDomains, def.CreateDomainsReason},
 	} {
-		// Preserve annotations without overwriting the supplied feature note.
-		var note DocumentationNote
-		if legacy := def.DerivedFeatures[capability]; legacy != nil {
-			note = *legacy
+		def.DerivedFeatures[capability] = &DocumentationNote{
+			HasFeature: derived.supported,
+			Comment:    derived.reason,
 		}
-		if derived.reason != "" {
-			note.Comment = derived.reason
-		}
-		note.HasFeature = derived.supported
-		note.Unimplemented = false
-		def.DerivedFeatures[capability] = &note
 	}
 
 	for _, n := range names {

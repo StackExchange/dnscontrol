@@ -254,7 +254,7 @@ func matrixData() *FeatureMatrix {
 		}
 
 		// setRecordType reports support for a record type from the provider's
-		// SupportedTypes (including any notes from legacy Features).
+		// SupportedTypes, including reason and link annotations.
 		setRecordType := func(
 			featureName string,
 			typeName string,
