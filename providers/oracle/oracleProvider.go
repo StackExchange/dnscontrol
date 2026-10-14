@@ -31,9 +31,6 @@ func init() {
 			"TLSA",
 			"LOC:Unimplemented",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
 	})
 }
 

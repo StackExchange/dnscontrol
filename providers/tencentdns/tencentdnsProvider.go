@@ -29,9 +29,8 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		OfficiallySupported: providers.Cannot(),
-		DefaultTTL:          defaultTTL,
-		CanDualHost:         providers.Can("Tencent Cloud allows full management of apex NS records"),
+		DefaultTTL:  defaultTTL,
+		CanDualHost: providers.Can("Tencent Cloud allows full management of apex NS records"),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "secret_id",

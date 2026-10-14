@@ -35,9 +35,7 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot(),
 		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{

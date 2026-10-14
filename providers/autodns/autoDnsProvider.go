@@ -38,9 +38,7 @@ func init() {
 			"ALIAS",
 			"PTR",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Cannot(),
+		CanDualHost: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",

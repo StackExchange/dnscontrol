@@ -21,8 +21,6 @@ func init() {
 			"ALIAS",
 			"PTR",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
 		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{

@@ -202,9 +202,14 @@ func TestSupportedTypesOperationalCapabilities(t *testing.T) {
 	if !ProviderHasCapability("ALL", CanUseDSForChildren) || d.DerivedFeatures[CanUseDSForChildren].Comment != "" {
 		t.Fatal("general DS support must imply child support without contradictory notes")
 	}
-	for _, capability := range []Capability{CanAutoDNSSEC, CanConcur, CanDualHost, OfficiallySupported} {
+	for _, capability := range []Capability{CanAutoDNSSEC, OfficiallySupported} {
 		if ProviderHasCapability("ALL", capability) {
 			t.Fatalf("wildcard enabled operational capability %s", capability)
+		}
+	}
+	for _, capability := range []Capability{CanConcur, CanDualHost} {
+		if !ProviderHasCapability("ALL", capability) {
+			t.Fatalf("default operational capability %s was disabled", capability)
 		}
 	}
 }

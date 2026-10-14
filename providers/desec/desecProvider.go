@@ -51,9 +51,7 @@ func init() {
 			"TLSA",
 			"ALIAS:Unimplemented:Apex aliasing is supported via new SVCB and HTTPS record types. For details, check the deSEC docs.",
 		},
-		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can("deSEC always signs all records. When trying to disable, a notice is printed."),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Unimplemented(),
 		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{

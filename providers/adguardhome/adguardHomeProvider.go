@@ -43,8 +43,6 @@ func init() {
 			"ALIAS",
 			"CNAME",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
 	})
 }
 

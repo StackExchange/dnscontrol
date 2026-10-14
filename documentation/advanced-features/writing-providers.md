@@ -371,8 +371,10 @@ ensure finalization for programs importing individual providers. Register all
 providers and record types before concurrent reads. Tests registering additional
 types or providers can call `providers.Finalize()` again to rebuild derived data.
 
-Named operational fields such as `CanConcur`
-can be set directly on the definition. Some fields are derived automatically for
+Named operational fields can be set directly on the definition. `CanConcur`
+and `CanDualHost` default to `Can()`; use `Cannot()` to opt out. `CanConcur`
+does not accept `Unimplemented()`. `CanAutoDNSSEC` defaults to `Cannot()`;
+declare `Can()` or `Unimplemented()` when appropriate. Some fields are derived automatically for
 you, such as `CanGetZones` and `DocCreateDomains`
 (set based on the existence or absence of `providers.ZoneLister` and `providers.ZoneCreator`, respectively.)
 Use `CanGetZonesReason` and `CreateDomainsReason` to explain those derived results.

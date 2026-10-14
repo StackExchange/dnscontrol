@@ -46,10 +46,8 @@ func init() {
 			"DS:Cannot:DS at the zone apex belongs in the parent zone",
 			"SOA:Cannot:The SOA record is maintained by the platform",
 		},
-		OfficiallySupported: providers.Cannot(),
 		DefaultTTL:          defaultTTL,
 		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC is switched on per zone outside of DNSControl"),
-		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Cannot("The NS records at the zone apex cannot be changed through the API"),
 		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{

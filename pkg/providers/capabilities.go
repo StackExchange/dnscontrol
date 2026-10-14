@@ -18,7 +18,8 @@ const (
 	// CanConcur indicates the provider can be used concurrently to gather zone data.
 	// Can() indicates that it has been tested and shown to work concurrently.
 	// Cannot() indicates it has not been tested OR it has been shown to not
-	// work when used concurrently.  The default is Cannot().
+	// work when used concurrently. The default is Can(); providers that cannot
+	// be used concurrently must declare Cannot(). Unimplemented() is invalid.
 	CanConcur
 
 	// CanGetZones indicates the provider can enumerate zones (get-zones ... all).

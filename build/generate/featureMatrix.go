@@ -150,7 +150,7 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport          = "[Official Support](../provider/index.md#providers-with-official-support)" // vs. community supported
 		ProviderDNSProvider      = "DNS Provider"
 		ProviderRegistrar        = "Registrar"
-		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
+		ProviderThreadSafe       = "[Concurrent fetching](../advanced-features/concurrency-verified.md)"
 		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
 		DomainModifierCsync      = "[`CSYNC`](../language-reference/domain-modifiers/CSYNC.md)"

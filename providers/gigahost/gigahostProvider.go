@@ -26,7 +26,6 @@ func init() {
 			"NAPTR",
 			"PTR",
 		},
-		CanConcur: providers.Unimplemented(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "apikey",

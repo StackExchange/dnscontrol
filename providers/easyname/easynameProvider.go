@@ -23,7 +23,6 @@ func init() {
 		FriendlyName:   "easyname",
 		Maintainer:     "@tresni",
 		SupportedTypes: []string{},
-		CanConcur:      providers.Unimplemented(),
 	})
 }
 

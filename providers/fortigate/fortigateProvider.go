@@ -22,10 +22,7 @@ func init() {
 			"CNAME",
 			"PTR:Cannot:does not really support ARPA Zones and handles PTR records weirdly",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
+		CanDualHost: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "host",

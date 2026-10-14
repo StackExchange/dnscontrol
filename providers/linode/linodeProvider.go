@@ -97,9 +97,7 @@ func init() {
 			"CAA:Can:Linode doesn't support changing the CAA flag",
 			"SRV:Can:Linode requires non-zero priority",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
+		CanDualHost: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "token",

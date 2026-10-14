@@ -32,10 +32,7 @@ func init() {
 			"TLSA",
 			"LOC:Unimplemented:Normalization within the PowerDNS API seems to be buggy, so disabled: https://github.com/PowerDNS/pdns/issues/10558",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Can(),
 	})
 }
 

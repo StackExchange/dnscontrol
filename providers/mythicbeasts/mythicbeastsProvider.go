@@ -42,9 +42,6 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CreateDomainsReason: "Requires domain registered through Web UI",
 		CredFields: []providers.CredsField{
 			{

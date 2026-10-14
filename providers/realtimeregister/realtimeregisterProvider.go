@@ -39,9 +39,7 @@ func init() {
 			"TLSA",
 			"DS:Cannot:Only for subdomains",
 		},
-		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Cannot(),
 		CanUseDSForChildren: providers.Can(),
 	})

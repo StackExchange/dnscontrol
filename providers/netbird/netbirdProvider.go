@@ -80,10 +80,7 @@ func init() {
 			"AAAA",
 			"CNAME",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Cannot(),
+		CanDualHost: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{Key: "token", Label: "API Token", Required: true, Secret: true},
 			{Key: "apiurl", Label: "API Url", Default: netbirdAPIURL},

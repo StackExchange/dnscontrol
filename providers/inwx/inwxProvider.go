@@ -70,10 +70,7 @@ func init() {
 			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
 			"LOC:Unimplemented",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",

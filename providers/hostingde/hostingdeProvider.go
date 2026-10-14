@@ -31,10 +31,7 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "authToken",

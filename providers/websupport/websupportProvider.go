@@ -37,8 +37,6 @@ func init() {
 			"NS:Cannot",
 			"ALIAS:Cannot:WebSupport's ANAME is apex-only and conflicts with other apex records.",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Cannot(),
 		CanGetZonesReason:   "WebSupport has no list-all-zones endpoint.",
 		CreateDomainsReason: "Zones must be created via the WebSupport portal.",

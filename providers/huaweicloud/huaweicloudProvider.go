@@ -95,9 +95,7 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "KeyId",

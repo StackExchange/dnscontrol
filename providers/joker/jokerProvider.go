@@ -30,7 +30,6 @@ func init() {
 			"Basic8",
 			"NAPTR",
 		},
-		OfficiallySupported: providers.Cannot(),
 		CanConcur:           providers.Cannot("Joker API has session-based authentication"),
 		CanDualHost:         providers.Cannot(),
 		CanUseDSForChildren: providers.Cannot(),

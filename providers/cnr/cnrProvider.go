@@ -74,8 +74,6 @@ func init() {
 		},
 		OfficiallySupported: providers.Cannot("Actively maintained provider module."),
 		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CanUseDSForChildren: providers.Unimplemented("Ask for this feature."),
 		CredFields: []providers.CredsField{
 			{

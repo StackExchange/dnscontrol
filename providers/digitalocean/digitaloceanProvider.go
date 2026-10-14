@@ -98,10 +98,7 @@ func init() {
 			"SVCB:Cannot:Digital Ocean documents that this is not supported.",
 			"TLSA:Cannot:Digital Ocean documents that this is not supported.",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot("Digital Ocean documents that this is not supported."),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Cannot("Digital Ocean documents that this is not supported."),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "token",

@@ -37,9 +37,11 @@ type Definition struct {
 	// support legacy configurations.
 	Aliases []string
 
-	// SupportedTypes is an exhaustive declaration of record support. Nil means
-	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no record support. Entries may use TYPE:Status:Reason
+	// SupportedTypes is an exhaustive, required declaration of record support.
+	// List Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT) explicitly when
+	// supported. A non-nil empty slice declares no record support. Nil still
+	// resolves to Basic8 for compatibility, but provider registrations must
+	// supply a list. Entries may use TYPE:Status:Reason
 	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
 	// ": http(s)://..." in Reason supplies a link.
 	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
@@ -48,18 +50,32 @@ type Definition struct {
 	// Capabilities that can't be deduced automatically
 
 	// OfficiallySupported documents if the provider has official support.
+	// Omit it for the default, Cannot() without a reason.
 	OfficiallySupported *DocumentationNote
 
 	// DefaultTTL (optional) minimum TTL when `get-zone` writes .js files
 	DefaultTTL uint32
 
-	CanAutoDNSSEC       *DocumentationNote
-	CanConcur           *DocumentationNote
-	CanDualHost         *DocumentationNote
+	// CanAutoDNSSEC defaults to Cannot(). Declare Can() or Unimplemented()
+	// to document a different status, or Cannot(reason) to explain the default.
+	CanAutoDNSSEC *DocumentationNote
+	// CanConcur defaults to Can(). Declare Cannot() for providers that must
+	// not be used concurrently. Unimplemented() is invalid for this field.
+	CanConcur *DocumentationNote
+	// CanDualHost defaults to Can(). Declare Cannot() or Unimplemented()
+	// when the provider cannot manage apex NS records for dual hosting, or
+	// Can(reason) to explain support that needs qualification.
+	CanDualHost *DocumentationNote
+	// CanUseDSForChildren defaults to no child-DS support unless SupportedTypes
+	// grants general DS support, which also grants child-DS support.
 	CanUseDSForChildren *DocumentationNote
 
+	// Interface discovery sets the capabilities; these reasons explain the result.
 	CanGetZonesReason   string
 	CreateDomainsReason string
+	// RecordIdentity optionally distinguishes records with the same label,
+	// type, and RDATA when the provider stores them as separate objects.
+	RecordIdentity RecordIdentityFunc
 
 	// "init" fields:
 
@@ -86,7 +102,6 @@ type Definition struct {
 	ImplementationType reflect.Type
 	Initializer        Initializer  // Function called to initialize a client
 	Kind               ProviderKind // Are we initializing a REgistrar or DNS Provider?
-	RecordIdentity     RecordIdentityFunc
 	RecordAuditor      RecordAuditor
 	CanGetZones        bool
 	DocCreateDomains   bool
@@ -110,6 +125,18 @@ func Register[T InitializableProvider](name string, definition Definition) {
 	// Validate FriendlyName
 	if strings.TrimSpace(definition.FriendlyName) == "" {
 		panic(fmt.Sprintf("provider %q: FriendlyName is required", name))
+	}
+	if definition.CanConcur != nil && definition.CanConcur.Unimplemented {
+		panic(fmt.Sprintf("provider %q: CanConcur cannot be Unimplemented; use Cannot()", name))
+	}
+	if definition.CanConcur == nil {
+		definition.CanConcur = Can()
+	}
+	if definition.CanAutoDNSSEC == nil {
+		definition.CanAutoDNSSEC = Cannot()
+	}
+	if definition.CanDualHost == nil {
+		definition.CanDualHost = Can()
 	}
 	// Make sure caller didn't set fields that are generated.
 	if definition.TypeName != "" || definition.ImplementationType != nil || definition.Kind != 0 ||
