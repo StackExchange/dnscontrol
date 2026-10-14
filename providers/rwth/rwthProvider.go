@@ -18,20 +18,15 @@ func init() {
 		Maintainer:   "@mistererwin",
 		SupportedTypes: []string{
 			"Basic8",
-			"PTR",
+			"PTR:Can:PTR records with empty targets are not supported",
 			"SSHFP",
-			"DS:Unimplemented",
+			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
+			"SRV:Can:SRV records with empty targets are not supported.",
 		},
 		CanAutoDNSSEC:          providers.Unimplemented("Supported by RWTH but not implemented yet."),
 		CanConcur:              providers.Unimplemented(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDS:  providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
-			providers.CanUsePTR: providers.Can("PTR records with empty targets are not supported"),
-			providers.CanUseSRV: providers.Can("SRV records with empty targets are not supported."),
-		},
 	})
 }
 

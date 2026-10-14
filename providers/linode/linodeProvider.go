@@ -104,15 +104,12 @@ func init() {
 		Maintainer: "@koesie10",
 		SupportedTypes: []string{
 			"Basic8",
+			"CAA:Can:Linode doesn't support changing the CAA flag",
+			"SRV:Can:Linode requires non-zero priority",
 		},
 		CanConcur:              providers.Unimplemented(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseCAA: providers.Can("Linode doesn't support changing the CAA flag"),
-			providers.CanUseSRV: providers.Can("Linode requires non-zero priority"),
-		},
 	})
 }
 

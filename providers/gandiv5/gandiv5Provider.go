@@ -70,7 +70,7 @@ func init() {
 		Maintainer: "@TomOnTime",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS",
+			"ALIAS:Can:Only on the bare domain. Otherwise CNAME will be substituted",
 			"HTTPS",
 			"LOC",
 			"NAPTR",
@@ -80,14 +80,13 @@ func init() {
 			"SSHFP",
 			"SVCB",
 			"TLSA",
+			"DS:Cannot:Only supports DS records at the apex",
 		},
 		CanConcur:              providers.Can(),
 		CanUseDSForChildren:    providers.Can(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
+		// Features retains annotations and links not expressible in SupportedTypes.
 		Features: providers.DocumentationNotes{
-			providers.CanUseAlias:      providers.Can("Only on the bare domain. Otherwise CNAME will be substituted"),
-			providers.CanUseDS:         providers.Cannot("Only supports DS records at the apex"),
 			providers.DocCreateDomains: providers.Cannot("Can only manage domains registered through their service"),
 		},
 	})

@@ -30,20 +30,16 @@ func init() {
 			"Basic8",
 			"ALIAS:Unimplemented:Needs custom implementation",
 			"DS:Unimplemented",
-			"TLSA:Unimplemented",
+			"NAPTR:Cannot:According to Domainnameshop this will probably never be supported",
+			"PTR:Cannot:According to Domainnameshop this will probably never be supported",
+			"SSHFP:Cannot:Might be supported in the future",
+			"TLSA:Unimplemented:Has support but no documentation. Needs to be investigated.",
 		},
 		CanAutoDNSSEC:          providers.Cannot(),
 		CanConcur:              providers.Unimplemented(),
 		CanUseDSForChildren:    providers.Unimplemented(),
 		DocDualHost:            providers.Unimplemented(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseNAPTR: providers.Cannot("According to Domainnameshop this will probably never be supported"),
-			providers.CanUsePTR:   providers.Cannot("According to Domainnameshop this will probably never be supported"),
-			providers.CanUseSSHFP: providers.Cannot("Might be supported in the future"),
-			providers.CanUseTLSA:  providers.Unimplemented("Has support but no documentation. Needs to be investigated."),
-		},
 	})
 }
 

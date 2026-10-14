@@ -38,7 +38,7 @@ func init() {
 		Maintainer: "@ppmathis",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS",
+			"ALIAS:Can:Bunny flattens CNAME records into A/AAAA records dynamically",
 			"BUNNY_DNS_PZ",
 			"BUNNY_DNS_RDR",
 			"HTTPS",
@@ -51,10 +51,6 @@ func init() {
 		CanUseDSForChildren:    providers.Cannot(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Can("Bunny flattens CNAME records into A/AAAA records dynamically"),
-		},
 	})
 }
 

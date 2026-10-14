@@ -61,14 +61,11 @@ func init() {
 			"Basic8",
 			"ALIAS",
 			"NS:Cannot",
+			"SRV:Can:SRV records with empty targets are not supported",
 		},
 		CanConcur:              providers.Cannot(),
 		DocDualHost:            providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseSRV: providers.Can("SRV records with empty targets are not supported"),
-		},
 	})
 }
 
