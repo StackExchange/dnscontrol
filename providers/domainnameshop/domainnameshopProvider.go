@@ -35,9 +35,6 @@ func init() {
 			"SSHFP:Cannot:Might be supported in the future",
 			"TLSA:Unimplemented:Has support but no documentation. Needs to be investigated.",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Unimplemented(),
 		CanUseDSForChildren: providers.Unimplemented(),
 	})

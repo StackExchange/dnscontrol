@@ -38,10 +38,6 @@ func init() {
 			"Basic8",
 			"CAA:Cannot:Only premium service",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CreateDomainsReason: "Must be created via web UI",
 		CredFields: []providers.CredsField{
 			{

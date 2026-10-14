@@ -68,8 +68,6 @@ func init() {
 			"URL",
 			"URL301",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot("Doesn't allow control of apex NS records"),
 		CreateDomainsReason: "Requires domain registered through their service",
 		CredFields: []providers.CredsField{

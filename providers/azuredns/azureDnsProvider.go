@@ -108,7 +108,6 @@ func init() {
 			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
 		},
 		OfficiallySupported: providers.Can(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 		CredFields: []providers.CredsField{
 			{

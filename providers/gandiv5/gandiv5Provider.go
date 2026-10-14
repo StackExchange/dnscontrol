@@ -53,8 +53,6 @@ func init() {
 			"TLSA",
 			"DS:Cannot:Only supports DS records at the apex",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanUseDSForChildren: providers.Can(),
 		CreateDomainsReason: "Can only manage domains registered through their service",
 		CredFields: []providers.CredsField{

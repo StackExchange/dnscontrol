@@ -130,8 +130,6 @@ func init() {
 			"ALIAS:Cannot:R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead.",
 		},
 		OfficiallySupported: providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:    "Region",

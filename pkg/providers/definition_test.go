@@ -284,6 +284,33 @@ func assertRegistrationPanics(t *testing.T, message string, f func()) {
 	f()
 }
 
+func TestDefinitionCapabilityDefaults(t *testing.T) {
+	isolateDefinitions(t)
+	Register[*definitionDNS]("DEFAULTS", Definition{
+		FriendlyName:   "Defaults",
+		SupportedTypes: []string{"Basic8"},
+	})
+	def, _ := GetDefinition("DEFAULTS")
+	if def.CanConcur == nil || !def.CanConcur.HasFeature ||
+		def.CanAutoDNSSEC == nil || def.CanAutoDNSSEC.HasFeature ||
+		def.CanDualHost == nil || !def.CanDualHost.HasFeature {
+		t.Fatalf("registration did not apply capability defaults: %+v", def)
+	}
+	for capability, want := range map[Capability]bool{
+		CanConcur: true, CanDualHost: true,
+		CanAutoDNSSEC: false, OfficiallySupported: false,
+	} {
+		if got := ProviderHasCapability("DEFAULTS", capability); got != want {
+			t.Errorf("%s = %t, want %t", capability, got, want)
+		}
+	}
+	assertRegistrationPanics(t, "CanConcur cannot be Unimplemented", func() {
+		Register[*definitionDNS]("INVALID", Definition{
+			FriendlyName: "Invalid", SupportedTypes: []string{"Basic8"}, CanConcur: Unimplemented(),
+		})
+	})
+}
+
 func TestRegistrationNameCollisions(t *testing.T) {
 	for _, canonicalFirst := range []bool{false, true} {
 		t.Run(fmt.Sprint("canonical first=", canonicalFirst), func(t *testing.T) {

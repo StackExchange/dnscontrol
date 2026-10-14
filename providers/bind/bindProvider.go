@@ -83,8 +83,6 @@ func init() {
 		},
 		OfficiallySupported: providers.Can(),
 		CanAutoDNSSEC:       providers.Can("Just writes out a comment indicating DNSSEC was requested"),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CreateDomainsReason: "Driver just maintains list of zone files. It should automatically add missing ones.",
 		CredFields: []providers.CredsField{
 			{

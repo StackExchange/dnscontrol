@@ -44,10 +44,6 @@ func init() {
 			"DS:Cannot:Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end.",
 			"SOA:Cannot:💩",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
 		CanUseDSForChildren: providers.Cannot(),
 		CreateDomainsReason: "Can only manage domains registered through their service",
 		CredFields: []providers.CredsField{

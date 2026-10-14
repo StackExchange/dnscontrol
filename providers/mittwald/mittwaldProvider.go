@@ -32,8 +32,6 @@ func init() {
 			"Basic8",
 			"NS:Cannot",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
 		CanConcur:           providers.Cannot(),
 		CanDualHost:         providers.Cannot(),
 		CreateDomainsReason: "A domain's zone exists once the domain is in an mStudio project",

@@ -37,8 +37,7 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanAutoDNSSEC: providers.Cannot(),
-		CanConcur:     providers.Cannot(),
+		CanConcur: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{Key: "api_key", Label: "API Key", Required: true, Secret: true},
 		},

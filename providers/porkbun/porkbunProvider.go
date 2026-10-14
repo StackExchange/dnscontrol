@@ -85,9 +85,6 @@ func init() {
 			"URL",
 			"URL301",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot(),
 		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{

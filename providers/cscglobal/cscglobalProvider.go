@@ -49,6 +49,5 @@ func init() {
 			"Basic8",
 		},
 		OfficiallySupported: providers.Can(),
-		CanConcur:           providers.Can(),
 	})
 }

@@ -21,11 +21,8 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		OfficiallySupported: providers.Cannot(),
-		DefaultTTL:          600,
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
+		DefaultTTL:  600,
+		CanDualHost: providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "access_key_id",

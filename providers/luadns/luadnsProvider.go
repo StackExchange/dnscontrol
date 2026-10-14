@@ -38,9 +38,6 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "email",

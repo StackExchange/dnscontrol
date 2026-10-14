@@ -63,9 +63,7 @@ func init() {
 			"TLSA",
 		},
 		OfficiallySupported: providers.Can(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",

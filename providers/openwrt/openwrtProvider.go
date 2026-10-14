@@ -51,7 +51,6 @@ func init() {
 			"NS:Cannot",
 			"TXT:Cannot",
 		},
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

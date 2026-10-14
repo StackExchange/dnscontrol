@@ -31,10 +31,8 @@ func init() {
 			"Basic8",
 			"PTR",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
+		CanAutoDNSSEC: providers.Can(),
+		CanDualHost:   providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "base_url",

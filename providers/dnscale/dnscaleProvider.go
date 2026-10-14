@@ -41,8 +41,7 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Cannot(),
+		CanConcur: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_key",

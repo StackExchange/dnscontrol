@@ -61,10 +61,6 @@ func init() {
 			"SSHFP",
 			"SVCB",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{

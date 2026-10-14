@@ -60,9 +60,6 @@ func init() {
 			"PTR:Cannot:PTR records are not supported (See Link): https://www.name.com/support/articles/205188508-Reverse-DNS-records",
 			"SRV:Can:SRV records with empty targets are not supported",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
 		CreateDomainsReason: "New domains require registration",
 	})
 }

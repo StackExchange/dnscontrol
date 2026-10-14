@@ -17,8 +17,6 @@ func init() {
 			"PTR",
 			"NS:Cannot",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot(),
 		CreateDomainsReason: "zones must be pre-created",
 	})

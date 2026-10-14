@@ -74,9 +74,6 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot(),
 		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{

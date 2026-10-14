@@ -23,9 +23,6 @@ func init() {
 			"NETLIFY",
 			"NETLIFYV6",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot("Netlify does not allow sufficient control over the apex NS records"),
 		CanUseDSForChildren: providers.Cannot(),
 	})

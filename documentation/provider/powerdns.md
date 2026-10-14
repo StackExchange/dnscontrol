@@ -137,7 +137,7 @@ be handled with an `if`-statement in the for loop.
   - DNS Provider: ✅
   - Registrar: ❌
 - Provider API
-  - [Concurrency Verified](../advanced-features/concurrency-verified.md): ❔
+  - [Concurrent fetching](../advanced-features/concurrency-verified.md): ✅
   - [dual host](../advanced-features/dual-host.md): ✅
   - create-domains: ✅
   - [get-zones](../commands/get-zones.md): ✅

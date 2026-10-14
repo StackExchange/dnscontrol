@@ -64,10 +64,7 @@ func init() {
 			"SVCB",
 			"SRV:Can:G-Core doesn't support SRV records with empty targets",
 		},
-		OfficiallySupported: providers.Cannot(),
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api-key",
