@@ -29,7 +29,7 @@ const (
 	// CanDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider.
 	CanDualHost
 
-	// OfficiallySupported means it is actively used and maintained by Stack Exchange.
+	// OfficiallySupported means it is actively used and maintained by the project.
 	OfficiallySupported
 )
 
