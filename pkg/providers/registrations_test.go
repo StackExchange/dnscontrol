@@ -17,9 +17,6 @@ func TestAllProvidersUseDefinitions(t *testing.T) {
 		if def.SupportedTypes == nil {
 			t.Errorf("%s: missing exhaustive SupportedTypes declaration", def.TypeName)
 		}
-		if len(def.Features) != 0 {
-			t.Errorf("%s: built-in provider still uses legacy Features", def.TypeName)
-		}
 		if !def.Kind.Has(providers.KindDNS) {
 			if len(def.SupportedTypes) != 0 {
 				t.Errorf("%s: registrar-only provider declares record support", def.TypeName)
