@@ -29,8 +29,8 @@ const (
 //     entirely quoted. Any other value is the raw string, so a bare
 //     back\slash is published with its backslash.
 //
-// Original is not set: the API addresses a record set by name and type, and
-// every diff2.ByRecordSet instruction carries both.
+// Original is the record set itself: its Name keeps the spelling the API
+// knows the set by, which can differ from the lowercased label.
 func toRC(dc *models.DomainConfig, rs apiRecordSet) (models.Records, error) {
 	label := dc.LabelFromShort(rs.Name)
 
@@ -51,6 +51,7 @@ func toRC(dc *models.DomainConfig, rs apiRecordSet) (models.Records, error) {
 		if err != nil {
 			return nil, fmt.Errorf("MISAKA: record set %s/%s: value %q: %w", rs.Name, rs.Type, r.Value, err)
 		}
+		rc.Original = rs
 		recs = append(recs, rc)
 	}
 	return recs, nil

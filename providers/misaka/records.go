@@ -61,11 +61,10 @@ func checkRecordSet(rs apiRecordSet) error {
 		return fmt.Errorf("MISAKA: record set %s/%s %s", rs.Name, rs.Type, fmt.Sprintf(format, args...))
 	}
 
-	// Names are case-sensitive, verbatim identifiers on the API side while
-	// DNSControl lowercases every label: a write to the lowercased name would
-	// miss this set or create a second one next to it.
-	if rs.Name != strings.ToLower(rs.Name) || strings.HasSuffix(rs.Name, ".") {
-		return fail("has a name that is not lowercase or ends with a dot; rename it in the Misaka.io console")
+	// Names are stored verbatim, so a name can end with a dot; DNSControl
+	// cannot tell what such a name is meant to be relative to.
+	if strings.HasSuffix(rs.Name, ".") {
+		return fail("has a name that ends with a dot; rename it in the Misaka.io console")
 	}
 	if len(rs.Filters) > 0 {
 		return fail("uses filters (GeoDNS), which DNSControl does not manage")
@@ -128,6 +127,7 @@ func (p *misakaProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 
 			write := p.client.createRecordSet
 			if inst.Type == diff2.CHANGE {
+				name = nativeName(inst.Old)
 				write = p.client.updateRecordSet
 			}
 			corrections = append(corrections, inst.CreateCorrection(func() error {
@@ -135,7 +135,7 @@ func (p *misakaProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 			}))
 
 		case diff2.DELETE:
-			name, rtype := inst.Old[0].GetLabel(), inst.Key.Type
+			name, rtype := nativeName(inst.Old), inst.Key.Type
 			corrections = append(corrections, inst.CreateCorrection(func() error {
 				return p.client.deleteRecordSet(dc.Name, name, rtype)
 			}))
@@ -146,6 +146,13 @@ func (p *misakaProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, exis
 	}
 
 	return corrections, actualChangeCount, nil
+}
+
+// nativeName returns the name the API knows an existing record set by. Names
+// are case-sensitive there, and DNSControl lowercases labels, so a set named
+// "Www" must be addressed as "Www", not "www".
+func nativeName(existing models.Records) string {
+	return existing[0].Original.(apiRecordSet).Name
 }
 
 // filterApexNS removes the NS records at the zone apex from dc.Records.

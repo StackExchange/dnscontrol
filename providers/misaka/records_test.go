@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 
@@ -111,11 +112,6 @@ func TestGetZoneRecordsRefusesUnmodelledSets(t *testing.T) {
 			want: []string{"@/MX", `"10 @"`},
 		},
 		{
-			name: "mixed-case name",
-			set:  `{"name": "Www", "type": "A", "ttl": 300, "enabled": true, "protected": false, "alias": null, "records": [{"value": "192.0.2.1"}], "filters": []}`,
-			want: []string{"Www/A", "rename"},
-		},
-		{
 			name: "name with a trailing dot",
 			set:  `{"name": "www.example.com.", "type": "A", "ttl": 300, "enabled": true, "protected": false, "alias": null, "records": [{"value": "192.0.2.1"}], "filters": []}`,
 			want: []string{"www.example.com./A", "rename"},
@@ -154,6 +150,21 @@ func TestGetZoneRecordsAcceptsTXTAt(t *testing.T) {
 	}
 }
 
+// existingSet converts a record set the way GetZoneRecords does, so the
+// records carry the native set in Original.
+func existingSet(t *testing.T, dc *models.DomainConfig, name, rtype string, ttl uint32, values ...string) models.Records {
+	t.Helper()
+	rs := apiRecordSet{Name: name, Type: rtype, TTL: ttl, Enabled: true}
+	for _, v := range values {
+		rs.Records = append(rs.Records, apiRecord{Value: v})
+	}
+	recs, err := toRC(dc, rs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return recs
+}
+
 // request is one API call seen by the fake server.
 type request struct {
 	Method string
@@ -181,11 +192,10 @@ func TestGetZoneRecordsCorrections(t *testing.T) {
 		return rc
 	}
 
-	existing := models.Records{
-		rec("www", "A", "192.0.2.1", 300),
-		rec("ttl", "A", "192.0.2.5", 300),
-		rec("@", "MX", "10 mail.example.net.", 300),
-	}
+	var existing models.Records
+	existing = append(existing, existingSet(t, dc, "www", "A", 300, "192.0.2.1")...)
+	existing = append(existing, existingSet(t, dc, "ttl", "A", 300, "192.0.2.5")...)
+	existing = append(existing, existingSet(t, dc, "@", "MX", 300, "10 mail.example.net.")...)
 	dc.Records = models.Records{
 		rec("www", "A", "192.0.2.1", 300),
 		rec("www", "A", "192.0.2.2", 300),
@@ -238,12 +248,9 @@ func TestGetZoneRecordsCorrectionsReport(t *testing.T) {
 	dc := models.MustNewDomainConfig(testOrigin)
 	dc.KeepUnknown = true // NO_PURGE
 
-	existing, err := dc.NewRecordConfigParse("old", 300, "A", "192.0.2.9")
-	if err != nil {
-		t.Fatal(err)
-	}
+	existing := existingSet(t, dc, "old", "A", 300, "192.0.2.9")
 
-	corrections, count, err := p.GetZoneRecordsCorrections(dc, models.Records{existing})
+	corrections, count, err := p.GetZoneRecordsCorrections(dc, existing)
 	if err != nil {
 		t.Fatalf("GetZoneRecordsCorrections() error = %v", err)
 	}
@@ -310,17 +317,14 @@ func TestGetZoneRecordsCorrectionsLowersTTL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			seen = nil
 			dc := models.MustNewDomainConfig(testOrigin)
-			existing, err := dc.NewRecordConfigParse("big", tt.existingTTL, "A", "192.0.2.1")
-			if err != nil {
-				t.Fatal(err)
-			}
+			existing := existingSet(t, dc, "big", "A", tt.existingTTL, "192.0.2.1")
 			desired, err := dc.NewRecordConfigParse("big", 4294967295, "A", "192.0.2.1")
 			if err != nil {
 				t.Fatal(err)
 			}
 			dc.Records = models.Records{desired}
 
-			corrections, _, err := p.GetZoneRecordsCorrections(dc, models.Records{existing})
+			corrections, _, err := p.GetZoneRecordsCorrections(dc, existing)
 			if err != nil {
 				t.Fatalf("GetZoneRecordsCorrections() error = %v", err)
 			}
@@ -340,5 +344,55 @@ func TestGetZoneRecordsCorrectionsLowersTTL(t *testing.T) {
 				t.Errorf("requests = %+v, want one PUT with %s", seen, tt.wantBody)
 			}
 		})
+	}
+}
+
+func TestMixedCaseName(t *testing.T) {
+	var seen []request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			_, _ = w.Write([]byte(`{"results": [{"name": "Www", "type": "A", "ttl": 300, "enabled": true, "protected": false, "alias": null, "records": [{"value": "192.0.2.1"}], "filters": []},
+				{"name": "Old", "type": "TXT", "ttl": 300, "enabled": true, "protected": false, "alias": null, "records": [{"value": "\"x\""}], "filters": []}], "count": 2}`))
+			return
+		}
+		seen = append(seen, request{Method: r.Method, Path: r.URL.EscapedPath()})
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer server.Close()
+	p := testProvider(server.URL)
+
+	dc := models.MustNewDomainConfig(testOrigin)
+	existing, err := p.GetZoneRecords(dc)
+	if err != nil {
+		t.Fatalf("GetZoneRecords() error = %v", err)
+	}
+	if len(existing) != 2 || existing[0].GetLabel() != "www" || existing[1].GetLabel() != "old" {
+		t.Fatalf("GetZoneRecords() = %v, want the lowercased labels www and old", existing)
+	}
+
+	// The set is changed and deleted under the name the API knows it by.
+	desired, err := dc.NewRecordConfigParse("www", 300, "A", "192.0.2.2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dc.Records = models.Records{desired}
+	corrections, _, err := p.GetZoneRecordsCorrections(dc, existing)
+	if err != nil {
+		t.Fatalf("GetZoneRecordsCorrections() error = %v", err)
+	}
+	for _, c := range corrections {
+		if err := c.F(); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	want := []string{"DELETE /dns/zones/example.com/recordsets/Old/TXT", "PUT /dns/zones/example.com/recordsets/Www/A"}
+	var got []string
+	for _, r := range seen {
+		got = append(got, r.Method+" "+r.Path)
+	}
+	slices.Sort(got)
+	if !slices.Equal(got, want) {
+		t.Errorf("requests = %v, want %v", got, want)
 	}
 }

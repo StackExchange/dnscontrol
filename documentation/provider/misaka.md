@@ -140,11 +140,16 @@ names the record set when it finds one of these:
 * a record set without any values
 * a hostname value of `@` (Misaka.io publishes it as the literal name `\@.`;
   use the zone's full name instead)
-* a record set whose name contains upper-case letters or ends with a dot
-  (Misaka.io treats names as case-sensitive, DNSControl does not)
+* a record set whose name ends with a dot
 
 Change or remove the record set in the Misaka.io console, then run DNSControl
 again.
+
+### Record set names
+
+Misaka.io stores record set names exactly as they were entered. DNSControl
+reports a name such as `Www` in lower case, as `www`, and changes or deletes the
+record set under the name Misaka.io knows it by.
 
 ### TTL
 
