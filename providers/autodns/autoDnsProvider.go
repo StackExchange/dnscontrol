@@ -71,9 +71,9 @@ func init() {
 			"ALIAS",
 			"PTR",
 		},
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

@@ -62,12 +62,12 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
-		DocOfficiallySupported: providers.Can(),
-		PortalURL:              "https://dash.cloudflare.com/profile/api-tokens", // TODO: Verify
-		Notes:                  "Cloudflare supports two auth methods: a scoped API token (recommended) or the legacy global API key paired with the account email.",
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Cannot("Cloudflare will not work well in situations where it is not the only DNS server"),
+		OfficiallySupported: providers.Can(),
+		PortalURL:           "https://dash.cloudflare.com/profile/api-tokens", // TODO: Verify
+		Notes:               "Cloudflare supports two auth methods: a scoped API token (recommended) or the legacy global API key paired with the account email.",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",

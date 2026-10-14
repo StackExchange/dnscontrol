@@ -51,8 +51,8 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanConcur:              providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

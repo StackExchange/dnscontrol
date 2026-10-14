@@ -36,10 +36,10 @@ func init() {
 			"DNSKEY:Cannot:DNSSEC keys are managed by Openprovider",
 			"SOA:Cannot:The SOA record is managed by Openprovider",
 		},
-		CanAutoDNSSEC:          providers.Unimplemented("DNSSEC can be enabled outside DNSControl"),
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Cannot("Openprovider manages the authoritative NS records"),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Unimplemented("DNSSEC can be enabled outside DNSControl"),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot("Openprovider manages the authoritative NS records"),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

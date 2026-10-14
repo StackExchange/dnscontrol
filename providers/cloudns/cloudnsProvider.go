@@ -88,11 +88,11 @@ func init() {
 			"SOA:Unimplemented:Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet",
 			"DS:Cannot:Not supported for root, only for children",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

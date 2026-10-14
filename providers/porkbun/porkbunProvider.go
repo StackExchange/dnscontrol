@@ -113,11 +113,11 @@ func init() {
 			"URL",
 			"URL301",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

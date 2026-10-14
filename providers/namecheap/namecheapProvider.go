@@ -89,13 +89,10 @@ func init() {
 			"URL",
 			"URL301",
 		},
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Cannot("Doesn't allow control of apex NS records"),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("Requires domain registered through their service"),
-		},
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot("Doesn't allow control of apex NS records"),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Requires domain registered through their service",
 	})
 }
 

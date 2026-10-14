@@ -82,13 +82,10 @@ func init() {
 			"TLSA",
 			"DS:Cannot:Only supports DS records at the apex",
 		},
-		CanConcur:              providers.Can(),
-		CanUseDSForChildren:    providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations and links not expressible in SupportedTypes.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("Can only manage domains registered through their service"),
-		},
+		CanConcur:           providers.Can(),
+		CanUseDSForChildren: providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Can only manage domains registered through their service",
 	})
 }
 

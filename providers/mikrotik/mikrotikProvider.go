@@ -66,11 +66,11 @@ func init() {
 			"MIKROTIK_NXDOMAIN",
 			"CAA:Cannot",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Cannot(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 
