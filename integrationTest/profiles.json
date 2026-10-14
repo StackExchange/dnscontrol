@@ -284,6 +284,11 @@
     "password": "$MIKROTIK_PASSWORD",
     "username": "$MIKROTIK_USERNAME"
   },
+  "MISAKA": {
+    "TYPE": "MISAKA",
+    "api_token": "$MISAKA_API_TOKEN",
+    "domain": "$MISAKA_DOMAIN"
+  },
   "MITTWALD": {
     "TYPE": "MITTWALD",
     "api_token": "$MITTWALD_API_TOKEN",
