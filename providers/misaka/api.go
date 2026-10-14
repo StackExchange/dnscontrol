@@ -27,11 +27,13 @@ const (
 	// document (a Cloudflare block page, for example) goes into an error.
 	maxErrorBody = 512
 
-	// The API occasionally drops a connection in the middle of a request: the
-	// client sees "unexpected EOF" and no HTTP status. It happened in three
-	// of four full integration runs, on a GET, a PUT and a DELETE. A
-	// request that cannot create anything twice is sent once more after a
-	// short pause; a POST is not, because the first one may have been applied.
+	// The API occasionally drops a connection in the middle of a request.
+	// The client then sees "unexpected EOF" and no HTTP status, or, when the
+	// response is lost between Cloudflare and the origin, a 502 "The origin
+	// web server returned an invalid or incomplete response". Both happened
+	// during the integration runs, on GET, PUT and DELETE requests. A request
+	// that cannot create anything twice is sent once more after a short
+	// pause; a POST is not, because the first one may have been applied.
 	maxAttempts = 2
 	retryPause  = time.Second
 )
@@ -205,41 +207,41 @@ func (c *apiClient) doRequest(method, path string, query url.Values, body, resul
 		u += "?" + query.Encode()
 	}
 
-	var status int
-	var respBody []byte
 	for attempt := 1; ; attempt++ {
-		var err error
-		status, respBody, err = c.send(method, u, payload)
-		if err == nil {
-			// The first DELETE may have been applied before its connection
-			// was dropped.
+		status, respBody, err := c.send(method, u, payload)
+		if err == nil && status >= 400 {
+			// The first DELETE may have been applied before its response
+			// was lost.
 			if attempt > 1 && method == http.MethodDelete && status == http.StatusNotFound {
 				return nil
 			}
-			break
+			err = &apiError{
+				Method:     method,
+				Path:       path,
+				StatusCode: status,
+				Detail:     errorDetail(respBody),
+			}
 		}
-		if method == http.MethodPost || attempt == maxAttempts {
+		if err == nil {
+			if result == nil {
+				return nil
+			}
+			if err := json.Unmarshal(respBody, result); err != nil {
+				return fmt.Errorf("MISAKA: %s %s: decoding response: %w", method, path, err)
+			}
+			return nil
+		}
+
+		dropped := status == 0 || status == http.StatusBadGateway
+		if !dropped || method == http.MethodPost || attempt == maxAttempts {
 			return err
 		}
-		printer.Warnf("MISAKA: %v; retrying %s %s\n", err, method, path)
+		if status == 0 {
+			err = fmt.Errorf("MISAKA: %w", err)
+		}
+		printer.Warnf("%v; retrying %s %s\n", err, method, path)
 		c.sleep(retryPause)
 	}
-
-	if status >= 400 {
-		return &apiError{
-			Method:     method,
-			Path:       path,
-			StatusCode: status,
-			Detail:     errorDetail(respBody),
-		}
-	}
-	if result == nil {
-		return nil
-	}
-	if err := json.Unmarshal(respBody, result); err != nil {
-		return fmt.Errorf("MISAKA: %s %s: decoding response: %w", method, path, err)
-	}
-	return nil
 }
 
 // send sends one request and reads the whole response.

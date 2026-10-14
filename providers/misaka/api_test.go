@@ -190,13 +190,19 @@ func TestErrorDetailTruncatesRawBody(t *testing.T) {
 	}
 }
 
-// dropFirstServer closes the connection of its first request without
-// answering, and answers every later one with status and body.
-func dropFirstServer(t *testing.T, hits *int, status int, body string) *httptest.Server {
+// failFirstServer answers its first request with firstStatus, or closes the
+// connection without answering when firstStatus is 0, and every later one
+// with status and body.
+func failFirstServer(t *testing.T, hits *int, firstStatus, status int, body string) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		*hits++
 		if *hits == 1 {
+			if firstStatus != 0 {
+				w.WriteHeader(firstStatus)
+				_, _ = w.Write([]byte(`The origin web server returned an invalid or incomplete response to Cloudflare.`))
+				return
+			}
 			conn, _, err := w.(http.Hijacker).Hijack()
 			if err != nil {
 				t.Fatal(err)
@@ -211,19 +217,21 @@ func dropFirstServer(t *testing.T, hits *int, status int, body string) *httptest
 
 func TestDroppedConnection(t *testing.T) {
 	req := recordSetRequest{TTL: 300, Records: []apiRecord{{Value: "192.0.2.1"}}, Filters: []any{}}
+	getSet := func(c *apiClient) error { _, err := c.getRecordSet("example.com", "www", "A"); return err }
 	tests := []struct {
-		name     string
-		status   int
-		body     string
-		call     func(c *apiClient) error
-		wantHits int
-		wantErr  bool
+		name        string
+		firstStatus int // 0: the connection is dropped
+		status      int
+		body        string
+		call        func(c *apiClient) error
+		wantHits    int
+		wantErr     bool
 	}{
 		{
 			name:     "GET is sent again",
 			status:   http.StatusOK,
 			body:     `{"name": "www", "type": "A", "records": [{"value": "192.0.2.1"}]}`,
-			call:     func(c *apiClient) error { _, err := c.getRecordSet("example.com", "www", "A"); return err },
+			call:     getSet,
 			wantHits: 2,
 		},
 		{
@@ -248,12 +256,46 @@ func TestDroppedConnection(t *testing.T) {
 			wantHits: 1,
 			wantErr:  true,
 		},
+		{
+			name:        "GET after a 502 is sent again",
+			firstStatus: http.StatusBadGateway,
+			status:      http.StatusOK,
+			body:        `{"name": "www", "type": "A", "records": [{"value": "192.0.2.1"}]}`,
+			call:        getSet,
+			wantHits:    2,
+		},
+		{
+			name:        "DELETE after a 502 already applied",
+			firstStatus: http.StatusBadGateway,
+			status:      http.StatusNotFound,
+			body:        `{"detail": "RecordSet not found"}`,
+			call:        func(c *apiClient) error { return c.deleteRecordSet("example.com", "www", "A") },
+			wantHits:    2,
+		},
+		{
+			name:        "POST after a 502 is not sent again",
+			firstStatus: http.StatusBadGateway,
+			status:      http.StatusOK,
+			body:        `{}`,
+			call:        func(c *apiClient) error { return c.createRecordSet("example.com", "www", "A", req) },
+			wantHits:    1,
+			wantErr:     true,
+		},
+		{
+			name:        "other 5xx statuses are not retried",
+			firstStatus: http.StatusServiceUnavailable,
+			status:      http.StatusOK,
+			body:        `{}`,
+			call:        getSet,
+			wantHits:    1,
+			wantErr:     true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var hits int
-			server := dropFirstServer(t, &hits, tt.status, tt.body)
+			server := failFirstServer(t, &hits, tt.firstStatus, tt.status, tt.body)
 			defer server.Close()
 
 			c := newAPIClient(server.URL, "test-token")
