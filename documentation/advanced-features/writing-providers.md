@@ -348,7 +348,10 @@ An entry without a suffix means supported. Use `:Can`, `:Cannot`, or
 `[]string{"RFC", "CAA:Cannot"}`. Both negative statuses reject records;
 `Unimplemented` retains a distinct documentation status. `Basic8` and `RFC`
 do not take suffixes. Type names are case-insensitive; status suffixes use the
-spellings shown here.
+spellings shown here. Add `:reason` after a status to record an explanatory
+comment, for example `"SOA:Cannot:Vendor promises this in 2027"`. The reason
+must be nonempty and may contain colons. It is available through the provider's
+`DocumentationNote`; the generated feature tables currently show only status.
 
 Precedence is: exact entries, patterns with status suffixes, legacy `Features`,
 then unsuffixed patterns/categories. Conflicting statuses at the winning
@@ -360,6 +363,10 @@ compatibility input and can retain comments and links for individual types or
 interface-derived capabilities. A non-nil `Features` with nil `SupportedTypes`
 retains legacy capability validation. General `DS` support includes child DS records; `CanUseDSForChildren`
 can independently allow child DS records even with `DS:Cannot`.
+
+When an inline reason and a `Features` note describe the same status, the inline
+reason wins. A link from `Features` is retained because `SupportedTypes` has no
+link field.
 
 Registration retains selectors until the complete catalog is available.
 Importing `pkg/providers/_all` finalizes the registry; definition accessors also

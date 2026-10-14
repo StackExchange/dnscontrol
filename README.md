@@ -1,6 +1,7 @@
 # DNSControl
 
 [![DNSControl/dnscontrol/build](https://github.com/DNSControl/dnscontrol/actions/workflows/pr_build.yml/badge.svg)](https://github.com/DNSControl/dnscontrol/actions/workflows/pr_build.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/DNSControl/dnscontrol/badge)](https://scorecard.dev/viewer/?uri=github.com/DNSControl/dnscontrol)
 [![Google Group](https://img.shields.io/badge/google%20group-chat-green.svg)](https://groups.google.com/forum/#!forum/dnscontrol-discuss)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/DNSControl/dnscontrol)](https://pkg.go.dev/github.com/DNSControl/dnscontrol/v5)
 

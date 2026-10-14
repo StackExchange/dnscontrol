@@ -46,7 +46,7 @@ func init() {
 		Maintainer: "@rootful",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS",
+			"ALIAS:Can:Apex ALIAS is stored as CNAME; declare an apex CNAME instead",
 			"HTTPS",
 			"PTR",
 			"SVCB",
@@ -57,9 +57,8 @@ func init() {
 		CanUseDSForChildren:    providers.Cannot(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
+		// Features retains annotations and links not expressible in SupportedTypes.
 		Features: providers.DocumentationNotes{
-			providers.CanUseAlias:      providers.Can("Apex ALIAS is stored as CNAME; declare an apex CNAME instead"),
 			providers.DocCreateDomains: providers.Cannot("The domain must already exist in the Spaceship account"),
 		},
 	})

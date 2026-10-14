@@ -54,16 +54,12 @@ func init() {
 			"A",
 			"AAAA",
 			"CNAME",
-			"PTR:Cannot",
+			"PTR:Cannot:does not really support ARPA Zones and handles PTR records weirdly",
 		},
 		CanAutoDNSSEC:          providers.Cannot(),
 		CanConcur:              providers.Unimplemented(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUsePTR: providers.Cannot("does not really support ARPA Zones and handles PTR records weirdly"),
-		},
 	})
 }
 

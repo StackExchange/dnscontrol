@@ -84,7 +84,7 @@ func init() {
 			"Basic8",
 			"AKAMAICDN",
 			"AKAMAITLC",
-			"ALIAS",
+			"ALIAS:Can:Akamai Edge DNS does not directly support ALIAS. Apex record will be converted to AKAMAITLC, any others to CNAME.",
 			"LOC",
 			"NAPTR",
 			"PTR",
@@ -96,10 +96,6 @@ func init() {
 		CanUseDSForChildren:    providers.Can(),
 		DocDualHost:            providers.Can(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Can("Akamai Edge DNS does not directly support ALIAS. Apex record will be converted to AKAMAITLC, any others to CNAME."),
-		},
 	})
 }
 
