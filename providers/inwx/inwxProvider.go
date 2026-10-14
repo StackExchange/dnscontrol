@@ -85,22 +85,17 @@ func init() {
 			"ALIAS",
 			"HTTPS",
 			"NAPTR",
-			"PTR",
+			"PTR:Can:PTR records with empty targets are not supported",
 			"SSHFP",
 			"SVCB",
 			"TLSA",
-			"DS:Unimplemented",
+			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
 			"LOC:Unimplemented",
 		},
 		CanAutoDNSSEC:          providers.Can(),
 		CanConcur:              providers.Can(),
 		DocDualHost:            providers.Can(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDS:  providers.Unimplemented("DS records are only supported at the apex and require a different API call that hasn't been implemented yet."),
-			providers.CanUsePTR: providers.Can("PTR records with empty targets are not supported"),
-		},
 	})
 }
 

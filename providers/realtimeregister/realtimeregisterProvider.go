@@ -37,16 +37,13 @@ func init() {
 			"NAPTR",
 			"SSHFP",
 			"TLSA",
+			"DS:Cannot:Only for subdomains",
 		},
 		CanAutoDNSSEC:          providers.Can(),
 		CanConcur:              providers.Unimplemented(),
 		CanUseDSForChildren:    providers.Can(),
 		DocDualHost:            providers.Cannot(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDS: providers.Cannot("Only for subdomains"),
-		},
 	})
 }
 

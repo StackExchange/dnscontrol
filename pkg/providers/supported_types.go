@@ -45,6 +45,15 @@ func (d *Definition) compileTypeSelectors() error {
 			return fmt.Errorf("provider %q: malformed SupportedTypes selector %q", d.TypeName, source)
 		}
 		if suffixed {
+			var reason string
+			var hasReason bool
+			status, reason, hasReason = strings.Cut(status, ":")
+			if hasReason {
+				s.note.Comment = strings.TrimSpace(reason)
+				if s.note.Comment == "" {
+					return fmt.Errorf("provider %q: empty SupportedTypes reason in %q", d.TypeName, source)
+				}
+			}
 			switch status {
 			case "Can":
 			case "Cannot":
@@ -124,7 +133,12 @@ func (d *Definition) resolveType(typ privatetypes.RecordType) (DocumentationNote
 		previous, result = s.source, s.note
 	}
 	if legacy != nil && sameTypeStatus(result, *legacy) {
-		result = *legacy
+		if result.Comment == "" {
+			result.Comment = legacy.Comment
+		}
+		if result.Link == "" {
+			result.Link = legacy.Link
+		}
 	}
 	return result, nil
 }

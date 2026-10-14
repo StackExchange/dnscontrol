@@ -67,7 +67,8 @@ type Definition struct {
 
 	// SupportedTypes is an exhaustive declaration of record support. Nil means
 	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no support beyond Features.
+	// declares no support beyond Features. Entries may use TYPE:Status:Reason
+	// to attach a comment to Can, Cannot, or Unimplemented status.
 	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
 	SupportedTypes []string
 

@@ -86,7 +86,7 @@ func init() {
 		Maintainer: "@AsifNawaz-cnic",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS",
+			"ALIAS:Can:ALIAS records require an unsigned zone served through RCodeZero and cannot be used with DNSSEC-signed zones.",
 			"DHCID",
 			"DNAME",
 			"LOC",
@@ -96,22 +96,16 @@ func init() {
 			"SSHFP",
 			"SVCB",
 			"TLSA",
-			"DNSKEY:Unimplemented",
-			"DS:Unimplemented",
+			"DNSKEY:Unimplemented:Ask for this feature.",
+			"DS:Unimplemented:Ask for this feature.",
+			"HTTPS:Cannot:Managed via (Query|Add|Modify|Delete)WebFwd API call. Data not accessible via the resource records list. Hard to integrate this into DNSControl by that.",
+			"SOA:Cannot:The SOA record is managed on the DNSZone directly. Data only accessible via StatusDNSZone Request, not via the resource records list. Hard to integrate this into DNSControl by that.",
+			"SRV:Can:SRV records with empty targets are not supported",
 		},
 		CanAutoDNSSEC:          providers.Can(),
 		CanConcur:              providers.Can(),
 		DocDualHost:            providers.Can(),
 		DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
 		CanUseDSForChildren:    providers.Unimplemented("Ask for this feature."),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias:  providers.Can("ALIAS records require an unsigned zone served through RCodeZero and cannot be used with DNSSEC-signed zones."),
-			providers.CanUseDNSKEY: providers.Unimplemented("Ask for this feature."),
-			providers.CanUseDS:     providers.Unimplemented("Ask for this feature."),
-			providers.CanUseHTTPS:  providers.Cannot("Managed via (Query|Add|Modify|Delete)WebFwd API call. Data not accessible via the resource records list. Hard to integrate this into DNSControl by that."),
-			providers.CanUseSOA:    providers.Cannot("The SOA record is managed on the DNSZone directly. Data only accessible via StatusDNSZone Request, not via the resource records list. Hard to integrate this into DNSControl by that."),
-			providers.CanUseSRV:    providers.Can("SRV records with empty targets are not supported"),
-		},
 	})
 }

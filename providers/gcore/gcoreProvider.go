@@ -70,18 +70,14 @@ func init() {
 			"Basic8",
 			"ALIAS",
 			"HTTPS",
-			"PTR",
+			"PTR:Can:G-Core supports PTR records only in rDNS zones",
 			"SVCB",
+			"SRV:Can:G-Core doesn't support SRV records with empty targets",
 		},
 		CanAutoDNSSEC:          providers.Can(),
 		CanConcur:              providers.Can(),
 		DocDualHost:            providers.Can(),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUsePTR: providers.Can("G-Core supports PTR records only in rDNS zones"),
-			providers.CanUseSRV: providers.Can("G-Core doesn't support SRV records with empty targets"),
-		},
 	})
 }
 

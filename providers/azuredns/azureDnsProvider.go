@@ -140,14 +140,11 @@ func init() {
 			"Basic8",
 			"AZURE_ALIAS",
 			"PTR",
+			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
 		},
 		CanConcur:              providers.Can(),
 		DocDualHost:            providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 		DocOfficiallySupported: providers.Can(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Cannot("Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead."),
-		},
 	})
 }
 

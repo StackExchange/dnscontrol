@@ -61,17 +61,14 @@ func init() {
 			"DNAME",
 			"PTR",
 			"TLSA",
+			"DS:Cannot:DS at the zone apex belongs in the parent zone",
+			"SOA:Cannot:The SOA record is maintained by the platform",
 		},
 		CanAutoDNSSEC:          providers.Unimplemented("DNSSEC is switched on per zone outside of DNSControl"),
 		CanConcur:              providers.Unimplemented(),
 		CanUseDSForChildren:    providers.Can(),
 		DocDualHost:            providers.Cannot("The NS records at the zone apex cannot be changed through the API"),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDS:  providers.Cannot("DS at the zone apex belongs in the parent zone"),
-			providers.CanUseSOA: providers.Cannot("The SOA record is maintained by the platform"),
-		},
 	})
 }
 

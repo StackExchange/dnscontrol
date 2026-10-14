@@ -33,16 +33,13 @@ func init() {
 			"Basic8",
 			"TLSA",
 			"NS:Cannot",
+			"DNSKEY:Cannot:DNSSEC keys are managed by Openprovider",
+			"SOA:Cannot:The SOA record is managed by Openprovider",
 		},
 		CanAutoDNSSEC:          providers.Unimplemented("DNSSEC can be enabled outside DNSControl"),
 		CanConcur:              providers.Unimplemented(),
 		DocDualHost:            providers.Cannot("Openprovider manages the authoritative NS records"),
 		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.CanUseDNSKEY: providers.Cannot("DNSSEC keys are managed by Openprovider"),
-			providers.CanUseSOA:    providers.Cannot("The SOA record is managed by Openprovider"),
-		},
 	})
 }
 
