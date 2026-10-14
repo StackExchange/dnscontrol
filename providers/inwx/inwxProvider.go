@@ -92,10 +92,10 @@ func init() {
 			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
 			"LOC:Unimplemented",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

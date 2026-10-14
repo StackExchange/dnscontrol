@@ -57,16 +57,12 @@ func init() {
 			"Basic8",
 			"ALIAS",
 			"CAA:Cannot",
-			"PTR:Cannot:PTR records are not supported (See Link)",
+			"PTR:Cannot:PTR records are not supported (See Link): https://www.name.com/support/articles/205188508-Reverse-DNS-records",
 			"SRV:Can:SRV records with empty targets are not supported",
 		},
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations and links not expressible in SupportedTypes.
-		Features: providers.DocumentationNotes{
-			providers.CanUsePTR:        providers.Cannot("", "https://www.name.com/support/articles/205188508-Reverse-DNS-records"),
-			providers.DocCreateDomains: providers.Cannot("New domains require registration"),
-		},
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "New domains require registration",
 	})
 }

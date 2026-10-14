@@ -58,13 +58,10 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("Requires domain registered through Web UI"),
-		},
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Requires domain registered through Web UI",
 	})
 }
 

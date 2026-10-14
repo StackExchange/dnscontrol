@@ -108,10 +108,10 @@ func init() {
 			"SVCB:Cannot:Digital Ocean documents that this is not supported.",
 			"TLSA:Cannot:Digital Ocean documents that this is not supported.",
 		},
-		CanAutoDNSSEC:          providers.Cannot("Digital Ocean documents that this is not supported."),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot("Digital Ocean documents that this is not supported."),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

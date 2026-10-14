@@ -19,7 +19,7 @@ const lineZone = "example.com"
 const plainProviderType = "TEST_NO_IDENTITY"
 
 func init() {
-	providers.Register[*validationProvider](plainProviderType, providers.Definition{FriendlyName: "Identity test", Features: providers.DocumentationNotes{}})
+	providers.Register[*validationProvider](plainProviderType, providers.Definition{FriendlyName: "Identity test"})
 }
 
 // Four lines answer one name: two share a target, two point elsewhere.

@@ -138,10 +138,10 @@ func init() {
 			"NS:Cannot",
 			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
 		},
-		CanConcur:              providers.Can(),
-		CanAutoDNSSEC:          providers.Cannot(),
-		DocDualHost:            providers.Cannot("Private zones can not change NS records"),
-		DocOfficiallySupported: providers.Can(),
+		CanConcur:           providers.Can(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanDualHost:         providers.Cannot("Private zones can not change NS records"),
+		OfficiallySupported: providers.Can(),
 	})
 }
 

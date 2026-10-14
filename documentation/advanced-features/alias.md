@@ -13,8 +13,9 @@ A few notes:
 func init() {
     providers.Register[*cloudflareProvider]("CLOUDFLAREAPI", providers.Definition{
         FriendlyName: "Cloudflare",
-        Features: providers.DocumentationNotes{
-            providers.CanUseAlias: providers.Can(),
+        SupportedTypes: []string{
+            "Basic8",
+            "ALIAS",
         },
     })
 }

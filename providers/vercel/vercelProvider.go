@@ -49,15 +49,12 @@ func init() {
 			"ALIAS",
 			"HTTPS",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Unimplemented(),
-		CanUseDSForChildren:    providers.Cannot(),
-		DocDualHost:            providers.Cannot("Vercel does not allow sufficient control over the apex NS records"),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations for record types and interface-derived facts.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("Vercel requires a domain to be associated with a project before it can be added and managed"),
-		},
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Unimplemented(),
+		CanUseDSForChildren: providers.Cannot(),
+		CanDualHost:         providers.Cannot("Vercel does not allow sufficient control over the apex NS records"),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Vercel requires a domain to be associated with a project before it can be added and managed",
 	})
 }
 

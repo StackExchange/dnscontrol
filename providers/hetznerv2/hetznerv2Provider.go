@@ -38,10 +38,10 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		DocDualHost:            providers.Can(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CanDualHost:         providers.Can(),
 	})
 }
 

@@ -38,10 +38,10 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		DocDualHost:            providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CanDualHost:         providers.Can("Alibaba Cloud DNS allows full management of apex NS records"),
 	})
 }
 

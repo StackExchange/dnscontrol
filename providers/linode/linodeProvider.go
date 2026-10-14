@@ -107,9 +107,9 @@ func init() {
 			"CAA:Can:Linode doesn't support changing the CAA flag",
 			"SRV:Can:Linode requires non-zero priority",
 		},
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Cannot(),
-		DocOfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

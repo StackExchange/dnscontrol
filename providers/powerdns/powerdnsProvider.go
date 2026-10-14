@@ -16,9 +16,9 @@ func init() {
 		Maintainer:   "@jpbede",
 		SupportedTypes: []string{
 			"Basic8",
-			"ALIAS:Can:Needs to be enabled in PowerDNS first",
+			"ALIAS:Can:Needs to be enabled in PowerDNS first: https://doc.powerdns.com/authoritative/guides/alias.html",
 			"DHCID",
-			"DNAME:Can:Needs to be enabled in PowerDNS first",
+			"DNAME:Can:Needs to be enabled in PowerDNS first: https://doc.powerdns.com/authoritative/settings.html#setting-dname-processing",
 			"DNSKEY",
 			"DS",
 			"HTTPS",
@@ -30,18 +30,12 @@ func init() {
 			"SSHFP",
 			"SVCB",
 			"TLSA",
-			"LOC:Unimplemented:Normalization within the PowerDNS API seems to be buggy, so disabled",
+			"LOC:Unimplemented:Normalization within the PowerDNS API seems to be buggy, so disabled: https://github.com/PowerDNS/pdns/issues/10558",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Unimplemented(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains links not expressible in SupportedTypes.
-		Features: providers.DocumentationNotes{
-			providers.CanUseAlias: providers.Can("", "https://doc.powerdns.com/authoritative/guides/alias.html"),
-			providers.CanUseLOC:   providers.Unimplemented("", "https://github.com/PowerDNS/pdns/issues/10558"),
-			providers.CanUseDNAME: providers.Can("", "https://doc.powerdns.com/authoritative/settings.html#setting-dname-processing"),
-		},
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
 	})
 }
 

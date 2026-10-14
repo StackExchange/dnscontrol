@@ -55,14 +55,11 @@ func init() {
 			"Basic8",
 			"CAA:Cannot:Only premium service",
 		},
-		CanAutoDNSSEC:          providers.Cannot(),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot(),
-		// Features retains annotations and links not expressible in SupportedTypes.
-		Features: providers.DocumentationNotes{
-			providers.DocCreateDomains: providers.Cannot("Must be created via web UI"),
-		},
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot(),
+		CreateDomainsReason: "Must be created via web UI",
 	})
 }
 

@@ -96,11 +96,11 @@ const (
 	// DocCreateDomains means provider can add domains with the `dnscontrol create-domains` command.
 	DocCreateDomains
 
-	// DocDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider.
-	DocDualHost
+	// CanDualHost means provider allows full management of apex NS records, so we can safely dual-host with another provider.
+	CanDualHost
 
-	// DocOfficiallySupported means it is actively used and maintained by stack exchange.
-	DocOfficiallySupported
+	// OfficiallySupported means it is actively used and maintained by stack exchange.
+	OfficiallySupported
 
 	// CanUseAKAMAITLC indicates the provider supports the specific AKAMAITLC records that only the Akamai EdgeDns provider supports.
 	CanUseAKAMAITLC

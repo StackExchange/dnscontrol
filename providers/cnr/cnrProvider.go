@@ -102,10 +102,10 @@ func init() {
 			"SOA:Cannot:The SOA record is managed on the DNSZone directly. Data only accessible via StatusDNSZone Request, not via the resource records list. Hard to integrate this into DNSControl by that.",
 			"SRV:Can:SRV records with empty targets are not supported",
 		},
-		CanAutoDNSSEC:          providers.Can(),
-		CanConcur:              providers.Can(),
-		DocDualHost:            providers.Can(),
-		DocOfficiallySupported: providers.Cannot("Actively maintained provider module."),
-		CanUseDSForChildren:    providers.Unimplemented("Ask for this feature."),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		OfficiallySupported: providers.Cannot("Actively maintained provider module."),
+		CanUseDSForChildren: providers.Unimplemented("Ask for this feature."),
 	})
 }
