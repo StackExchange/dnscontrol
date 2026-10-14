@@ -35,12 +35,11 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can(),
 		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
 		CanDualHost:         providers.Cannot("DNSimple does not allow sufficient control over the apex NS records"),
-		OfficiallySupported: providers.Cannot(),
-		PortalURL:           "https://dnsimple.com/user",
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "token",
@@ -55,6 +54,7 @@ func init() {
 				Help:  "Override the API base URL (for example, the sandbox URL https://api.sandbox.dnsimple.com). Leave blank to use the production endpoint.",
 			},
 		},
+		PortalURL: "https://dnsimple.com/user",
 	})
 }
 

@@ -91,7 +91,13 @@ var defaultNameServerNames = []string{
 func init() {
 	providers.Register[*huaweicloudProvider]("HUAWEICLOUD", providers.Definition{
 		FriendlyName: "Huawei Cloud DNS",
-		PortalURL:    "https://console-intl.huaweicloud.com/iam/?locale=en-us#/iam/users",
+		Maintainer:   "@huihuimoe",
+		SupportedTypes: []string{
+			"Basic8",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanDualHost:         providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "KeyId",
@@ -113,14 +119,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer:     "@huihuimoe",
+		PortalURL:      "https://console-intl.huaweicloud.com/iam/?locale=en-us#/iam/users",
 		RecordIdentity: genComparable,
-		SupportedTypes: []string{
-			"Basic8",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

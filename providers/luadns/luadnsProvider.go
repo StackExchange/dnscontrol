@@ -28,7 +28,19 @@ Info required in `creds.json`:
 func init() {
 	providers.Register[*luadnsProvider]("LUADNS", providers.Definition{
 		FriendlyName: "LuaDNS",
-		PortalURL:    "https://app.luadns.com/users/api_keys",
+		Maintainer:   "@riku22",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"OPENPGPKEY",
+			"PTR",
+			"SSHFP",
+			"TLSA",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "email",
@@ -44,19 +56,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@riku22",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"OPENPGPKEY",
-			"PTR",
-			"SSHFP",
-			"TLSA",
-		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://app.luadns.com/users/api_keys",
 	})
 }
 

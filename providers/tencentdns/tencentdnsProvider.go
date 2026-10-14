@@ -25,7 +25,13 @@ const (
 func init() {
 	providers.Register[*tencentdnsProvider]("TENCENTDNS", providers.Definition{
 		FriendlyName: "Tencent Cloud DNS",
-		PortalURL:    "https://console.intl.cloud.tencent.com/cam/capi",
+		Maintainer:   "@cylonchau",
+		SupportedTypes: []string{
+			"Basic8",
+		},
+		OfficiallySupported: providers.Cannot(),
+		DefaultTTL:          defaultTTL,
+		CanDualHost:         providers.Can("Tencent Cloud allows full management of apex NS records"),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "secret_id",
@@ -54,14 +60,8 @@ func init() {
 				Default: "cn",
 			},
 		},
-		Maintainer:     "@cylonchau",
-		DefaultTTL:     defaultTTL,
+		PortalURL:      "https://console.intl.cloud.tencent.com/cam/capi",
 		RecordIdentity: recordIdentity,
-		SupportedTypes: []string{
-			"Basic8",
-		},
-		CanDualHost:         providers.Can("Tencent Cloud allows full management of apex NS records"),
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

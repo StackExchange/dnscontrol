@@ -41,8 +41,25 @@ func (c *cloudnsProvider) Initialize(m map[string]string, _ json.RawMessage, opt
 func init() {
 	providers.Register[*cloudnsProvider]("CLOUDNS", providers.Definition{
 		FriendlyName: "ClouDNS",
-		PortalURL:    "https://www.cloudns.net/api-settings/",
-		Notes:        "ClouDNS supports two auth methods: a main API user (auth-id) or a sub-user API account (sub-auth-id). Both use the same auth-password.",
+		Maintainer:   "@pragmaton",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"CLOUDNS_WR",
+			"DNAME",
+			"LOC",
+			"NAPTR",
+			"PTR",
+			"SSHFP",
+			"TLSA",
+			"SOA:Unimplemented:Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet",
+			"DS:Cannot:Not supported for root, only for children",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Can(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Can(),
+		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",
@@ -74,25 +91,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@pragmaton",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"CLOUDNS_WR",
-			"DNAME",
-			"LOC",
-			"NAPTR",
-			"PTR",
-			"SSHFP",
-			"TLSA",
-			"SOA:Unimplemented:Supported by cloudns at a separate API endpoint (/dns/modify-soa.json), not implemented yet",
-			"DS:Cannot:Not supported for root, only for children",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://www.cloudns.net/api-settings/",
+		Notes:     "ClouDNS supports two auth methods: a main API user (auth-id) or a sub-user API account (sub-auth-id). Both use the same auth-password.",
 	})
 }
 

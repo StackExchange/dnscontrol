@@ -169,10 +169,10 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can("Just warn when DNSSEC is requested but no RRSIG is found in the AXFR or warn when DNSSEC is not requested but RRSIG are found in the AXFR."),
 		CanConcur:           providers.Can(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

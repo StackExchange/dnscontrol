@@ -66,8 +66,19 @@ func (n *transipProvider) Initialize(m map[string]string, _ json.RawMessage, opt
 func init() {
 	providers.Register[*transipProvider]("TRANSIP", providers.Definition{
 		FriendlyName: "TransIP",
-		PortalURL:    "https://www.transip.nl/cp/account/api/",
-		Notes:        "TransIP supports two auth methods: a short lived access token, or an account name paired with a long lived private key.",
+		Maintainer:   "@blackshadev",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"NAPTR",
+			"SSHFP",
+			"TLSA",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Can(),
+		CanDualHost:         providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "_authMethod",
@@ -101,19 +112,8 @@ func init() {
 				ShowIf:    map[string]string{"_authMethod": "Account name + private key"},
 			},
 		},
-		Maintainer: "@blackshadev",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"NAPTR",
-			"SSHFP",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://www.transip.nl/cp/account/api/",
+		Notes:     "TransIP supports two auth methods: a short lived access token, or an account name paired with a long lived private key.",
 	})
 }
 

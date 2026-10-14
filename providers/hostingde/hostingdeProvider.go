@@ -21,17 +21,7 @@ var defaultNameservers = []string{"ns1.hosting.de", "ns2.hosting.de", "ns3.hosti
 func init() {
 	providers.Register[*hostingdeProvider]("HOSTINGDE", providers.Definition{
 		FriendlyName: "hosting.de",
-		PortalURL:    "https://secure.hosting.de/",
-		CredFields: []providers.CredsField{
-			{
-				Key:      "authToken",
-				Label:    "Auth token",
-				Help:     "Your hosting.de API auth token.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@juliusrickert",
+		Maintainer:   "@juliusrickert",
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS",
@@ -41,10 +31,20 @@ func init() {
 			"SSHFP",
 			"TLSA",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanAutoDNSSEC:       providers.Can(),
 		CanConcur:           providers.Unimplemented(),
 		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "authToken",
+				Label:    "Auth token",
+				Help:     "Your hosting.de API auth token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		PortalURL: "https://secure.hosting.de/",
 	})
 }
 

@@ -63,9 +63,9 @@ func init() {
 			"NS:Cannot",
 			"SRV:Can:SRV records with empty targets are not supported",
 		},
+		OfficiallySupported: providers.Cannot(),
 		CanConcur:           providers.Cannot(),
 		CanDualHost:         providers.Cannot("Exoscale does not allow sufficient control over the apex NS records"),
-		OfficiallySupported: providers.Cannot(),
 	})
 }
 

@@ -15,7 +15,17 @@ import (
 func init() {
 	providers.Register[*fortigateProvider]("FORTIGATE", providers.Definition{
 		FriendlyName: "FortiGate",
-		PortalURL:    "https://docs.fortinet.com/", // TODO: Verify
+		Maintainer:   "@KlettIT",
+		SupportedTypes: []string{
+			"A",
+			"AAAA",
+			"CNAME",
+			"PTR:Cannot:does not really support ARPA Zones and handles PTR records weirdly",
+		},
+		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC:       providers.Cannot(),
+		CanConcur:           providers.Unimplemented(),
+		CanDualHost:         providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "host",
@@ -49,17 +59,7 @@ func init() {
 				ConfirmValue: "true",
 			},
 		},
-		Maintainer: "@KlettIT",
-		SupportedTypes: []string{
-			"A",
-			"AAAA",
-			"CNAME",
-			"PTR:Cannot:does not really support ARPA Zones and handles PTR records weirdly",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://docs.fortinet.com/", // TODO: Verify
 	})
 }
 
