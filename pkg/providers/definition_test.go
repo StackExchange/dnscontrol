@@ -196,18 +196,18 @@ func TestDefinitionPointersAndMetadata(t *testing.T) {
 	}
 	if def.TypeName != "ZZZ" || def.ImplementationType != reflect.TypeFor[*definitionDNS]() ||
 		def.Aliases[0] != "ALIAS" || def.CredFields[0].Choices[0] != "one" || def.CredFields[0].ShowIf["mode"] != "one" ||
-		def.DerivedFeatures[CanUseCAA].Comment != "CAA" || def.DerivedFeatures[CanUseCAA].Link != "https://example.com/docs" ||
+		def.RecordTypeSupport("CAA").Comment != "CAA" || def.RecordTypeSupport("CAA").Link != "https://example.com/docs" ||
 		def.CanConcur.Comment != "explicit" || def.CanAutoDNSSEC.Comment != "pending" ||
 		!def.CanUseDSForChildren.HasFeature || def.CanDualHost.HasFeature || !def.OfficiallySupported.HasFeature {
 		t.Fatalf("registration did not retain supplied metadata: %+v", def)
 	}
-	if def.DerivedFeatures[CanGetZones].Comment != "zone listing unavailable" ||
-		def.DerivedFeatures[DocCreateDomains].Comment != "zone creation unavailable" {
-		t.Fatal("interface reasons were not derived")
+	if def.CanGetZonesReason != "zone listing unavailable" ||
+		def.CreateDomainsReason != "zone creation unavailable" {
+		t.Fatal("interface reasons were not retained")
 	}
-	if ProviderHasCapability("ALIAS", CanConcur) || !ProviderHasCapability("ALIAS", CanUseCAA) ||
-		ProviderHasCapability("ALIAS", CanAutoDNSSEC) || !def.DerivedFeatures[CanAutoDNSSEC].Unimplemented ||
-		ProviderHasCapability("ALIAS", CanGetZones) || ProviderHasCapability("ALIAS", DocCreateDomains) {
+	if def.CanConcur.HasFeature || !def.RecordTypeSupport("CAA").HasFeature ||
+		def.CanAutoDNSSEC.HasFeature || !def.CanAutoDNSSEC.Unimplemented ||
+		def.CanGetZones || def.DocCreateDomains {
 		t.Fatal("capabilities did not match their declarations or interfaces")
 	}
 	if GetDefaultTTL("ALIAS") != 300 || GetRecordIdentity("ALIAS")(&models.RecordConfig{}) != "identity" {
@@ -296,13 +296,8 @@ func TestDefinitionCapabilityDefaults(t *testing.T) {
 		def.CanDualHost == nil || !def.CanDualHost.HasFeature {
 		t.Fatalf("registration did not apply capability defaults: %+v", def)
 	}
-	for capability, want := range map[Capability]bool{
-		CanConcur: true, CanDualHost: true,
-		CanAutoDNSSEC: false, OfficiallySupported: false,
-	} {
-		if got := ProviderHasCapability("DEFAULTS", capability); got != want {
-			t.Errorf("%s = %t, want %t", capability, got, want)
-		}
+	if def.OfficiallySupported != nil {
+		t.Fatal("official support should remain unset by default")
 	}
 	assertRegistrationPanics(t, "CanConcur cannot be Unimplemented", func() {
 		Register[*definitionDNS]("INVALID", Definition{

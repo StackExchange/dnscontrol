@@ -534,17 +534,22 @@ func splitConcurrent(domains []*models.DomainConfig, filter string) (serial []*m
 // allConcur returns true if its registrar and all DNS providers support
 // concurrency.  Otherwise false is returned.
 func allConcur(dc *models.DomainConfig) bool {
-	if !providers.ProviderHasCapability(dc.RegistrarInstance.ProviderType, providers.CanConcur) {
+	if !providerCanConcur(dc.RegistrarInstance.ProviderType) {
 		// fmt.Printf("WHY? %q: %+v\n", dc.Name, dc.RegistrarInstance)
 		return false
 	}
 	for _, p := range dc.DNSProviderInstances {
-		if !providers.ProviderHasCapability(p.ProviderType, providers.CanConcur) {
+		if !providerCanConcur(p.ProviderType) {
 			// fmt.Printf("WHY? %q: %+v\n", dc.Name, p)
 			return false
 		}
 	}
 	return true
+}
+
+func providerCanConcur(name string) bool {
+	def, ok := providers.GetDefinition(name)
+	return ok && def.CanConcur.HasFeature
 }
 
 // optimizeOrder returns a list of DomainConfigs so that they gather fastest.
