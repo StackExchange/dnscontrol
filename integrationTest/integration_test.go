@@ -498,6 +498,7 @@ func makeTests() []*TestGroup {
 				"GANDI_V5",          // "Gandi does not support changing apex NS records. Ignoring ns1.foo.com."
 				"GIDINET",           // "GIDINET does not support modifying NS records at apex."
 				"JOKER",             // Not supported via the Zone API.
+				"MISAKA",            // Apex NS records are managed by Misaka.io.
 				"NAMECHEAP",         // cannot handle single NS at apex but does handle dual
 				"NAMEDOTCOM",        // "Ignores @ for NS records"
 				"NETCUP",            // NS records not currently supported.

@@ -50,6 +50,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v5/providers/loopia"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/luadns"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/mikrotik"
+	_ "github.com/DNSControl/dnscontrol/v5/providers/misaka"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/mittwald"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/mythicbeasts"
 	_ "github.com/DNSControl/dnscontrol/v5/providers/namecheap"

@@ -66,6 +66,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ❌ | ✅ | ❌ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ✅ | ❌ |
+| [`MISAKA`](misaka.md) | ❌ | ✅ | ❌ |
 | [`MITTWALD`](mittwald.md) | ❌ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ✅ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ✅ | ✅ |
@@ -147,6 +148,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ✅ | ✅ | ❌ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ✅ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❌ | ✅ |
+| [`MISAKA`](misaka.md) | ✅ | ❌ | ✅ | ✅ |
 | [`MITTWALD`](mittwald.md) | ❌ | ❌ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ✅ | ❌ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ✅ |
@@ -228,6 +230,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| [`MISAKA`](misaka.md) | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ |
 | [`MITTWALD`](mittwald.md) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -309,6 +312,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ❌ | ✅ | ✅ | ❌ |
 | [`LUADNS`](luadns.md) | ❌ | ❌ | ✅ | ❌ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ✅ | ❌ |
+| [`MISAKA`](misaka.md) | ❌ | ❌ | ✅ | ❌ |
 | [`MITTWALD`](mittwald.md) | ❌ | ❌ | ✅ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❌ | ✅ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ❌ | ✅ | ❌ |
@@ -390,6 +394,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | [`LUADNS`](luadns.md) | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| [`MISAKA`](misaka.md) | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | [`MITTWALD`](mittwald.md) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | [`NAMECHEAP`](namecheap.md) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -471,6 +476,7 @@ Jump to a table:
 | [`LOOPIA`](loopia.md) | ❌ | ❌ | ❌ |
 | [`LUADNS`](luadns.md) | ❌ | ❌ | ❌ |
 | [`MIKROTIK`](mikrotik.md) | ❌ | ❌ | ❌ |
+| [`MISAKA`](misaka.md) | ❔ | ❌ | ❌ |
 | [`MITTWALD`](mittwald.md) | ❌ | ❌ | ❌ |
 | [`MYTHICBEASTS`](mythicbeasts.md) | ❌ | ❌ | ❌ |
 | [`NAMECHEAP`](namecheap.md) | ❌ | ❌ | ❌ |
@@ -577,6 +583,7 @@ Providers in this category and their maintainers are:
 |[`LOOPIA`](loopia.md)|@systemcrash|
 |[`LUADNS`](luadns.md)|@riku22|
 |[`MIKROTIK`](mikrotik.md)|@hedger|
+|[`MISAKA`](misaka.md)|@ZeroClover|
 |[`NAMECHEAP`](namecheap.md)|@willpower232|
 |[`NETCUP`](netcup.md)|@kordianbruck|
 |[`NETLIFY`](netlify.md)|@SphericalKat|
