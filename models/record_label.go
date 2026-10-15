@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"net/netip"
 	"regexp"
 	"strings"
 
@@ -124,6 +125,14 @@ func (dc *DomainConfig) LabelFromFQDNWithDot(name string) string {
 	return newName
 }
 
+// isIPv6Label reports whether label is a bare IPv6 address, which is a
+// permitted way to write a PTR label in an ip6.arpa zone. Parsing rather than
+// looking for a colon keeps a label such as "foo:bar" out of this branch.
+func isIPv6Label(label string) bool {
+	addr, err := netip.ParseAddr(label)
+	return err == nil && addr.Is6()
+}
+
 // LabelFromDnsconfigjs processes labels from `dnsconfig.js`.
 //
 // nameRaw can be any string that is acceptable in dnsconfig.js, including "@", "foo", "foo.bar", "foo.bar.baz.", etc.
@@ -161,9 +170,10 @@ func (dc *DomainConfig) LabelFromDnsconfigjs(rawLabel, subdomainASCII string) (s
 	case ipv4LabelRe.MatchString(labelASCII):
 		// 1.2.3.4 sub -> 1.2.3.4 (leave it alone)
 		return labelASCII, nil
-	case strings.HasSuffix(dc.Name, ".ip6.arpa"):
-		return subdomainASCII, nil
-	case strings.HasSuffix(labelASCII, ".in-addr.arpa"):
+	case strings.HasSuffix(dc.Name, ".ip6.arpa") && isIPv6Label(labelASCII):
+		// 2001:db8::1 sub -> 2001:db8::1 (leave it alone)
+		return labelASCII, nil
+	case strings.HasSuffix(labelASCII, ".in-addr.arpa"), strings.HasSuffix(labelASCII, ".ip6.arpa"):
 		// 4.3.2.1.in-addr.arpa -> 4.3 (strip the subdomain suffix)
 		if strings.HasSuffix(labelASCII, subdomainASCII) {
 			return labelASCII[:len(labelASCII)-len(subdomainASCII)-1], nil

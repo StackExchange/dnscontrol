@@ -74,9 +74,22 @@
           "comparablev3": "abcd.example.com.",
           "filepos": "[line:15:5]",
           "name": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
-          "name_unicode": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "name_unicode": "2001:db8::abcd",
           "rdata": {
             "Ptr": "abcd.example.com."
+          },
+          "subdomain": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "ttl": 300,
+          "type": "PTR",
+          "typenum": 12
+        },
+        {
+          "comparablev3": "abce.example.com.",
+          "filepos": "[line:16:5]",
+          "name": "e.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
+          "name_unicode": "2001:db8::abce",
+          "rdata": {
+            "Ptr": "abce.example.com."
           },
           "subdomain": "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0",
           "ttl": 300,
