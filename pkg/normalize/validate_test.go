@@ -490,13 +490,37 @@ const (
 )
 
 func init() {
-	for name, features := range map[string]providers.DocumentationNotes{
-		ProviderNoDS:        {},
-		ProviderFullDS:      {providers.CanUseDS: providers.Can()},
-		ProviderChildDSOnly: {providers.CanUseDSForChildren: providers.Can()},
-		ProviderBothDSCaps:  {providers.CanUseDS: providers.Can(), providers.CanUseDSForChildren: providers.Can()},
+	for name, definition := range map[string]providers.Definition{
+		ProviderNoDS: {
+			FriendlyName: ProviderNoDS,
+			SupportedTypes: []string{
+				"Basic8",
+			},
+		},
+		ProviderFullDS: {
+			FriendlyName: ProviderFullDS,
+			SupportedTypes: []string{
+				"Basic8",
+				"DS",
+			},
+		},
+		ProviderChildDSOnly: {
+			FriendlyName: ProviderChildDSOnly,
+			SupportedTypes: []string{
+				"Basic8",
+			},
+			CanUseDSForChildren: providers.Can(),
+		},
+		ProviderBothDSCaps: {
+			FriendlyName: ProviderBothDSCaps,
+			SupportedTypes: []string{
+				"Basic8",
+				"DS",
+			},
+			CanUseDSForChildren: providers.Can(),
+		},
 	} {
-		providers.Register[*validationProvider](name, providers.Definition{FriendlyName: name, Features: features})
+		providers.Register[*validationProvider](name, definition)
 	}
 }
 

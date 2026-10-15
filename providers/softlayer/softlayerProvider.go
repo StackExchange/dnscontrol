@@ -31,7 +31,6 @@ func init() {
 			"Basic8",
 			"CAA:Cannot",
 		},
-		CanConcur: providers.Unimplemented(),
 	})
 }
 

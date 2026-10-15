@@ -17,9 +17,6 @@ func TestAllProvidersUseDefinitions(t *testing.T) {
 		if def.SupportedTypes == nil {
 			t.Errorf("%s: missing exhaustive SupportedTypes declaration", def.TypeName)
 		}
-		if len(def.Features) != 0 {
-			t.Errorf("%s: built-in provider still uses legacy Features", def.TypeName)
-		}
 		if !def.Kind.Has(providers.KindDNS) {
 			if len(def.SupportedTypes) != 0 {
 				t.Errorf("%s: registrar-only provider declares record support", def.TypeName)
@@ -43,14 +40,16 @@ func TestMigratedZoneCapabilities(t *testing.T) {
 	// These old feature flags disagreed with the operations implemented by
 	// the provider. Interface discovery must describe the usable operations.
 	for _, name := range []string{"DNSCALE", "DYNU", "LINODE", "MYTHICBEASTS", "OPENWRT"} {
-		if providers.ProviderHasCapability(name, providers.CanGetZones) {
+		def, _ := providers.GetDefinition(name)
+		if def.CanGetZones {
 			t.Errorf("%s advertises zone listing without ListZones", name)
 		}
 	}
 	for name, want := range map[string]bool{
 		"AUTODNS": true, "EXOSCALE": true, "AZURE_PRIVATE_DNS": false, "MIKROTIK": false,
 	} {
-		if got := providers.ProviderHasCapability(name, providers.DocCreateDomains); got != want {
+		def, _ := providers.GetDefinition(name)
+		if got := def.DocCreateDomains; got != want {
 			t.Errorf("%s: zone creation = %v, want %v", name, got, want)
 		}
 	}

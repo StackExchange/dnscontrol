@@ -150,7 +150,7 @@ func matrixData() *FeatureMatrix {
 		OfficialSupport          = "[Official Support](../provider/index.md#providers-with-official-support)" // vs. community supported
 		ProviderDNSProvider      = "DNS Provider"
 		ProviderRegistrar        = "Registrar"
-		ProviderThreadSafe       = "[Concurrency Verified](../advanced-features/concurrency-verified.md)"
+		ProviderThreadSafe       = "[Concurrent fetching](../advanced-features/concurrency-verified.md)"
 		DomainModifierAlias      = "[`ALIAS`](../language-reference/domain-modifiers/ALIAS.md)"
 		DomainModifierCaa        = "[`CAA`](../language-reference/domain-modifiers/CAA.md)"
 		DomainModifierCsync      = "[`CSYNC`](../language-reference/domain-modifiers/CSYNC.md)"
@@ -233,28 +233,9 @@ func matrixData() *FeatureMatrix {
 	for _, def := range publicDefinitions() {
 		providerName := def.TypeName
 		featureMap := FeatureMap{}
-		providerNotes := def.DerivedFeatures
-		if providerNotes == nil {
-			providerNotes = providers.DocumentationNotes{}
-		}
-
-		setCapability := func(
-			featureName string,
-			capability providers.Capability,
-		) {
-			if providerNotes[capability] != nil {
-				featureMap[featureName] = providerNotes[capability]
-				return
-			}
-			featureMap.SetSimple(
-				featureName,
-				true,
-				func() bool { return providers.ProviderHasCapability(providerName, capability) },
-			)
-		}
 
 		// setRecordType reports support for a record type from the provider's
-		// SupportedTypes (including any notes from legacy Features).
+		// SupportedTypes, including reason and link annotations.
 		setRecordType := func(
 			featureName string,
 			typeName string,
@@ -263,25 +244,11 @@ func matrixData() *FeatureMatrix {
 			featureMap[featureName] = &note
 		}
 
-		setDocumentation := func(
-			featureName string,
-			capability providers.Capability,
-			defaultNo bool,
-		) {
-			if providerNotes[capability] != nil {
-				featureMap[featureName] = providerNotes[capability]
-			} else if defaultNo {
-				featureMap[featureName] = &providers.DocumentationNote{
-					HasFeature: false,
-				}
-			}
+		if def.OfficiallySupported != nil {
+			featureMap[OfficialSupport] = def.OfficiallySupported
+		} else {
+			featureMap[OfficialSupport] = providers.Cannot()
 		}
-
-		setDocumentation(
-			OfficialSupport,
-			providers.OfficiallySupported,
-			true,
-		)
 		featureMap.SetSimple(
 			ProviderDNSProvider,
 			false,
@@ -292,15 +259,9 @@ func matrixData() *FeatureMatrix {
 			false,
 			func() bool { return def.Kind.Has(providers.KindRegistrar) },
 		)
-		setCapability(
-			ProviderThreadSafe,
-			providers.CanConcur,
-		)
+		featureMap[ProviderThreadSafe] = def.CanConcur
 		setRecordType(DomainModifierAlias, "ALIAS")
-		setCapability(
-			DomainModifierDnssec,
-			providers.CanAutoDNSSEC,
-		)
+		featureMap[DomainModifierDnssec] = def.CanAutoDNSSEC
 		setRecordType(DomainModifierCaa, "CAA")
 		setRecordType(DomainModifierCsync, "CSYNC")
 		setRecordType(DomainModifierDhcid, "DHCID")
@@ -319,32 +280,9 @@ func matrixData() *FeatureMatrix {
 		setRecordType(DomainModifierSshfp, "SSHFP")
 		setRecordType(DomainModifierSvcb, "SVCB")
 		setRecordType(DomainModifierTlsa, "TLSA")
-		setCapability(
-			GetZones,
-			providers.CanGetZones,
-		)
-		setDocumentation(
-			CreateDomains,
-			providers.DocCreateDomains,
-			true,
-		)
-		setDocumentation(
-			DualHost,
-			providers.CanDualHost,
-			false,
-		)
-
-		//		// no purge is a freaky double negative
-		//		cantUseNOPURGE := providers.CantUseNOPURGE
-		//		if providerNotes[cantUseNOPURGE] != nil {
-		//			featureMap[NoPurge] = providerNotes[cantUseNOPURGE]
-		//		} else {
-		//			featureMap.SetSimple(
-		//				NoPurge,
-		//				false,
-		//				func() bool { return !providers.ProviderHasCapability(providerName, cantUseNOPURGE) },
-		//			)
-		//		}
+		featureMap[GetZones] = &providers.DocumentationNote{HasFeature: def.CanGetZones, Comment: def.CanGetZonesReason}
+		featureMap[CreateDomains] = &providers.DocumentationNote{HasFeature: def.DocCreateDomains, Comment: def.CreateDomainsReason}
+		featureMap[DualHost] = def.CanDualHost
 		matrix.Providers[providerName] = featureMap
 	}
 	return matrix

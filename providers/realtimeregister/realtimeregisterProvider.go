@@ -40,10 +40,8 @@ func init() {
 			"DS:Cannot:Only for subdomains",
 		},
 		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Can(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanUseDSForChildren: providers.Can(),
 	})
 }
 

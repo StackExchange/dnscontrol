@@ -22,10 +22,6 @@ import (
 func init() {
 	providers.Register[*dynuProvider]("DYNU", providers.Definition{
 		FriendlyName: "Dynu",
-		PortalURL:    "https://www.dynu.com/en-US/ControlPanel",
-		CredFields: []providers.CredsField{
-			{Key: "api_key", Label: "API Key", Required: true, Secret: true},
-		},
 		SupportedTypes: []string{
 			"Basic8",
 			"DHCID",
@@ -41,8 +37,11 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanConcur:     providers.Cannot(),
-		CanAutoDNSSEC: providers.Cannot(),
+		CanConcur: providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{Key: "api_key", Label: "API Key", Required: true, Secret: true},
+		},
+		PortalURL: "https://www.dynu.com/en-US/ControlPanel",
 	})
 }
 

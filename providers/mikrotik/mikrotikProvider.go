@@ -36,7 +36,17 @@ forwarding), MIKROTIK_NXDOMAIN, and MIKROTIK_FORWARDER.
 func init() {
 	providers.Register[*mikrotikProvider]("MIKROTIK", providers.Definition{
 		FriendlyName: "MikroTik RouterOS",
-		PortalURL:    "", // No portal; managed on-device
+		Maintainer:   "@hedger",
+		SupportedTypes: []string{
+			"Basic8",
+			"MIKROTIK_FORWARDER",
+			"MIKROTIK_FWD",
+			"MIKROTIK_NXDOMAIN",
+			"CAA:Cannot",
+		},
+		CanConcur:           providers.Cannot(),
+		CanDualHost:         providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "host",
@@ -58,19 +68,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@hedger",
-		SupportedTypes: []string{
-			"Basic8",
-			"MIKROTIK_FORWARDER",
-			"MIKROTIK_FWD",
-			"MIKROTIK_NXDOMAIN",
-			"CAA:Cannot",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Cannot(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "", // No portal; managed on-device
 	})
 }
 

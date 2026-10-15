@@ -26,7 +26,6 @@ func init() {
 		FriendlyName:   "Internet.bs",
 		Maintainer:     "@pragmaton",
 		SupportedTypes: []string{},
-		CanConcur:      providers.Unimplemented(),
 	})
 }
 

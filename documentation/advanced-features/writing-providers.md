@@ -357,20 +357,13 @@ must be the last space in the string. The preceding text becomes the
 `DocumentationNote.Comment` and the URL becomes its `Link`; generated feature
 tables currently show only status.
 
-Precedence is: exact entries, patterns with status suffixes, legacy `Features`,
-then unsuffixed patterns/categories. Conflicting statuses at the winning
+Precedence is: exact entries, patterns with status suffixes, then unsuffixed
+patterns/categories. Conflicting statuses at the winning
 priority are errors, regardless of order. An exact entry can resolve conflicting
 patterns. Nil `SupportedTypes` means `Basic8`; a non-nil empty slice declares
-no support beyond `Features`. Built-in providers all declare `SupportedTypes`
-explicitly; registrar-only providers use `[]string{}`. `Features` remains a
-compatibility input and can retain comments and links for individual types or
-interface-derived capabilities. A non-nil `Features` with nil `SupportedTypes`
-retains legacy capability validation. General `DS` support includes child DS records; `CanUseDSForChildren`
+no record support. Built-in providers all declare `SupportedTypes`
+explicitly; registrar-only providers use `[]string{}`. General `DS` support includes child DS records; `CanUseDSForChildren`
 can independently allow child DS records even with `DS:Cannot`.
-
-When an inline reason and a legacy `Features` note describe the same status,
-the inline reason wins. A link from `Features` is retained if the selector has
-no link of its own.
 
 Registration retains selectors until the complete catalog is available.
 Importing `pkg/providers/_all` finalizes the registry; definition accessors also
@@ -378,8 +371,10 @@ ensure finalization for programs importing individual providers. Register all
 providers and record types before concurrent reads. Tests registering additional
 types or providers can call `providers.Finalize()` again to rebuild derived data.
 
-Named operational fields such as `CanConcur`
-can be set directly on the definition. Some fields are derived automatically for
+Named operational fields can be set directly on the definition. `CanConcur`
+and `CanDualHost` default to `Can()`; use `Cannot()` to opt out. `CanConcur`
+does not accept `Unimplemented()`. `CanAutoDNSSEC` defaults to `Cannot()`;
+declare `Can()` or `Unimplemented()` when appropriate. Some fields are derived automatically for
 you, such as `CanGetZones` and `DocCreateDomains`
 (set based on the existence or absence of `providers.ZoneLister` and `providers.ZoneCreator`, respectively.)
 Use `CanGetZonesReason` and `CreateDomainsReason` to explain those derived results.

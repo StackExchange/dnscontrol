@@ -38,7 +38,20 @@ func (a *edgeDNSProvider) SetConversionObserver(observer providers.ConversionObs
 func init() {
 	providers.Register[*edgeDNSProvider]("AKAMAIEDGEDNS", providers.Definition{
 		FriendlyName: "Akamai Edge DNS",
-		PortalURL:    "https://control.akamai.com/apps/identity-management/", // TODO: Verify
+		Maintainer:   "@meghanakudua02",
+		SupportedTypes: []string{
+			"Basic8",
+			"AKAMAICDN",
+			"AKAMAITLC",
+			"ALIAS:Can:Akamai Edge DNS does not directly support ALIAS. Apex record will be converted to AKAMAITLC, any others to CNAME.",
+			"LOC",
+			"NAPTR",
+			"PTR",
+			"SSHFP",
+			"TLSA",
+		},
+		CanAutoDNSSEC:       providers.Can(),
+		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "host",
@@ -79,23 +92,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@meghanakudua02",
-		SupportedTypes: []string{
-			"Basic8",
-			"AKAMAICDN",
-			"AKAMAITLC",
-			"ALIAS:Can:Akamai Edge DNS does not directly support ALIAS. Apex record will be converted to AKAMAITLC, any others to CNAME.",
-			"LOC",
-			"NAPTR",
-			"PTR",
-			"SSHFP",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://control.akamai.com/apps/identity-management/", // TODO: Verify
 	})
 }
 

@@ -24,18 +24,7 @@ func (b *bunnydnsProvider) SetConversionObserver(observer providers.ConversionOb
 func init() {
 	providers.Register[*bunnydnsProvider]("BUNNY_DNS", providers.Definition{
 		FriendlyName: "Bunny DNS",
-		DocsURL:      "https://docs.dnscontrol.org/provider/bunnydns",
-		PortalURL:    "https://dash.bunny.net/account/api-key",
-		CredFields: []providers.CredsField{
-			{
-				Key:      "api_key",
-				Label:    "API key",
-				Help:     "Bunny.net account API key.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@ppmathis",
+		Maintainer:   "@ppmathis",
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS:Can:Bunny flattens CNAME records into A/AAAA records dynamically",
@@ -47,10 +36,19 @@ func init() {
 			"TLSA",
 		},
 		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
 		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "api_key",
+				Label:    "API key",
+				Help:     "Bunny.net account API key.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		DocsURL:   "https://docs.dnscontrol.org/provider/bunnydns",
+		PortalURL: "https://dash.bunny.net/account/api-key",
 	})
 }
 

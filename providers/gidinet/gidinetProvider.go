@@ -33,8 +33,12 @@ Note on Registrar functionality:
 func init() {
 	providers.Register[*gidinetProvider]("GIDINET", providers.Definition{
 		FriendlyName: "Gidinet",
-		PortalURL:    "https://www.gidinet.com/modules/private/account_password/",
-		Notes:        "The username is your usual Gidinet account username, but the password must be the dedicated \"API password\" generated in the Gidinet control panel — not your normal login password.",
+		Maintainer:   "@zupolgec",
+		SupportedTypes: []string{
+			"Basic8",
+			"CAA:Cannot:Only premium service",
+		},
+		CreateDomainsReason: "Must be created via web UI",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -50,16 +54,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@zupolgec",
-		SupportedTypes: []string{
-			"Basic8",
-			"CAA:Cannot:Only premium service",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "Must be created via web UI",
+		PortalURL: "https://www.gidinet.com/modules/private/account_password/",
+		Notes:     "The username is your usual Gidinet account username, but the password must be the dedicated \"API password\" generated in the Gidinet control panel — not your normal login password.",
 	})
 }
 

@@ -15,7 +15,14 @@ import (
 func init() {
 	providers.Register[*dnsMadeEasyProvider]("DNSMADEEASY", providers.Definition{
 		FriendlyName: "DNS Made Easy",
-		PortalURL:    "https://cp.dnsmadeeasy.com/",
+		Maintainer:   "@vojtad",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"PTR",
+		},
+		CanDualHost:         providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_key",
@@ -38,16 +45,7 @@ func init() {
 				ConfirmValue: "1",
 			},
 		},
-		Maintainer: "@vojtad",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"PTR",
-		},
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Can("System NS records cannot be edited. Custom apex NS records can be added/changed/deleted."),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://cp.dnsmadeeasy.com/",
 	})
 }
 

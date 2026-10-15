@@ -25,8 +25,19 @@ var defaultNS = client.DefaultBasicNameserverHosts()
 func init() {
 	providers.Register[*spaceshipProvider]("SPACESHIP", providers.Definition{
 		FriendlyName: "Spaceship",
-		PortalURL:    "https://www.spaceship.com/application/api-manager/",
-		Notes:        "Create an API key in Spaceship API Manager with dnsrecords and domains read/write scopes.",
+		Maintainer:   "@rootful",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS:Can:Apex ALIAS is stored as CNAME; declare an apex CNAME instead",
+			"HTTPS",
+			"PTR",
+			"SVCB",
+			"TLSA",
+		},
+		CanAutoDNSSEC:       providers.Cannot("Spaceship does not expose DNSSEC via the public API"),
+		CanDualHost:         providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
+		CreateDomainsReason: "The domain must already exist in the Spaceship account",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_key",
@@ -43,21 +54,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@rootful",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS:Can:Apex ALIAS is stored as CNAME; declare an apex CNAME instead",
-			"HTTPS",
-			"PTR",
-			"SVCB",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Cannot("Spaceship does not expose DNSSEC via the public API"),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "The domain must already exist in the Spaceship account",
+		PortalURL: "https://www.spaceship.com/application/api-manager/",
+		Notes:     "Create an API key in Spaceship API Manager with dnsrecords and domains read/write scopes.",
 	})
 }
 

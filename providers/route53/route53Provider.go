@@ -129,11 +129,7 @@ func init() {
 			"TLSA",
 			"ALIAS:Cannot:R53 does not provide a generic ALIAS functionality. Use R53_ALIAS instead.",
 		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		OfficiallySupported: providers.Can(),
-		PortalURL:           "https://console.aws.amazon.com/route53/",
-		Notes:               "Route53 supports several auth methods: a named profile from ~/.aws/config (including AWS IAM Identity Center / SSO), static access keys, or the SDK's default credential chain (environment variables, EC2 instance role, etc.). RoleArn can be layered on top of any of these.",
 		CredFields: []providers.CredsField{
 			{
 				Key:    "Region",
@@ -197,6 +193,8 @@ func init() {
 				Help:  "Existing Route 53 reusable delegation set ID (the value after /delegationset/). Only applied when creating new domains.",
 			},
 		},
+		PortalURL: "https://console.aws.amazon.com/route53/",
+		Notes:     "Route53 supports several auth methods: a named profile from ~/.aws/config (including AWS IAM Identity Center / SSO), static access keys, or the SDK's default credential chain (environment variables, EC2 instance role, etc.). RoleArn can be layered on top of any of these.",
 	})
 }
 

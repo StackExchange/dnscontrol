@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -18,11 +17,6 @@ func TestRegisteredDefinition(t *testing.T) {
 	def, ok := providers.GetDefinition("ROUTE53")
 	if !ok || def.Kind != providers.KindDNS|providers.KindRegistrar || !def.CanGetZones || !def.DocCreateDomains {
 		t.Fatalf("Route 53 definition = %+v", def)
-	}
-	for capability, note := range def.Features {
-		if !reflect.DeepEqual(def.DerivedFeatures[capability], note) {
-			t.Fatalf("migration changed annotation for %s", capability)
-		}
 	}
 	if errors := providers.AuditRecords("ROUTE53", nil); len(errors) != 0 {
 		t.Fatal(errors)

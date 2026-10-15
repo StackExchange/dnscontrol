@@ -113,7 +113,7 @@ If a domain does not exist in your Huawei Cloud account, DNSControl will automat
   - DNS Provider: ✅
   - Registrar: ❌
 - Provider API
-  - [Concurrency Verified](../advanced-features/concurrency-verified.md): ❔
+  - [Concurrent fetching](../advanced-features/concurrency-verified.md): ✅
   - [dual host](../advanced-features/dual-host.md): ✅
   - create-domains: ✅
   - [get-zones](../commands/get-zones.md): ✅

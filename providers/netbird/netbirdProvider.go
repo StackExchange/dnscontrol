@@ -74,21 +74,18 @@ func (api *netbirdProvider) Initialize(m map[string]string, _ json.RawMessage, _
 func init() {
 	providers.Register[*netbirdProvider]("NETBIRD", providers.Definition{
 		FriendlyName: "Netbird",
-		PortalURL:    "https://app.netbird.io/settings",
-		CredFields: []providers.CredsField{
-			{Key: "token", Label: "API Token", Required: true, Secret: true},
-			{Key: "apiurl", Label: "API Url", Default: netbirdAPIURL},
-		},
-		Maintainer: "@yzqzss",
+		Maintainer:   "@yzqzss",
 		SupportedTypes: []string{
 			"A",
 			"AAAA",
 			"CNAME",
 		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanDualHost: providers.Cannot(),
+		CredFields: []providers.CredsField{
+			{Key: "token", Label: "API Token", Required: true, Secret: true},
+			{Key: "apiurl", Label: "API Url", Default: netbirdAPIURL},
+		},
+		PortalURL: "https://app.netbird.io/settings",
 	})
 }
 

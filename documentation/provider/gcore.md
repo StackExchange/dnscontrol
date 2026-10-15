@@ -166,7 +166,7 @@ This provider may not work propoerly with SKIP_AUDIT. If you need to use SKIP_AU
   - DNS Provider: ✅
   - Registrar: ❌
 - Provider API
-  - [Concurrency Verified](../advanced-features/concurrency-verified.md): ✅
+  - [Concurrent fetching](../advanced-features/concurrency-verified.md): ✅
   - [dual host](../advanced-features/dual-host.md): ✅
   - create-domains: ✅
   - [get-zones](../commands/get-zones.md): ✅

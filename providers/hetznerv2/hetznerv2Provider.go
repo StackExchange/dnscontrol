@@ -18,8 +18,15 @@ import (
 func init() {
 	providers.Register[*hetznerv2Provider]("HETZNER_V2", providers.Definition{
 		FriendlyName: "Hetzner DNS",
-		DocsURL:      "https://docs.dnscontrol.org/provider/hetznerv2",
-		PortalURL:    "https://console.hetzner.com/projects",
+		Maintainer:   "@das7pad",
+		SupportedTypes: []string{
+			"Basic8",
+			"DS",
+			"HTTPS",
+			"PTR",
+			"SVCB",
+			"TLSA",
+		},
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_token",
@@ -29,19 +36,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@das7pad",
-		SupportedTypes: []string{
-			"Basic8",
-			"DS",
-			"HTTPS",
-			"PTR",
-			"SVCB",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CanDualHost:         providers.Can(),
+		DocsURL:   "https://docs.dnscontrol.org/provider/hetznerv2",
+		PortalURL: "https://console.hetzner.com/projects",
 	})
 }
 

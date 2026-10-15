@@ -18,6 +18,14 @@ import (
 func init() {
 	providers.Register[*gigahostProvider]("GIGAHOST", providers.Definition{
 		FriendlyName: "Gigahost",
+		Maintainer:   "@jochristian",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"DNAME",
+			"NAPTR",
+			"PTR",
+		},
 		CredFields: []providers.CredsField{
 			{
 				Key:      "apikey",
@@ -27,15 +35,6 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@jochristian",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"DNAME",
-			"NAPTR",
-			"PTR",
-		},
-		CanConcur: providers.Unimplemented(),
 	})
 }
 

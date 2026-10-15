@@ -55,7 +55,16 @@ var defaultNameServerNames = []string{
 func init() {
 	providers.Register[*gcoreProvider]("GCORE", providers.Definition{
 		FriendlyName: "G-Core Labs",
-		PortalURL:    "https://accounts.gcore.com/profile/api-tokens", // TODO: Verify
+		Maintainer:   "@xddxdd",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"PTR:Can:G-Core supports PTR records only in rDNS zones",
+			"SVCB",
+			"SRV:Can:G-Core doesn't support SRV records with empty targets",
+		},
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api-key",
@@ -65,19 +74,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@xddxdd",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"PTR:Can:G-Core supports PTR records only in rDNS zones",
-			"SVCB",
-			"SRV:Can:G-Core doesn't support SRV records with empty targets",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://accounts.gcore.com/profile/api-tokens", // TODO: Verify
 	})
 }
 

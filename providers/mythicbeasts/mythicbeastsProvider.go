@@ -35,7 +35,14 @@ type mythicBeastsProvider struct {
 func init() {
 	providers.Register[*mythicBeastsProvider]("MYTHICBEASTS", providers.Definition{
 		FriendlyName: "Mythic Beasts",
-		PortalURL:    "https://www.mythic-beasts.com/customer/api-users", // TODO: Verify
+		Maintainer:   "@tomfitzhenry",
+		SupportedTypes: []string{
+			"Basic8",
+			"PTR",
+			"SSHFP",
+			"TLSA",
+		},
+		CreateDomainsReason: "Requires domain registered through Web UI",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "keyID",
@@ -51,17 +58,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@tomfitzhenry",
-		SupportedTypes: []string{
-			"Basic8",
-			"PTR",
-			"SSHFP",
-			"TLSA",
-		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "Requires domain registered through Web UI",
+		PortalURL: "https://www.mythic-beasts.com/customer/api-users", // TODO: Verify
 	})
 }
 

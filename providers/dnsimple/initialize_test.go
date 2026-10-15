@@ -1,7 +1,6 @@
 package dnsimple
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/DNSControl/dnscontrol/v5/pkg/providers"
@@ -11,11 +10,6 @@ func TestRegisteredDefinition(t *testing.T) {
 	def, ok := providers.GetDefinition("DNSIMPLE")
 	if !ok || def.Kind != providers.KindDNS|providers.KindRegistrar || !def.CanGetZones || def.DocCreateDomains {
 		t.Fatalf("DNSimple definition = %+v", def)
-	}
-	for capability, note := range def.Features {
-		if !reflect.DeepEqual(def.DerivedFeatures[capability], note) {
-			t.Fatalf("migration changed annotation for %s", capability)
-		}
 	}
 	if errors := providers.AuditRecords("DNSIMPLE", nil); len(errors) != 0 {
 		t.Fatal(errors)

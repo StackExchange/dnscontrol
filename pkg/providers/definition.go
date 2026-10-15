@@ -24,21 +24,60 @@ type Initializer func(map[string]string, json.RawMessage, *CreateOptions) (any, 
 // providers.Register is the main entry point. It registers the provider, generates
 // the derived fields, and cross-checks for errors.
 // Definitions and their nested metadata are read-only to callers. Framework
-// finalization completes derived type capabilities before concurrent reads.
+// finalization validates type selectors before concurrent reads.
 type Definition struct {
 	// FriendlyName is the brand name ("Google", not "GCLOUD")
 	FriendlyName string
+
+	// Maintainer is the github username of the maintainer.
+	Maintainer string
 
 	// Aliases (optional) is an optional list of aliases. For example, if
 	// we rename CLOUDFLAREAPI to CLOUDFLARE, we would make CLOUDFLAREAPI an alias to
 	// support legacy configurations.
 	Aliases []string
 
-	// Maintainer is the github username of the maintainer.
-	Maintainer string
+	// SupportedTypes is an exhaustive, required declaration of record support.
+	// List Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT) explicitly when
+	// supported. A non-nil empty slice declares no record support. Nil still
+	// resolves to Basic8 for compatibility, but provider registrations must
+	// supply a list. Entries may use TYPE:Status:Reason
+	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
+	// ": http(s)://..." in Reason supplies a link.
+	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
+	SupportedTypes []string
+
+	// Capabilities that can't be deduced automatically
+
+	// OfficiallySupported documents if the provider has official support.
+	// Omit it for the default, Cannot() without a reason.
+	OfficiallySupported *DocumentationNote
 
 	// DefaultTTL (optional) minimum TTL when `get-zone` writes .js files
 	DefaultTTL uint32
+
+	// CanAutoDNSSEC defaults to Cannot(). Declare Can() or Unimplemented()
+	// to document a different status, or Cannot(reason) to explain the default.
+	CanAutoDNSSEC *DocumentationNote
+	// CanConcur defaults to Can(). Declare Cannot() for providers that must
+	// not be used concurrently. Unimplemented() is invalid for this field.
+	CanConcur *DocumentationNote
+	// CanDualHost defaults to Can(). Declare Cannot() or Unimplemented()
+	// when the provider cannot manage apex NS records for dual hosting, or
+	// Can(reason) to explain support that needs qualification.
+	CanDualHost *DocumentationNote
+	// CanUseDSForChildren defaults to no child-DS support unless SupportedTypes
+	// grants general DS support, which also grants child-DS support.
+	CanUseDSForChildren *DocumentationNote
+
+	// Interface discovery sets the capabilities; these reasons explain the result.
+	CanGetZonesReason   string
+	CreateDomainsReason string
+	// RecordIdentity optionally distinguishes records with the same label,
+	// type, and RDATA when the provider stores them as separate objects.
+	RecordIdentity RecordIdentityFunc
+
+	// "init" fields:
 
 	// CredFields is a description of the creds.json fields for this provider. Used by "init".
 	CredFields []CredsField
@@ -56,39 +95,16 @@ type Definition struct {
 	// PostWrite prepares local resources after the wizard writes creds.json.
 	PostWrite func(map[string]string) error
 
-	// Nil capability notes fall back to legacy Features. Explicit notes take precedence.
-	CanAutoDNSSEC       *DocumentationNote
-	CanConcur           *DocumentationNote
-	CanUseDSForChildren *DocumentationNote
-	CanDualHost         *DocumentationNote
-	OfficiallySupported *DocumentationNote
-	// Interface discovery sets these capabilities; the reasons only explain the result.
-	CanGetZonesReason   string
-	CreateDomainsReason string
-	RecordIdentity      RecordIdentityFunc
-	// Features remains for external providers using the legacy registration API.
-	// Deprecated: use the named fields and SupportedTypes.
-	Features DocumentationNotes
-
-	// SupportedTypes is an exhaustive declaration of record support. Nil means
-	// Basic8 (A, AAAA, CAA, CNAME, MX, NS, SRV, TXT). A non-nil empty slice
-	// declares no support beyond legacy Features. Entries may use TYPE:Status:Reason
-	// to attach a comment to Can, Cannot, or Unimplemented status. A trailing
-	// ": http(s)://..." in Reason supplies a link.
-	// Internal commands such as IMPORT_TRANSFORM do not belong in this list.
-	SupportedTypes []string
-
 	typeSelectors []typeSelector
 
 	// Calculated by Register and Finalize. Providers must leave these fields unset.
-	TypeName           string
+	TypeName           string // ex. "BIND"
 	ImplementationType reflect.Type
-	Kind               ProviderKind
-	Initializer        Initializer
+	Initializer        Initializer  // Function called to initialize a client
+	Kind               ProviderKind // Are we initializing a REgistrar or DNS Provider?
 	RecordAuditor      RecordAuditor
 	CanGetZones        bool
 	DocCreateDomains   bool
-	DerivedFeatures    DocumentationNotes
 }
 
 // Provider implementations register here.
@@ -109,16 +125,22 @@ func Register[T InitializableProvider](name string, definition Definition) {
 	if strings.TrimSpace(definition.FriendlyName) == "" {
 		panic(fmt.Sprintf("provider %q: FriendlyName is required", name))
 	}
-	// Validate Features
-	for capability, note := range definition.Features {
-		if note == nil {
-			panic(fmt.Sprintf("provider %q: Features[%v] must not be nil", name, capability))
-		}
+	if definition.CanConcur != nil && definition.CanConcur.Unimplemented {
+		panic(fmt.Sprintf("provider %q: CanConcur cannot be Unimplemented; use Cannot()", name))
+	}
+	if definition.CanConcur == nil {
+		definition.CanConcur = Can()
+	}
+	if definition.CanAutoDNSSEC == nil {
+		definition.CanAutoDNSSEC = Cannot()
+	}
+	if definition.CanDualHost == nil {
+		definition.CanDualHost = Can()
 	}
 	// Make sure caller didn't set fields that are generated.
 	if definition.TypeName != "" || definition.ImplementationType != nil || definition.Kind != 0 ||
 		definition.Initializer != nil || definition.RecordAuditor != nil || definition.CanGetZones ||
-		definition.DocCreateDomains || definition.DerivedFeatures != nil {
+		definition.DocCreateDomains {
 		panic(fmt.Sprintf("provider %q: derived definition fields must be left unset", name))
 	}
 
@@ -171,39 +193,6 @@ func Register[T InitializableProvider](name string, definition Definition) {
 		}
 		return instance, nil
 	}
-	def.DerivedFeatures = maps.Clone(def.Features)
-	if def.DerivedFeatures == nil {
-		def.DerivedFeatures = DocumentationNotes{}
-	}
-	for capability, note := range map[Capability]*DocumentationNote{
-		CanAutoDNSSEC: def.CanAutoDNSSEC, CanConcur: def.CanConcur,
-		CanUseDSForChildren: def.CanUseDSForChildren, CanDualHost: def.CanDualHost,
-		OfficiallySupported: def.OfficiallySupported,
-	} {
-		if note != nil {
-			def.DerivedFeatures[capability] = note
-		}
-	}
-	for capability, derived := range map[Capability]struct {
-		supported bool
-		reason    string
-	}{
-		CanGetZones:      {def.CanGetZones, def.CanGetZonesReason},
-		DocCreateDomains: {def.DocCreateDomains, def.CreateDomainsReason},
-	} {
-		// Preserve annotations without overwriting the supplied feature note.
-		var note DocumentationNote
-		if legacy := def.DerivedFeatures[capability]; legacy != nil {
-			note = *legacy
-		}
-		if derived.reason != "" {
-			note.Comment = derived.reason
-		}
-		note.HasFeature = derived.supported
-		note.Unimplemented = false
-		def.DerivedFeatures[capability] = &note
-	}
-
 	for _, n := range names {
 		definitions[n] = def
 	}

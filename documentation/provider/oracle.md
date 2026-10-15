@@ -63,7 +63,7 @@ WARNING: Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL o
   - DNS Provider: ✅
   - Registrar: ❌
 - Provider API
-  - [Concurrency Verified](../advanced-features/concurrency-verified.md): ❔
+  - [Concurrent fetching](../advanced-features/concurrency-verified.md): ✅
   - [dual host](../advanced-features/dual-host.md): ✅
   - create-domains: ✅
   - [get-zones](../commands/get-zones.md): ✅
@@ -88,7 +88,7 @@ WARNING: Oracle Cloud forces TTL=86400 for NS records. Ignoring configured TTL o
   - [`SSHFP`](../language-reference/domain-modifiers/SSHFP.md): ✅
   - [`TLSA`](../language-reference/domain-modifiers/TLSA.md): ✅
 - DNSSEC
-  - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ❔
+  - [`AUTODNSSEC`](../language-reference/domain-modifiers/AUTODNSSEC_ON.md): ❌
   - [`DNSKEY`](../language-reference/domain-modifiers/DNSKEY.md): ❌
   - [`DS`](../language-reference/domain-modifiers/DS.md): ❌
 <!-- provider-features-end -->
