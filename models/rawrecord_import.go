@@ -76,7 +76,17 @@ func (config *DNSConfig) ImportRawRecords() error {
 					return fmt.Errorf("metadata error at %s [%s(%s)]: %w", filePos, typeName, txtutil.ZoneifyManyAny(rawRec.Args), err)
 				}
 
-				rec, err := dc.newRecordConfigFromDnsconfigjs(rawRec.Args[0].(string), rawRec.TTL, typeNum, rawRec.Args[1:], mm, subdomain)
+				// The args come from dnsconfig.js, so they are user input and
+				// must not panic dnscontrol.  Guard the label before using it.
+				if len(rawRec.Args) == 0 {
+					return fmt.Errorf("missing label (first arg) at %s [%s()]", filePos, typeName)
+				}
+				label, ok := rawRec.Args[0].(string)
+				if !ok {
+					return fmt.Errorf("label (first arg) at %s [%s(%s)] must be a string, got %T", filePos, typeName, txtutil.ZoneifyManyAny(rawRec.Args), rawRec.Args[0])
+				}
+
+				rec, err := dc.newRecordConfigFromDnsconfigjs(label, rawRec.TTL, typeNum, rawRec.Args[1:], mm, subdomain)
 				if err != nil {
 					return fmt.Errorf("ImportRawRecords error at %s [%s(%s)]: %w", filePos, typeName, txtutil.ZoneifyManyAny(rawRec.Args), err)
 				}

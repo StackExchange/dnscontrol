@@ -141,7 +141,7 @@ func (dc *DomainConfig) NewRecordConfigForRRv2toRC(name string, ttl uint32, type
 // none). Relative targets (CNAME/MX/NS/SRV/ALIAS) are canonicalized relative to
 // subdomain.zone, while the label is already relative to the zone, so the label
 // machinery still uses dc.Name.
-func (dc *DomainConfig) newRecordConfigFromDnsconfigjs(name string, ttl uint32, typeNum uint16, args []any, metadata map[string]string, subdomain string) (*RecordConfig, error) {
+func (dc *DomainConfig) newRecordConfigFromDnsconfigjs(name string, ttl uint32, typeNum uint16, args []any, metadata map[string]string, subdomain string) (rc *RecordConfig, err error) {
 
 	targetOrigin := dc.Name
 	if subdomain != "" {
@@ -153,7 +153,22 @@ func (dc *DomainConfig) newRecordConfigFromDnsconfigjs(name string, ttl uint32, 
 		return nil, err
 	}
 
-	rd, err := privatetypes.TypeToMakeRDATA[typeNum](targetOrigin, metadata, nrc.Flags{EnforceOneDotPolicy: true}, args...)
+	maker, found := privatetypes.TypeToMakeRDATA[typeNum]
+	if !found {
+		return nil, fmt.Errorf("dnsconfigjs: no maker registered for type %s", dnsutilv2.TypeToString(typeNum))
+	}
+
+	// The args come from dnsconfig.js, so they are user input and must not
+	// panic dnscontrol.  The maker (and the mustbe.* helpers it calls)
+	// panic on values they cannot convert; a malformed record must be
+	// reported as an error instead of crashing dnscontrol with a panic.
+	defer func() {
+		if r := recover(); r != nil {
+			rc, err = nil, fmt.Errorf("dnsconfigjs: failed to create RDATA for type %s: %v", dnsutilv2.TypeToString(typeNum), r)
+		}
+	}()
+
+	rd, err := maker(targetOrigin, metadata, nrc.Flags{EnforceOneDotPolicy: true}, args...)
 	if err != nil {
 		return nil, fmt.Errorf("dnsconfigjs: failed to create RDATA for type %s: %w", dnsutilv2.TypeToString(typeNum), err)
 	}
