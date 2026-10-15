@@ -110,8 +110,7 @@ func isDropped(err error) bool {
 	if err == nil {
 		return false
 	}
-	var apiErr *apiError
-	if errors.As(err, &apiErr) {
+	if apiErr, ok := errors.AsType[*apiError](err); ok {
 		return apiErr.StatusCode == http.StatusBadGateway
 	}
 	return true
