@@ -12,6 +12,11 @@ import (
 	"github.com/DNSControl/dnscontrol/v5/pkg/zonerecs"
 )
 
+func providerCanDualHost(name string) bool {
+	def, ok := providers.GetDefinition(name)
+	return ok && def.CanDualHost.HasFeature
+}
+
 // TestDualProviders verifies that providers labeled CanDualHost support having
 // delegation to multiple DNS Providers. i.e. verifies that example.com's
 // delegations can be both ROUTE53 and GCLOUD. Some providers want to be the
@@ -25,7 +30,7 @@ func TestDualProviders(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerFlag, providers.CanDualHost) {
+	if !providerCanDualHost(*providerFlag) {
 		t.Skip("Skipping.  CanDualHost == Cannot")
 		return
 	}
@@ -109,7 +114,7 @@ func TestNameserverDots(t *testing.T) {
 		t.Fatal("NO DOMAIN SET!  Exiting!")
 	}
 	dc := getDomainConfigWithNameservers(t, p, domain)
-	if !providers.ProviderHasCapability(*providerFlag, providers.CanDualHost) {
+	if !providerCanDualHost(*providerFlag) {
 		t.Skip("Skipping.  CanDualHost == Cannot")
 		return
 	}
@@ -141,7 +146,7 @@ func TestDuplicateNameservers(t *testing.T) {
 
 	dc := getDomainConfigWithNameservers(t, p, domain)
 
-	if !providers.ProviderHasCapability(*providerFlag, providers.CanDualHost) {
+	if !providerCanDualHost(*providerFlag) {
 		t.Skip("Skipping.  CanDualHost == Cannot")
 		return
 	}

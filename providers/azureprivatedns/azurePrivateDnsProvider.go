@@ -93,8 +93,16 @@ func (a *azurednsProvider) Initialize(m map[string]string, _ json.RawMessage, op
 func init() {
 	providers.Register[*azurednsProvider]("AZURE_PRIVATE_DNS", providers.Definition{
 		FriendlyName: "Azure Private DNS",
-		DocsURL:      "https://docs.dnscontrol.org/provider/azureprivatedns",
-		PortalURL:    "https://portal.azure.com/",
+		Maintainer:   "@matthewmgamble",
+		SupportedTypes: []string{
+			"Basic8",
+			"PTR",
+			"CAA:Cannot:Azure Private DNS does not support CAA records",
+			"NS:Cannot",
+			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
+		},
+		OfficiallySupported: providers.Can(),
+		CanDualHost:         providers.Cannot("Private zones can not change NS records"),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "SubscriptionID",
@@ -130,18 +138,8 @@ func init() {
 				Help:  "Set to 'true' to use interactive browser authentication (OIDC).",
 			},
 		},
-		Maintainer: "@matthewmgamble",
-		SupportedTypes: []string{
-			"Basic8",
-			"PTR",
-			"CAA:Cannot:Azure Private DNS does not support CAA records",
-			"NS:Cannot",
-			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
-		},
-		CanConcur:           providers.Can(),
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanDualHost:         providers.Cannot("Private zones can not change NS records"),
-		OfficiallySupported: providers.Can(),
+		DocsURL:   "https://docs.dnscontrol.org/provider/azureprivatedns",
+		PortalURL: "https://portal.azure.com/",
 	})
 }
 

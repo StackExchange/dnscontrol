@@ -108,6 +108,28 @@ type Correction struct {
 // PostProcess performs and post-processing required after running dnsconfig.js and loading the result.
 func (config *DNSConfig) PostProcess() error {
 	for _, domain := range config.Domains {
+		// A domain name with a trailing dot is invalid (NewDomainConfig
+		// rejects the same) and panics downstream in SetLabel.  Reject it
+		// here so that user input can never crash dnscontrol.
+		if strings.HasSuffix(domain.Name, ".") {
+			return fmt.Errorf("domain name %q must not end with a dot", domain.Name)
+		}
+		// dnsconfig.js creates records only via the record constructors
+		// (A(), TXT(), ...), which arrive as .RawRecords and are imported
+		// by ImportRawRecords().  RecordConfig.rdata is unexported, so a
+		// record injected via a JSON "records" or "recordsabsent" field
+		// can never be well-formed.  Reject malformed records here so
+		// they cannot crash dnscontrol later.
+		for i, rec := range domain.Records {
+			if rec == nil || rec.rdata == nil {
+				return fmt.Errorf("domain %s: .Records[%d] is nil or was not created by a record constructor", domain.Name, i)
+			}
+		}
+		for i, rec := range domain.EnsureAbsent {
+			if rec == nil || rec.rdata == nil {
+				return fmt.Errorf("domain %s: .EnsureAbsent[%d] is nil or was not created by a record constructor", domain.Name, i)
+			}
+		}
 		domain.PostProcess()
 	}
 	return nil

@@ -2,7 +2,6 @@ package providers
 
 import (
 	"fmt"
-	"maps"
 	"net/url"
 	"regexp"
 	"strings"
@@ -11,19 +10,6 @@ import (
 	dnsv2 "codeberg.org/miekg/dns"
 	"github.com/DNSControl/dnscontrol/v5/pkg/privatetypes"
 )
-
-// RecordTypeCapabilities bridges SupportedTypes and legacy feature consumers.
-// Treat this map as read-only. Operational capabilities do not belong here.
-var RecordTypeCapabilities = map[string]Capability{
-	"AKAMAICDN": CanUseAKAMAICDN, "AKAMAITLC": CanUseAKAMAITLC,
-	"ALIAS": CanUseAlias, "AZURE_ALIAS": CanUseAzureAlias,
-	"CAA": CanUseCAA, "DHCID": CanUseDHCID, "DNAME": CanUseDNAME,
-	"DNSKEY": CanUseDNSKEY, "DS": CanUseDS, "HTTPS": CanUseHTTPS,
-	"LOC": CanUseLOC, "NAPTR": CanUseNAPTR, "OPENPGPKEY": CanUseOPENPGPKEY,
-	"PTR": CanUsePTR, "R53_ALIAS": CanUseRoute53Alias, "RP": CanUseRP,
-	"SMIMEA": CanUseSMIMEA, "SOA": CanUseSOA, "SRV": CanUseSRV,
-	"SSHFP": CanUseSSHFP, "SVCB": CanUseSVCB, "TLSA": CanUseTLSA,
-}
 
 type typeSelector struct {
 	source   string
@@ -167,7 +153,8 @@ func RecordTypeSupported(pType string, typeNum uint16, label string) bool {
 	if name, ok := dnsv2.TypeToString[typeNum]; ok && def.RecordTypeSupport(name).HasFeature {
 		return true
 	}
-	return typeNum == dnsv2.TypeDS && label != "@" && ProviderHasCapability(pType, CanUseDSForChildren)
+	return typeNum == dnsv2.TypeDS && label != "@" &&
+		def.CanUseDSForChildren != nil && def.CanUseDSForChildren.HasFeature
 }
 
 var (
@@ -177,10 +164,10 @@ var (
 	finalizedCatalog     uint64
 )
 
-// Finalize validates selectors against the complete record catalog and derives
-// compatibility capabilities. Call after package registration and before
-// concurrent reads. The _all package does this at startup; accessors also ensure
-// finalization for programs/tests importing individual providers.
+// Finalize validates selectors against the complete record catalog. Call after
+// package registration and before concurrent reads. The _all package does this
+// at startup; accessors also ensure finalization for programs/tests importing
+// individual providers.
 //
 // Register and private-type registration invalidate the result. Tests adding
 // either must finish registration before reading again. Repeated calls without
@@ -194,7 +181,6 @@ func Finalize() error {
 		return nil
 	}
 	catalog := privatetypes.RecordTypes()
-	updates := map[*Definition]DocumentationNotes{}
 	for _, d := range allDefinitions() {
 		for _, s := range d.typeSelectors {
 			if s.priority == 1 {
@@ -203,32 +189,11 @@ func Finalize() error {
 				}
 			}
 		}
-		features := maps.Clone(d.DerivedFeatures)
 		for _, typ := range catalog {
-			note, err := d.resolveType(typ)
-			if err != nil {
+			if _, err := d.resolveType(typ); err != nil {
 				return err
 			}
-			if capability, ok := RecordTypeCapabilities[typ.Name]; ok {
-				features[capability] = &note
-			}
 		}
-		// General DS support implies child support. Rebuild from the original
-		// inputs so later catalog registrations never retain stale notes.
-		child := d.CanUseDSForChildren
-		if features[CanUseDS].HasFeature {
-			if child == nil || !child.HasFeature {
-				child = Can()
-			}
-		}
-		if child != nil {
-			features[CanUseDSForChildren] = child
-		}
-		updates[d] = features
-	}
-	// Publish only after every declaration is valid.
-	for d, features := range updates {
-		d.DerivedFeatures = features
 	}
 	finalizedGeneration, finalizedCatalog = definitionGeneration, catalogVersion
 	return nil

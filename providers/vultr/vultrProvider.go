@@ -34,9 +34,7 @@ func init() {
 			"Basic8",
 			"SSHFP",
 		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC: providers.Can(),
 	})
 }
 

@@ -158,7 +158,6 @@ func init() {
 	Register[*None]("NONE", Definition{
 		FriendlyName:   "No registrar",
 		SupportedTypes: []string{},
-		CanConcur:      Can(),
 		Notes:          "Use NONE when you do not want DNSControl to manage nameserver delegation (that is, the nameservers for this domain will be managed manually).",
 	})
 }

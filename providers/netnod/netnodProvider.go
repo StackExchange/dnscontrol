@@ -12,8 +12,19 @@ import (
 func init() {
 	providers.Register[*netnodProvider]("NETNOD", providers.Definition{
 		FriendlyName: "Netnod",
-		PortalURL:    "https://www.netnod.se/dns/dns-enterprise-services",
-		Notes:        "An API key is required. The API URL defaults to https://primarydnsapi.netnod.se and can be omitted.",
+		Maintainer:   "@Netnod @vilhelmprytz",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"CSYNC",
+			"HTTPS",
+			"NAPTR",
+			"PTR",
+			"SSHFP",
+			"SVCB",
+			"TLSA",
+		},
+		CanUseDSForChildren: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "apiKey",
@@ -29,23 +40,8 @@ func init() {
 				Default: "https://primarydnsapi.netnod.se",
 			},
 		},
-		Maintainer: "@Netnod @vilhelmprytz",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"CSYNC",
-			"HTTPS",
-			"NAPTR",
-			"PTR",
-			"SSHFP",
-			"SVCB",
-			"TLSA",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://www.netnod.se/dns/dns-enterprise-services",
+		Notes:     "An API key is required. The API URL defaults to https://primarydnsapi.netnod.se and can be omitted.",
 	})
 }
 

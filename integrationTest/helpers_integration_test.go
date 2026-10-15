@@ -66,87 +66,26 @@ func withTTL(t uint32) recOpt {
 	}
 }
 
-// Commented out until we're ready to use this.
-//
-// // withMeta adds metadata to a tr() record. It takes key/value pairs:
-// // withMeta("k1", "v1", "k2", "v2"). Existing metadata is kept unless a key is repeated.
-// func withMeta(kv ...string) recOpt {
-// 	if len(kv)%2 != 0 {
-// 		panic(fmt.Sprintf("withMeta: expected key/value pairs, got an odd number of arguments: %q", kv))
-// 	}
-// 	return func(r *models.RecordConfig) {
-// 		if r.Metadata == nil {
-// 			r.Metadata = map[string]string{}
-// 		}
-// 		for i := 0; i < len(kv); i += 2 {
-// 			r.Metadata[kv[i]] = kv[i+1]
-// 		}
-// 	}
-// }
+// withMeta adds key/value pairs to a tr() record. Existing metadata is kept
+// unless a key is repeated.
+func withMeta(kv ...string) recOpt {
+	if len(kv)%2 != 0 {
+		panic(fmt.Sprintf("withMeta: expected key/value pairs, got an odd number of arguments: %q", kv))
+	}
+	return func(r *models.RecordConfig) {
+		if r.Metadata == nil {
+			r.Metadata = map[string]string{}
+		}
+		for i := 0; i < len(kv); i += 2 {
+			r.Metadata[kv[i]] = kv[i+1]
+		}
+	}
+}
 
 // Helper functions to perform substitutions
 
 func fillTemplate(s string) string {
 	return strings.Replace(s, "**current-domain**", globalDC.Name, 1)
-}
-
-// Helper constants/funcs for the HEDNS Dynamic DNS testing:
-
-func hednsDynamicA(name, target, status string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["hedns_dynamic"] = status
-	return r
-}
-
-func hednsDdnsKeyA(name, target, key string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["hedns_dynamic"] = "on"
-	r.Metadata["hedns_ddns_key"] = key
-	return r
-}
-
-func hednsDynamicAAAA(name, target, status string) *models.RecordConfig {
-	r := aaaa(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["hedns_dynamic"] = status
-	return r
-}
-
-func hednsDdnsKeyAAAA(name, target, key string) *models.RecordConfig {
-	r := aaaa(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["hedns_dynamic"] = "on"
-	r.Metadata["hedns_ddns_key"] = key
-	return r
-}
-
-func hednsDynamicTXT(name, target, status string) *models.RecordConfig {
-	r := txt(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["hedns_dynamic"] = status
-	return r
-}
-
-// Helper constants/funcs for the CLOUDFLARE proxy testing:
-
-// A-record proxy off/on.
-func CfProxyOff() *TestCase { return tc("proxyoff", cfProxyA("prxy", "174.136.107.111", "off")) }
-func CfProxyOn() *TestCase  { return tc("proxyon", cfProxyA("prxy", "174.136.107.111", "on")) }
-
-// CNAME-record proxy off/on.
-func CfCProxyOff() *TestCase { return tc("cproxyoff", cfProxyCNAME("cproxy", "example.com.", "off")) }
-func CfCProxyOn() *TestCase  { return tc("cproxyon", cfProxyCNAME("cproxy", "example.com.", "on")) }
-
-// Helper constants/funcs for the CLOUDFLARE CNAME flattening testing:
-
-// CNAME flattening off/on (requires paid plan).
-func CfFlattenOff() *TestCase {
-	return tc("flattenoff", cfFlattenCNAME("cflatten", "example.com.", "off"))
-}
-func CfFlattenOn() *TestCase {
-	return tc("flattenon", cfFlattenCNAME("cflatten", "example.com.", "on"))
 }
 
 func getDomainConfigWithNameservers(t *testing.T, prv providers.DNSServiceProvider, domainName string) *models.DomainConfig {
@@ -177,15 +116,6 @@ func testPermitted(p string, f TestGroup) error {
 	for _, c := range f.trueflags {
 		if !c {
 			return fmt.Errorf("excluded by alltrue(%v)", f.trueflags)
-		}
-	}
-
-	// If there are any required capabilities, make sure they all exist.
-	if len(f.required) != 0 {
-		for _, c := range f.required {
-			if !providers.ProviderHasCapability(*providerFlag, c) {
-				return fmt.Errorf("%s not supported", c)
-			}
 		}
 	}
 
@@ -416,7 +346,6 @@ func runTests(t *testing.T, prv providers.DNSServiceProvider, domainName string,
 
 type TestGroup struct {
 	Desc       string
-	required   []providers.Capability
 	only       []string
 	not        []string
 	trueflags  []bool
@@ -456,125 +385,27 @@ func SetLabel(r *models.RecordConfig, label, domain string) {
 	r.NameFQDN = nameutil.ToFqdnWithDot(label, "**current-domain**.")
 }
 
-func withMetaMap(record *models.RecordConfig, metadata map[string]string) *models.RecordConfig {
-	record.Metadata = metadata
-	return record
-}
-
-func a(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeA, target)
-	panicOnErr(err)
-	return r
-}
-
-func aaaa(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeAAAA, target)
-	panicOnErr(err)
-	return r
-}
-
-func alias(name, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeALIAS, target)
-	panicOnErr(err)
-	return r
-}
-
-func azureAlias(name, aliasType, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeAZUREALIAS, aliasType, target)
-	panicOnErr(err)
-	return r
-}
-
-func caa(name string, flag uint8, tag string, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeCAA, flag, tag, target)
-	panicOnErr(err)
-	return r
-}
-
-func cfProxyA(name, target, status string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_proxy"] = status
-	return r
-}
-
-func cfProxyCNAME(name, target, status string) *models.RecordConfig {
-	r := cname(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_proxy"] = status
-	return r
-}
-
-func cfFlattenCNAME(name, target, status string) *models.RecordConfig {
-	r := cname(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_cname_flatten"] = status
-	return r
-}
-
-func cfCommentA(name, target, comment string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_comment"] = comment
-	return r
-}
-
-func cfTagsA(name, target, tags string) *models.RecordConfig {
-	r := a(name, target)
-	r.Metadata = make(map[string]string)
-	r.Metadata["cloudflare_tags"] = tags
-	return r
-}
-
 func cfSingleRedirectEnabled() bool {
 	return (*enableCFRedirectMode)
 }
 
+// Keep the typed constructor until the zone parser unescapes quotes in the
+// when/then expressions instead of retaining the escape backslashes.
 func cfSingleRedirect(name string, code any, when, then string) *models.RecordConfig {
 	r, err := globalDC.NewRecordConfig("@", 1, privatetypes.TypeCLOUDFLAREAPISINGLEREDIRECT, name, code, when, then)
 	panicOnErr(err)
 	return r
 }
 
-func cfWorkerRoute(pattern, target string) *models.RecordConfig {
-	pattern = fillTemplate(pattern)
-	r, err := globalDC.NewRecordConfig("@", 1, privatetypes.TypeCFWORKERROUTE, pattern, target)
-	panicOnErr(err)
-	return r
-}
-
-func bunnyPullZone(name, pullZoneID string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, 1, privatetypes.TypeBUNNYDNSPZ, pullZoneID)
-	panicOnErr(err)
-	return r
-}
-
-func aghAPassthrough(pattern, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(pattern, defaultTTL, privatetypes.TypeADGUARDHOMEAPASSTHROUGH, target)
-	panicOnErr(err)
-	return r
-}
-
-func aghAAAAPassthrough(pattern, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(pattern, defaultTTL, privatetypes.TypeADGUARDHOMEAAAAPASSTHROUGH, target)
-	panicOnErr(err)
-	return r
-}
-
-func mikrotikFwd(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeMIKROTIKFWD, target)
-	panicOnErr(err)
-	return r
-}
-
+// Keep the typed constructor until the zone parser returns empty RDATA instead
+// of nil for MIKROTIK_NXDOMAIN.
 func mikrotikNxdomain(name string) *models.RecordConfig {
 	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeMIKROTIKNXDOMAIN)
 	panicOnErr(err)
 	return r
 }
 
+// cname converts Unicode targets to punycode; tr's zone parser does not.
 func cname(name, target string) *models.RecordConfig {
 	target = fillTemplate(target)
 	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeCNAME, target)
@@ -582,32 +413,11 @@ func cname(name, target string) *models.RecordConfig {
 	return r
 }
 
-func dhcid(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDHCID, target)
-	panicOnErr(err)
-	return r
-}
-
-func dname(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDNAME, target)
-	panicOnErr(err)
-	return r
-}
-
-func ds(name string, keyTag uint16, algorithm, digestType uint8, digest string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDS, keyTag, algorithm, digestType, digest)
-	panicOnErr(err)
-	return r
-}
-
-func dnskey(name string, flags uint16, protocol, algorithm uint8, publicKey string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeDNSKEY, flags, protocol, algorithm, publicKey)
-	panicOnErr(err)
-	return r
-}
-
-func https(name string, priority uint16, target string, params string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeHTTPS, priority, target, params)
+// Keep relative-target coverage until ALIAS's zone parser resolves targets
+// against the domain's origin, as the typed constructor does.
+func alias(name, target string) *models.RecordConfig {
+	target = fillTemplate(target)
+	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeALIAS, target)
 	panicOnErr(err)
 	return r
 }
@@ -634,139 +444,18 @@ func ignore(labelSpec string, typeSpec string, targetSpec string) *models.Record
 	return r
 }
 
-func loc(name string, d1 uint8, m1 uint8, s1 float32, ns string,
-	d2 uint8, m2 uint8, s2 float32, ew string, al float32, sz float32, hp float32, vp float32,
-) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeLOC, d1, m1, s1, ns, d2, m2, s2, ew, al, sz, hp, vp)
-	panicOnErr(err)
-	return r
-}
-
 func manyA(namePattern, target string, n int) models.Records {
 	recs := models.Records{}
 	for i := range n {
-		r, err := globalDC.NewRecordConfig(fmt.Sprintf(namePattern, i), defaultTTL, dnsv2.TypeA, target)
-		panicOnErr(err)
-		recs = append(recs, r)
+		recs = append(recs, tr(fmt.Sprintf(namePattern, i), dnsv2.TypeA, target))
 	}
 	return recs
-}
-
-func mx(name string, prio uint16, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeMX, prio, target)
-	panicOnErr(err)
-	return r
-}
-
-func ns(name, target string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeNS, target)
-	panicOnErr(err)
-	return r
-}
-
-func naptr(name string, order uint16, preference uint16, flags string, service string, regexp string, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeNAPTR, order, preference, flags, service, regexp, target)
-	panicOnErr(err)
-	return r
-}
-
-func openpgpkey(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeOPENPGPKEY, target)
-	panicOnErr(err)
-	return r
-}
-
-func ptr(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypePTR, target)
-	panicOnErr(err)
-	return r
-}
-
-func r53alias(name, aliasType, target, evalTargetHealth string) *models.RecordConfig {
-	target = fillTemplate(target)
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeR53ALIAS, aliasType, target, evalTargetHealth)
-	panicOnErr(err)
-	return r
-}
-
-func r53weighted(name, target, rtype string, weight int, setID string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, rtype, target)
-	panicOnErr(err)
-	r.Metadata = map[string]string{
-		"r53_weight":         fmt.Sprintf("%d", weight),
-		"r53_set_identifier": setID,
-	}
-	return r
-}
-
-func rp(name string, m, t string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeRP, m, t)
-	panicOnErr(err)
-	return r
-}
-
-func smimea(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSMIMEA, usage, selector, matchingtype, target)
-	panicOnErr(err)
-	return r
-}
-
-func soa(name string, ns, mbox string, serial, refresh, retry, expire, minttl uint32) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSOA, ns, mbox, serial, refresh, retry, expire, minttl)
-	panicOnErr(err)
-	return r
-}
-
-func srv(name string, priority, weight, port uint16, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSRV, priority, weight, port, target)
-	panicOnErr(err)
-	return r
-}
-
-func sshfp(name string, algorithm uint8, fingerprint uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSSHFP, algorithm, fingerprint, target)
-	panicOnErr(err)
-	return r
-}
-
-func svcb(name string, priority uint16, target string, params string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeSVCB, priority, target, params)
-	panicOnErr(err)
-	return r
-}
-
-func ovhdkim(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "DKIM")
-}
-
-func ovhspf(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "SPF")
-}
-
-func ovhdmarc(name, target string) *models.RecordConfig {
-	return makeOvhNativeRecord(name, target, "DMARC")
-}
-
-func makeOvhNativeRecord(name, target, rType string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeTXT, target)
-	panicOnErr(err)
-	r.Metadata = map[string]string{}
-	r.Metadata["create_ovh_native_record"] = rType
-	return r
 }
 
 func testgroup(desc string, items ...any) *TestGroup {
 	group := &TestGroup{Desc: desc}
 	for _, item := range items {
 		switch v := item.(type) {
-		case requiresFilter:
-			if len(group.tests) != 0 {
-				fmt.Printf("ERROR: requires() must be before all tc(): %v\n", desc)
-				os.Exit(1)
-			}
-			group.required = append(group.required, v.caps...)
 		case notFilter:
 			if len(group.tests) != 0 {
 				fmt.Printf("ERROR: not() must be before all tc(): %v\n", desc)
@@ -829,58 +518,8 @@ func tc(desc string, recs ...*models.RecordConfig) *TestCase {
 	}
 }
 
-func txt(name, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeTXT, target)
-	panicOnErr(err)
-	return r
-}
-
-// func (r *models.RecordConfig) ttl(t uint32) *models.RecordConfig {.
-func ttl(r *models.RecordConfig, t uint32) *models.RecordConfig {
-	r.TTL = t
-	return r
-}
-
-func tlsa(name string, usage, selector, matchingtype uint8, target string) *models.RecordConfig {
-	r, err := globalDC.NewRecordConfig(name, defaultTTL, dnsv2.TypeTLSA, usage, selector, matchingtype, target)
-	panicOnErr(err)
-	return r
-}
-
-func porkbunUrlfwd(name, target string) *models.RecordConfig {
-	rc, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypePORKBUNURLFWD, target)
-	panicOnErr(err)
-	return rc
-}
-
-func url(name, target string) *models.RecordConfig {
-	rc, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeURL, target)
-	panicOnErr(err)
-	return rc
-}
-
-func url301(name, target string) *models.RecordConfig {
-	rc, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeURL301, target)
-	panicOnErr(err)
-	return rc
-}
-
-func frame(name, target string) *models.RecordConfig {
-	rc, err := globalDC.NewRecordConfig(name, defaultTTL, privatetypes.TypeFRAME, target)
-	panicOnErr(err)
-	return rc
-}
-
 func tcEmptyZone() *TestCase {
 	return tc("Empty")
-}
-
-type requiresFilter struct {
-	caps []providers.Capability
-}
-
-func requires(c ...providers.Capability) requiresFilter {
-	return requiresFilter{caps: c}
 }
 
 type notFilter struct {

@@ -81,12 +81,9 @@ func init() {
 		SupportedTypes: []string{
 			"*",
 		},
-		CanAutoDNSSEC:       providers.Can("Just writes out a comment indicating DNSSEC was requested"),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
 		OfficiallySupported: providers.Can(),
+		CanAutoDNSSEC:       providers.Can("Just writes out a comment indicating DNSSEC was requested"),
 		CreateDomainsReason: "Driver just maintains list of zone files. It should automatically add missing ones.",
-		Notes:               "BIND writes zone files to a local directory; no API credentials are needed.",
 		CredFields: []providers.CredsField{
 			{
 				Key:     "directory",
@@ -101,6 +98,7 @@ func init() {
 				Default: "%c.zone",
 			},
 		},
+		Notes: "BIND writes zone files to a local directory; no API credentials are needed.",
 		PostWrite: func(fields map[string]string) error {
 			dir := fields["directory"]
 			if dir == "" {

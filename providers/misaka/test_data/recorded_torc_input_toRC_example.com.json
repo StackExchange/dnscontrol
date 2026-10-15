@@ -1,0 +1,4470 @@
+[
+  {
+    "index": 1,
+    "value": {
+      "name": "*",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3.3.3.3"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 2,
+    "value": {
+      "name": "4",
+      "type": "PTR",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "bar.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 3,
+    "value": {
+      "name": "4",
+      "type": "PTR",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 4,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 1000,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "8.8.8.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 5,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 6,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "2.3.4.5"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 7,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 8,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 9,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "4.4.4.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 10,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 500,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "8.8.8.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 11,
+    "value": {
+      "name": "@",
+      "type": "A",
+      "ttl": 666,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "8.8.8.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 12,
+    "value": {
+      "name": "@",
+      "type": "ALIAS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 13,
+    "value": {
+      "name": "@",
+      "type": "ALIAS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 14,
+    "value": {
+      "name": "@",
+      "type": "ALIAS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo2.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 15,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 issue \"letsencrypt.org; validationmethods=dns-01; accounturi=https://acme-v02.api.letsencrypt.org/acme/acct/1234\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 16,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 issue \"letsencrypt.org\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 17,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 issuewild \";\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 18,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 issuewild \"example.com\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 19,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 issuewild \"letsencrypt.org\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 20,
+    "value": {
+      "name": "@",
+      "type": "CAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "128 issue \"letsencrypt.org\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 21,
+    "value": {
+      "name": "@",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 ."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 22,
+    "value": {
+      "name": "@",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 example.com."
+        },
+        {
+          "value": "8 www.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 23,
+    "value": {
+      "name": "@",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 bar.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 24,
+    "value": {
+      "name": "@",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 25,
+    "value": {
+      "name": "@",
+      "type": "SSHFP",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1 1 66C7D5540B7D75A1FB4C84FEBFA178AD99BDD67C"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 26,
+    "value": {
+      "name": "@",
+      "type": "SSHFP",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 1 66C7D5540B7D75A1FB4C84FEBFA178AD99BDD67C"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 27,
+    "value": {
+      "name": "@",
+      "type": "SSHFP",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 2 745A635BC46A397A5C4F21D437483005BCC40D7511FF15FBFAFE913A081559BC"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 28,
+    "value": {
+      "name": "@",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"asimple\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 29,
+    "value": {
+      "name": "@",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"simple\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 30,
+    "value": {
+      "name": "_443._tcp",
+      "type": "TLSA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 0 1 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 31,
+    "value": {
+      "name": "_443._tcp",
+      "type": "TLSA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 0 2 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 32,
+    "value": {
+      "name": "_443._tcp",
+      "type": "TLSA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 0 2 fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 33,
+    "value": {
+      "name": "_443._tcp",
+      "type": "TLSA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2 1 1 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 34,
+    "value": {
+      "name": "_443._tcp",
+      "type": "TLSA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3 1 1 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 35,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "15 65 75 ."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 36,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "15 65 75 foo4.com."
+        },
+        {
+          "value": "52 6 7 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 37,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "15 65 75 foo4.com."
+        },
+        {
+          "value": "52 62 7 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 38,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "15 65 75 foo4.com."
+        },
+        {
+          "value": "52 62 72 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 39,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        },
+        {
+          "value": "15 65 75 foo3.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 40,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        },
+        {
+          "value": "15 65 75 foo4.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 41,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        },
+        {
+          "value": "5 60 70 foo2.com."
+        },
+        {
+          "value": "15 65 75 foo3.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 42,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        },
+        {
+          "value": "5 60 70 foo2.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 43,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 44,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 333,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 45,
+    "value": {
+      "name": "_sip._tcp",
+      "type": "SRV",
+      "ttl": 4400,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 6 7 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 46,
+    "value": {
+      "name": "a",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "xn--ndaaa.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 47,
+    "value": {
+      "name": "a",
+      "type": "DNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "b.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 48,
+    "value": {
+      "name": "bar",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 49,
+    "value": {
+      "name": "bar",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5.4.5.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 50,
+    "value": {
+      "name": "bar",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "redact2.acm-validations.aws."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 51,
+    "value": {
+      "name": "bar",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 bar.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 52,
+    "value": {
+      "name": "bar.bat",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5.4.5.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 53,
+    "value": {
+      "name": "decoy",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 54,
+    "value": {
+      "name": "decoy",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 55,
+    "value": {
+      "name": "decoy",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3.3.3.3"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 56,
+    "value": {
+      "name": "dyndns-city1",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "91.42.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 57,
+    "value": {
+      "name": "dyndns-city1",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2003:dd:d7ff::fe71:ce77"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 58,
+    "value": {
+      "name": "dyndns-city2",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "91.42.1.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 59,
+    "value": {
+      "name": "dyndns-city2",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2003:dd:d7ff::fe71:ce78"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 60,
+    "value": {
+      "name": "final",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"TestDNSProviders was successful!\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 61,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "11.11.11.11"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 62,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "12.12.12.12"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 63,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "13.13.13.13"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 64,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "14.14.14.14"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 65,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "9.9.9.9"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 66,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "2.3.4.5"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 67,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "3.4.5.6"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 68,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 69,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.3.4.5"
+        },
+        {
+          "value": "3.4.5.6"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 70,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.3.4.5"
+        },
+        {
+          "value": "8.8.8.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 71,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.3.4.5"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 72,
+    "value": {
+      "name": "foo",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "4.5.6.7"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 73,
+    "value": {
+      "name": "foo",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2003:dd:d7ff::fe71:aaaa"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 74,
+    "value": {
+      "name": "foo",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 75,
+    "value": {
+      "name": "foo",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "google.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 76,
+    "value": {
+      "name": "foo",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "google2.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 77,
+    "value": {
+      "name": "foo",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "redact1.acm-validations.aws."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 78,
+    "value": {
+      "name": "foo",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "10 aspmx.l.google.com."
+        },
+        {
+          "value": "20 alt1.aspmx.l.google.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 79,
+    "value": {
+      "name": "foo",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "10 foo.example.com."
+        },
+        {
+          "value": "20 bar.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 80,
+    "value": {
+      "name": "foo",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 mx.google.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 81,
+    "value": {
+      "name": "foo",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "8 example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 82,
+    "value": {
+      "name": "foo",
+      "type": "NS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 83,
+    "value": {
+      "name": "foo",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"simple\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 84,
+    "value": {
+      "name": "foo",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"v=spf1 ip4:99.99.99.99 -all\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 85,
+    "value": {
+      "name": "foo.bat",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "2.3.4.5"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 86,
+    "value": {
+      "name": "foo.bat",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"simple\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 87,
+    "value": {
+      "name": "foo0",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 88,
+    "value": {
+      "name": "foo254",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 89,
+    "value": {
+      "name": "foo255",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 90,
+    "value": {
+      "name": "foo256",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\" \"C\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 91,
+    "value": {
+      "name": "foo509",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\" \"DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 92,
+    "value": {
+      "name": "foo510",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\" \"EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 93,
+    "value": {
+      "name": "foo511",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\" \"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\" \"F\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 94,
+    "value": {
+      "name": "foo764",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\" \"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\" \"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 95,
+    "value": {
+      "name": "foo765",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\" \"HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\" \"HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 96,
+    "value": {
+      "name": "foo766",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\" \"JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\" \"JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ\" \"J\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 97,
+    "value": {
+      "name": "foobt",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"blah`blah\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 98,
+    "value": {
+      "name": "foodq",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"in\\\"side\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 99,
+    "value": {
+      "name": "foodqs",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"\\\"left\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 100,
+    "value": {
+      "name": "foodqs",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"in\\\"ter\\\"ior\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 101,
+    "value": {
+      "name": "foodqs",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"right\\\"\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 102,
+    "value": {
+      "name": "fooosbs1",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"1back\\\\slash\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 103,
+    "value": {
+      "name": "fooosbs2",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"2back\\\\\\\\slash\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 104,
+    "value": {
+      "name": "fooosbs3",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"3back\\\\\\\\\\\\slash\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 105,
+    "value": {
+      "name": "fooosbs4",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"4back\\\\\\\\\\\\\\\\slash\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 106,
+    "value": {
+      "name": "foosc1",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"semi;colon\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 107,
+    "value": {
+      "name": "foosc2",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"wssemi ; colon\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 108,
+    "value": {
+      "name": "foosp",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"with spaces\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 109,
+    "value": {
+      "name": "foosq",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"quo'te\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 110,
+    "value": {
+      "name": "foows1",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"trailingws \""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 111,
+    "value": {
+      "name": "mail",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "ghs.googlehosted.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 112,
+    "value": {
+      "name": "mail.bat",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "ghs.googlehosted.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 113,
+    "value": {
+      "name": "nmx",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.3"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 114,
+    "value": {
+      "name": "nmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "0 ."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 115,
+    "value": {
+      "name": "nmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3 nmx.example.com."
+        },
+        {
+          "value": "9 www.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 116,
+    "value": {
+      "name": "pager101-rec0000",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 117,
+    "value": {
+      "name": "pager101-rec0001",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 118,
+    "value": {
+      "name": "pager101-rec0002",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 119,
+    "value": {
+      "name": "pager101-rec0003",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 120,
+    "value": {
+      "name": "pager101-rec0004",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 121,
+    "value": {
+      "name": "pager101-rec0005",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 122,
+    "value": {
+      "name": "pager101-rec0006",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 123,
+    "value": {
+      "name": "pager101-rec0007",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 124,
+    "value": {
+      "name": "pager101-rec0008",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 125,
+    "value": {
+      "name": "pager101-rec0009",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 126,
+    "value": {
+      "name": "pager101-rec0010",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 127,
+    "value": {
+      "name": "pager101-rec0011",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 128,
+    "value": {
+      "name": "pager101-rec0012",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 129,
+    "value": {
+      "name": "pager101-rec0013",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 130,
+    "value": {
+      "name": "pager101-rec0014",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 131,
+    "value": {
+      "name": "pager101-rec0015",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 132,
+    "value": {
+      "name": "pager101-rec0016",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 133,
+    "value": {
+      "name": "pager101-rec0017",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 134,
+    "value": {
+      "name": "pager101-rec0018",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 135,
+    "value": {
+      "name": "pager101-rec0019",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 136,
+    "value": {
+      "name": "pager101-rec0020",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 137,
+    "value": {
+      "name": "pager101-rec0021",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 138,
+    "value": {
+      "name": "pager101-rec0022",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 139,
+    "value": {
+      "name": "pager101-rec0023",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 140,
+    "value": {
+      "name": "pager101-rec0024",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 141,
+    "value": {
+      "name": "pager101-rec0025",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 142,
+    "value": {
+      "name": "pager101-rec0026",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 143,
+    "value": {
+      "name": "pager101-rec0027",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 144,
+    "value": {
+      "name": "pager101-rec0028",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 145,
+    "value": {
+      "name": "pager101-rec0029",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 146,
+    "value": {
+      "name": "pager101-rec0030",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 147,
+    "value": {
+      "name": "pager101-rec0031",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 148,
+    "value": {
+      "name": "pager101-rec0032",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 149,
+    "value": {
+      "name": "pager101-rec0033",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 150,
+    "value": {
+      "name": "pager101-rec0034",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 151,
+    "value": {
+      "name": "pager101-rec0035",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 152,
+    "value": {
+      "name": "pager101-rec0036",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 153,
+    "value": {
+      "name": "pager101-rec0037",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 154,
+    "value": {
+      "name": "pager101-rec0038",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 155,
+    "value": {
+      "name": "pager101-rec0039",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 156,
+    "value": {
+      "name": "pager101-rec0040",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 157,
+    "value": {
+      "name": "pager101-rec0041",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 158,
+    "value": {
+      "name": "pager101-rec0042",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 159,
+    "value": {
+      "name": "pager101-rec0043",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 160,
+    "value": {
+      "name": "pager101-rec0044",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 161,
+    "value": {
+      "name": "pager101-rec0045",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 162,
+    "value": {
+      "name": "pager101-rec0046",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 163,
+    "value": {
+      "name": "pager101-rec0047",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 164,
+    "value": {
+      "name": "pager101-rec0048",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 165,
+    "value": {
+      "name": "pager101-rec0049",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 166,
+    "value": {
+      "name": "pager101-rec0050",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 167,
+    "value": {
+      "name": "pager101-rec0051",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 168,
+    "value": {
+      "name": "pager101-rec0052",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 169,
+    "value": {
+      "name": "pager101-rec0053",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 170,
+    "value": {
+      "name": "pager101-rec0054",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 171,
+    "value": {
+      "name": "pager101-rec0055",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 172,
+    "value": {
+      "name": "pager101-rec0056",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 173,
+    "value": {
+      "name": "pager101-rec0057",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 174,
+    "value": {
+      "name": "pager101-rec0058",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 175,
+    "value": {
+      "name": "pager101-rec0059",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 176,
+    "value": {
+      "name": "pager101-rec0060",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 177,
+    "value": {
+      "name": "pager101-rec0061",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 178,
+    "value": {
+      "name": "pager101-rec0062",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 179,
+    "value": {
+      "name": "pager101-rec0063",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 180,
+    "value": {
+      "name": "pager101-rec0064",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 181,
+    "value": {
+      "name": "pager101-rec0065",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 182,
+    "value": {
+      "name": "pager101-rec0066",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 183,
+    "value": {
+      "name": "pager101-rec0067",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 184,
+    "value": {
+      "name": "pager101-rec0068",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 185,
+    "value": {
+      "name": "pager101-rec0069",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 186,
+    "value": {
+      "name": "pager101-rec0070",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 187,
+    "value": {
+      "name": "pager101-rec0071",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 188,
+    "value": {
+      "name": "pager101-rec0072",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 189,
+    "value": {
+      "name": "pager101-rec0073",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 190,
+    "value": {
+      "name": "pager101-rec0074",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 191,
+    "value": {
+      "name": "pager101-rec0075",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 192,
+    "value": {
+      "name": "pager101-rec0076",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 193,
+    "value": {
+      "name": "pager101-rec0077",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 194,
+    "value": {
+      "name": "pager101-rec0078",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 195,
+    "value": {
+      "name": "pager101-rec0079",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 196,
+    "value": {
+      "name": "pager101-rec0080",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 197,
+    "value": {
+      "name": "pager101-rec0081",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 198,
+    "value": {
+      "name": "pager101-rec0082",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 199,
+    "value": {
+      "name": "pager101-rec0083",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 200,
+    "value": {
+      "name": "pager101-rec0084",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 201,
+    "value": {
+      "name": "pager101-rec0085",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 202,
+    "value": {
+      "name": "pager101-rec0086",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 203,
+    "value": {
+      "name": "pager101-rec0087",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 204,
+    "value": {
+      "name": "pager101-rec0088",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 205,
+    "value": {
+      "name": "pager101-rec0089",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 206,
+    "value": {
+      "name": "pager101-rec0090",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 207,
+    "value": {
+      "name": "pager101-rec0091",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 208,
+    "value": {
+      "name": "pager101-rec0092",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 209,
+    "value": {
+      "name": "pager101-rec0093",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 210,
+    "value": {
+      "name": "pager101-rec0094",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 211,
+    "value": {
+      "name": "pager101-rec0095",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 212,
+    "value": {
+      "name": "pager101-rec0096",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 213,
+    "value": {
+      "name": "pager101-rec0097",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 214,
+    "value": {
+      "name": "pager101-rec0098",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 215,
+    "value": {
+      "name": "pager101-rec0099",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 216,
+    "value": {
+      "name": "pager101-rec0100",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 217,
+    "value": {
+      "name": "test",
+      "type": "ALIAS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 218,
+    "value": {
+      "name": "test",
+      "type": "ALIAS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo2.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 219,
+    "value": {
+      "name": "test",
+      "type": "DNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 220,
+    "value": {
+      "name": "test",
+      "type": "DNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "example.net."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 221,
+    "value": {
+      "name": "testa",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 222,
+    "value": {
+      "name": "testa",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3.3.3.3"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 223,
+    "value": {
+      "name": "testa",
+      "type": "A",
+      "ttl": 333,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 224,
+    "value": {
+      "name": "testa",
+      "type": "A",
+      "ttl": 999,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 225,
+    "value": {
+      "name": "testaaaa",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2607:f8b0:4006:820::2006"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 226,
+    "value": {
+      "name": "testaaaa",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2607:f8b0:4006:820::2013"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 227,
+    "value": {
+      "name": "testcname",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "foo.example.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 228,
+    "value": {
+      "name": "testcname",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "www.google.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 229,
+    "value": {
+      "name": "testcname",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "www.yahoo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 230,
+    "value": {
+      "name": "testdefined",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 231,
+    "value": {
+      "name": "testdefined",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "9.9.9.9"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 232,
+    "value": {
+      "name": "testignore",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "8.8.8.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 233,
+    "value": {
+      "name": "testmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 bar.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 234,
+    "value": {
+      "name": "testmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 foo.com."
+        },
+        {
+          "value": "50 bar.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 235,
+    "value": {
+      "name": "testmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 236,
+    "value": {
+      "name": "testmx",
+      "type": "MX",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "50 foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 237,
+    "value": {
+      "name": "testtxt",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"changed\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 238,
+    "value": {
+      "name": "testtxt",
+      "type": "TXT",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "\"simple\""
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 239,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "2.2.2.2"
+        },
+        {
+          "value": "3.3.3.3"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 240,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        },
+        {
+          "value": "2.2.2.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 241,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.1.1.1"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 242,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "5.6.7.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 243,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 244,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.9"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 245,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        },
+        {
+          "value": "5.6.7.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 246,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5.4.5.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 247,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 400,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        },
+        {
+          "value": "5.6.7.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 248,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 400,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "5.6.7.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 249,
+    "value": {
+      "name": "www",
+      "type": "A",
+      "ttl": 700,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        },
+        {
+          "value": "5.6.7.8"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 250,
+    "value": {
+      "name": "xn--fiq228c",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 251,
+    "value": {
+      "name": "xn--ndaaa",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "1.2.3.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 252,
+    "value": {
+      "name": "xn--ndaaa",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2.2.2.2"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 253,
+    "value": {
+      "name": "xn--o-0gab",
+      "type": "CNAME",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "xn--ndaaa.xn--vhquv."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 254,
+    "value": {
+      "name": "xyz",
+      "type": "NS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "ns1.foo.com."
+        },
+        {
+          "value": "ns2.foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 255,
+    "value": {
+      "name": "xyz",
+      "type": "NS",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "ns2.foo.com."
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 256,
+    "value": {
+      "name": "zzz",
+      "type": "A",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "3.3.3.3"
+        },
+        {
+          "value": "4.4.4.4"
+        }
+      ],
+      "filters": []
+    }
+  },
+  {
+    "index": 257,
+    "value": {
+      "name": "zzz",
+      "type": "AAAA",
+      "ttl": 300,
+      "enabled": true,
+      "protected": false,
+      "alias": null,
+      "records": [
+        {
+          "value": "2003:dd:d7ff::fe71:cccc"
+        }
+      ],
+      "filters": []
+    }
+  }
+]

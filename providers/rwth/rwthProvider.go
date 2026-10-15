@@ -23,10 +23,8 @@ func init() {
 			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
 			"SRV:Can:SRV records with empty targets are not supported.",
 		},
-		CanAutoDNSSEC:       providers.Unimplemented("Supported by RWTH but not implemented yet."),
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC: providers.Unimplemented("Supported by RWTH but not implemented yet."),
+		CanDualHost:   providers.Cannot(),
 	})
 }
 

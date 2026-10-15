@@ -119,7 +119,7 @@ INWX enforces the [RFC 7505](https://www.rfc-editor.org/rfc/rfc7505.html#section
   - DNS Provider: ✅
   - Registrar: ✅
 - Provider API
-  - [Concurrency Verified](../advanced-features/concurrency-verified.md): ✅
+  - [Concurrent fetching](../advanced-features/concurrency-verified.md): ✅
   - [dual host](../advanced-features/dual-host.md): ✅
   - create-domains: ✅
   - [get-zones](../commands/get-zones.md): ✅

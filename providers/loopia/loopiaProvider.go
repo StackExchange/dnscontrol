@@ -34,7 +34,18 @@ import (
 func init() {
 	providers.Register[*APIClient]("LOOPIA", providers.Definition{
 		FriendlyName: "Loopia",
-		PortalURL:    "https://support.loopia.com/wiki/loopiaapi/",
+		Maintainer:   "@systemcrash",
+		SupportedTypes: []string{
+			"Basic8",
+			"LOC",
+			"NAPTR",
+			"SSHFP",
+			"TLSA",
+			"DS:Cannot:Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end.",
+			"SOA:Cannot:💩",
+		},
+		CanUseDSForChildren: providers.Cannot(),
+		CreateDomainsReason: "Can only manage domains registered through their service",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -50,22 +61,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@systemcrash",
-		SupportedTypes: []string{
-			"Basic8",
-			"LOC",
-			"NAPTR",
-			"SSHFP",
-			"TLSA",
-			"DS:Cannot:Only supports DS records at the apex, only for .se and .nu domains; done automatically at back-end.",
-			"SOA:Cannot:💩",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Unimplemented(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "Can only manage domains registered through their service",
+		PortalURL: "https://support.loopia.com/wiki/loopiaapi/",
 	})
 }
 

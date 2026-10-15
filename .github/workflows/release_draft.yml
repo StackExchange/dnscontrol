@@ -39,10 +39,14 @@ on:
     # NOTE: the branch to release from is chosen via the "Use workflow from"
     # dropdown (github.ref) — that is how "release from any branch" works.
 
+# Read-only by default. The `release` job grants itself the write
+# permissions it needs (contents + packages) at the job level; preflight
+# and verify never needed the workflow-wide write scopes. pull-requests
+# was removed entirely: job-level permissions fully replace the
+# workflow-level block, so the release job never had it, and this org
+# forbids GitHub Actions from creating pull requests anyway.
 permissions:
-  contents: write
-  packages: write
-  pull-requests: write
+  contents: read
 
 jobs:
   # preflight: validate the dispatch inputs before doing any real work.

@@ -2,7 +2,6 @@ package providers
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 	"sync"
@@ -84,9 +83,6 @@ func TestSupportedTypesResolution(t *testing.T) {
 					if got != *tc.want {
 						t.Fatalf("got %+v, want %+v", got, *tc.want)
 					}
-					if capability, ok := RecordTypeCapabilities[strings.ToUpper(tc.rtype)]; ok && *d.DerivedFeatures[capability] != got {
-						t.Fatal("derived capability disagrees with type support")
-					}
 				})
 			}
 		})
@@ -156,12 +152,12 @@ func TestSupportedTypesFinalization(t *testing.T) {
 	if !wildcard.RecordTypeSupport(lateName).HasFeature || !exact.RecordTypeSupport(lateName).HasFeature || rfc.RecordTypeSupport(lateName).HasFeature {
 		t.Fatal("late catalog registration was not resolved using explicit classification")
 	}
-	before := wildcard.DerivedFeatures
+	beforeGeneration, beforeCatalog := finalizedGeneration, finalizedCatalog
 	if err := Finalize(); err != nil {
 		t.Fatal(err)
 	}
-	if reflect.ValueOf(before).Pointer() != reflect.ValueOf(wildcard.DerivedFeatures).Pointer() {
-		t.Fatal("unchanged finalization replaced derived metadata")
+	if finalizedGeneration != beforeGeneration || finalizedCatalog != beforeCatalog {
+		t.Fatal("unchanged finalization changed its version")
 	}
 	// Accessors and type matching must be read-only once finalized.
 	var wg sync.WaitGroup
@@ -170,7 +166,7 @@ func TestSupportedTypesFinalization(t *testing.T) {
 			for range 10 {
 				def, _ := GetDefinition("WILDCARD")
 				_ = def.RecordTypeSupport("AKAMAITLC")
-				_ = ProviderHasCapability("WILDCARD", CanUseCAA)
+				_ = def.RecordTypeSupport("CAA")
 				_ = AllDefinitions()
 			}
 		})
@@ -195,16 +191,23 @@ func TestSupportedTypesFinalization(t *testing.T) {
 
 func TestSupportedTypesOperationalCapabilities(t *testing.T) {
 	isolateDefinitions(t)
+	Register[*definitionDNS]("CHILD_ONLY", Definition{FriendlyName: "Child only", SupportedTypes: []string{
+		"Basic8",
+	}, CanUseDSForChildren: Can()})
+	if !RecordTypeSupported("CHILD_ONLY", dnsv2.TypeDS, "child") || RecordTypeSupported("CHILD_ONLY", dnsv2.TypeDS, "@") {
+		t.Fatal("explicit child-DS support must not grant general DS support")
+	}
 	Register[*definitionDNS]("ALL", Definition{FriendlyName: "All", SupportedTypes: []string{
 		"*",
 	}, CanUseDSForChildren: Cannot("obsolete")})
 	d, _ := GetDefinition("ALL")
-	if !ProviderHasCapability("ALL", CanUseDSForChildren) || d.DerivedFeatures[CanUseDSForChildren].Comment != "" {
-		t.Fatal("general DS support must imply child support without contradictory notes")
+	if !RecordTypeSupported("ALL", dnsv2.TypeDS, "child") || !d.RecordTypeSupport("DS").HasFeature {
+		t.Fatal("general DS support must imply child support")
 	}
-	for _, capability := range []Capability{CanAutoDNSSEC, CanConcur, CanDualHost, OfficiallySupported} {
-		if ProviderHasCapability("ALL", capability) {
-			t.Fatalf("wildcard enabled operational capability %s", capability)
-		}
+	if d.CanAutoDNSSEC.HasFeature || d.OfficiallySupported != nil {
+		t.Fatal("wildcard enabled unrelated provider capabilities")
+	}
+	if !d.CanConcur.HasFeature || !d.CanDualHost.HasFeature {
+		t.Fatal("default provider capability was disabled")
 	}
 }

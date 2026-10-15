@@ -91,7 +91,13 @@ func (api *linodeProvider) Initialize(m map[string]string, _ json.RawMessage, _ 
 func init() {
 	providers.Register[*linodeProvider]("LINODE", providers.Definition{
 		FriendlyName: "Linode",
-		PortalURL:    "https://cloud.linode.com/profile/tokens", // TODO: Verify
+		Maintainer:   "@koesie10",
+		SupportedTypes: []string{
+			"Basic8",
+			"CAA:Can:Linode doesn't support changing the CAA flag",
+			"SRV:Can:Linode requires non-zero priority",
+		},
+		CanDualHost: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "token",
@@ -101,15 +107,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@koesie10",
-		SupportedTypes: []string{
-			"Basic8",
-			"CAA:Can:Linode doesn't support changing the CAA flag",
-			"SRV:Can:Linode requires non-zero priority",
-		},
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://cloud.linode.com/profile/tokens", // TODO: Verify
 	})
 }
 

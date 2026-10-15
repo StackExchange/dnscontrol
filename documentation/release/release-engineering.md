@@ -49,7 +49,7 @@ git checkout -b update_deps
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
 go mod tidy
-git commit -m "CHORE: Update dependencies" go.sum go.mod
+git commit -m "CHORE: update dependencies" go.sum go.mod
 ```
 
 Generated files, linting, etc:

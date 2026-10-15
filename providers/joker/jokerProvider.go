@@ -25,7 +25,14 @@ Info required in `creds.json`:
 func init() {
 	providers.Register[*jokerProvider]("JOKER", providers.Definition{
 		FriendlyName: "Joker.com",
-		PortalURL:    "https://joker.com/", // TODO: Verify
+		Maintainer:   "@atrull",
+		SupportedTypes: []string{
+			"Basic8",
+			"NAPTR",
+		},
+		CanConcur:           providers.Cannot("Joker API has session-based authentication"),
+		CanDualHost:         providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -41,15 +48,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@atrull",
-		SupportedTypes: []string{
-			"Basic8",
-			"NAPTR",
-		},
-		CanConcur:           providers.Cannot("Joker API has session-based authentication"),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://joker.com/", // TODO: Verify
 	})
 }
 

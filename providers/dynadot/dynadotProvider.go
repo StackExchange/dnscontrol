@@ -25,7 +25,6 @@ func init() {
 		FriendlyName:   "Dynadot",
 		Maintainer:     "@e-im",
 		SupportedTypes: []string{},
-		CanConcur:      providers.Unimplemented(),
 	})
 }
 

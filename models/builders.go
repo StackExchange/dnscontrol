@@ -21,6 +21,14 @@ func IsBuilder(name string) bool {
 	return ok
 }
 
-func (dc *DomainConfig) runBuilder(typeName string, ttl uint32, args []any, subdomain string) (Records, error) {
+func (dc *DomainConfig) runBuilder(typeName string, ttl uint32, args []any, subdomain string) (recs Records, err error) {
+	// The args come from dnsconfig.js, so they are user input and must not
+	// panic dnscontrol.  A builder that panics on user input is a bug;
+	// report it as an error instead of crashing.
+	defer func() {
+		if r := recover(); r != nil {
+			recs, err = nil, fmt.Errorf("panic building %s record (args=%v): %v", typeName, args, r)
+		}
+	}()
 	return mapBuilderNameToFn[typeName](dc, ttl, args, subdomain)
 }

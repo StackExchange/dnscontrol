@@ -30,7 +30,16 @@ func (c *websupportProvider) SetConversionObserver(observer providers.Conversion
 func init() {
 	providers.Register[*websupportProvider]("WEBSUPPORT", providers.Definition{
 		FriendlyName: "WebSupport",
-		PortalURL:    "https://admin.websupport.sk/en/auth/security",
+		Maintainer:   "@mtmn",
+		SupportedTypes: []string{
+			"Basic8",
+			"CAA:Cannot:The v2 API does not return CAA tag/flags on read, so records cannot be managed without churn.",
+			"NS:Cannot",
+			"ALIAS:Cannot:WebSupport's ANAME is apex-only and conflicts with other apex records.",
+		},
+		CanDualHost:         providers.Cannot(),
+		CanGetZonesReason:   "WebSupport has no list-all-zones endpoint.",
+		CreateDomainsReason: "Zones must be created via the WebSupport portal.",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_key",
@@ -47,18 +56,7 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@mtmn",
-		SupportedTypes: []string{
-			"Basic8",
-			"CAA:Cannot:The v2 API does not return CAA tag/flags on read, so records cannot be managed without churn.",
-			"NS:Cannot",
-			"ALIAS:Cannot:WebSupport's ANAME is apex-only and conflicts with other apex records.",
-		},
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
-		CanGetZonesReason:   "WebSupport has no list-all-zones endpoint.",
-		CreateDomainsReason: "Zones must be created via the WebSupport portal.",
+		PortalURL: "https://admin.websupport.sk/en/auth/security",
 	})
 }
 

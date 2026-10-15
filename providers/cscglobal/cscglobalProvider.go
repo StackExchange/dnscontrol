@@ -48,7 +48,6 @@ func init() {
 		SupportedTypes: []string{
 			"Basic8",
 		},
-		CanConcur:           providers.Can(),
 		OfficiallySupported: providers.Can(),
 	})
 }

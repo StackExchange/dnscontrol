@@ -29,6 +29,11 @@ concurrency:
   group: codeql-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default; the analyze job grants itself the extra
+# security-events: write it needs to upload results.
+permissions:
+  contents: read
+
 jobs:
   analyze:
     name: Analyze (go)

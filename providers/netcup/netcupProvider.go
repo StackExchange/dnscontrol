@@ -20,9 +20,7 @@ func init() {
 			"TLSA",
 			"NS:Cannot",
 		},
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		CanDualHost: providers.Cannot(),
 	})
 }
 

@@ -73,8 +73,20 @@ func (c *porkbunProvider) Initialize(m map[string]string, _ json.RawMessage, opt
 func init() {
 	providers.Register[*porkbunProvider]("PORKBUN", providers.Definition{
 		FriendlyName: "Porkbun",
-		PortalURL:    "https://porkbun.com/account/api",
-		Notes:        "Porkbun requires API access to be enabled for each domain before DNSControl can manage it.",
+		Maintainer:   "@imlonghao",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"PORKBUN_URLFWD",
+			"SSHFP",
+			"SVCB",
+			"TLSA",
+			"URL",
+			"URL301",
+		},
+		CanDualHost:         providers.Cannot(),
+		CanUseDSForChildren: providers.Cannot(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "api_key",
@@ -101,23 +113,8 @@ func init() {
 				Help:  "Retry duration limit, such as 5m. Leave blank for no limit.",
 			},
 		},
-		Maintainer: "@imlonghao",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"PORKBUN_URLFWD",
-			"SSHFP",
-			"SVCB",
-			"TLSA",
-			"URL",
-			"URL301",
-		},
-		CanAutoDNSSEC:       providers.Cannot(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Cannot(),
-		CanDualHost:         providers.Cannot(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://porkbun.com/account/api",
+		Notes:     "Porkbun requires API access to be enabled for each domain before DNSControl can manage it.",
 	})
 }
 

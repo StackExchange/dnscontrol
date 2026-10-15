@@ -17,7 +17,6 @@ func init() {
 		FriendlyName:   "OpenSRS",
 		Maintainer:     "NEEDS VOLUNTEER",
 		SupportedTypes: []string{},
-		CanConcur:      providers.Unimplemented(),
 	})
 }
 

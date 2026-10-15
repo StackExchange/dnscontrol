@@ -57,7 +57,20 @@ type inwxAPI struct {
 func init() {
 	providers.Register[*inwxAPI]("INWX", providers.Definition{
 		FriendlyName: "INWX",
-		PortalURL:    "https://www.inwx.com/en/customer",
+		Maintainer:   "@patschi",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"HTTPS",
+			"NAPTR",
+			"PTR:Can:PTR records with empty targets are not supported",
+			"SSHFP",
+			"SVCB",
+			"TLSA",
+			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
+			"LOC:Unimplemented",
+		},
+		CanAutoDNSSEC: providers.Can(),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "username",
@@ -79,23 +92,7 @@ func init() {
 				ConfirmValue: "1",
 			},
 		},
-		Maintainer: "@patschi",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"HTTPS",
-			"NAPTR",
-			"PTR:Can:PTR records with empty targets are not supported",
-			"SSHFP",
-			"SVCB",
-			"TLSA",
-			"DS:Unimplemented:DS records are only supported at the apex and require a different API call that hasn't been implemented yet.",
-			"LOC:Unimplemented",
-		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		PortalURL: "https://www.inwx.com/en/customer",
 	})
 }
 

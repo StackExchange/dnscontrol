@@ -100,8 +100,15 @@ func (a *azurednsProvider) Initialize(m map[string]string, _ json.RawMessage, op
 func init() {
 	providers.Register[*azurednsProvider]("AZURE_DNS", providers.Definition{
 		FriendlyName: "Azure DNS",
-		DocsURL:      "https://docs.dnscontrol.org/provider/azuredns",
-		PortalURL:    "https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps",
+		Maintainer:   "@vatsalyagoel",
+		SupportedTypes: []string{
+			"Basic8",
+			"AZURE_ALIAS",
+			"PTR",
+			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
+		},
+		OfficiallySupported: providers.Can(),
+		CanDualHost:         providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
 		CredFields: []providers.CredsField{
 			{
 				Key:      "SubscriptionID",
@@ -135,16 +142,8 @@ func init() {
 				Required: true,
 			},
 		},
-		Maintainer: "@vatsalyagoel",
-		SupportedTypes: []string{
-			"Basic8",
-			"AZURE_ALIAS",
-			"PTR",
-			"ALIAS:Cannot:Azure DNS does not provide a generic ALIAS functionality. Use AZURE_ALIAS instead.",
-		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Can("Azure does not permit modifying the existing NS records, only adding/removing additional records."),
-		OfficiallySupported: providers.Can(),
+		DocsURL:   "https://docs.dnscontrol.org/provider/azuredns",
+		PortalURL: "https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps",
 	})
 }
 

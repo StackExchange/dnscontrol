@@ -15,17 +15,7 @@ const clientRetries = 10
 func init() {
 	providers.Register[*nsone]("NS1", providers.Definition{
 		FriendlyName: "NS1",
-		PortalURL:    "https://my.nsone.net/#/account/settings/keys",
-		CredFields: []providers.CredsField{
-			{
-				Key:      "api_token",
-				Label:    "API token",
-				Help:     "Your NS1 API token.",
-				Secret:   true,
-				Required: true,
-			},
-		},
-		Maintainer: "@costasd",
+		Maintainer:   "@costasd",
 		SupportedTypes: []string{
 			"Basic8",
 			"ALIAS",
@@ -38,11 +28,17 @@ func init() {
 			"SVCB",
 			"TLSA",
 		},
-		CanAutoDNSSEC:       providers.Can(),
-		CanConcur:           providers.Can(),
-		CanUseDSForChildren: providers.Can(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
+		CanAutoDNSSEC: providers.Can(),
+		CredFields: []providers.CredsField{
+			{
+				Key:      "api_token",
+				Label:    "API token",
+				Help:     "Your NS1 API token.",
+				Secret:   true,
+				Required: true,
+			},
+		},
+		PortalURL: "https://my.nsone.net/#/account/settings/keys",
 	})
 }
 

@@ -60,7 +60,16 @@ func (e domainsGetListResponseError) Error() string {
 func init() {
 	providers.Register[*namecheapProvider]("NAMECHEAP", providers.Definition{
 		FriendlyName: "Namecheap",
-		PortalURL:    "https://ap.www.namecheap.com/settings/tools/apiaccess/",
+		Maintainer:   "@willpower232",
+		SupportedTypes: []string{
+			"Basic8",
+			"ALIAS",
+			"FRAME",
+			"URL",
+			"URL301",
+		},
+		CanDualHost:         providers.Cannot("Doesn't allow control of apex NS records"),
+		CreateDomainsReason: "Requires domain registered through their service",
 		CredFields: []providers.CredsField{
 			{
 				Key:      "apiuser",
@@ -81,18 +90,7 @@ func init() {
 				Help:  "Override the API base URL (for example to use the sandbox). Leave blank to use the production URL.",
 			},
 		},
-		Maintainer: "@willpower232",
-		SupportedTypes: []string{
-			"Basic8",
-			"ALIAS",
-			"FRAME",
-			"URL",
-			"URL301",
-		},
-		CanConcur:           providers.Can(),
-		CanDualHost:         providers.Cannot("Doesn't allow control of apex NS records"),
-		OfficiallySupported: providers.Cannot(),
-		CreateDomainsReason: "Requires domain registered through their service",
+		PortalURL: "https://ap.www.namecheap.com/settings/tools/apiaccess/",
 	})
 }
 

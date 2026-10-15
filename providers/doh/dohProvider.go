@@ -23,7 +23,6 @@ func init() {
 		FriendlyName:   "DNS over HTTPS",
 		Maintainer:     "@mikenz",
 		SupportedTypes: []string{},
-		CanConcur:      providers.Can(),
 	})
 }
 

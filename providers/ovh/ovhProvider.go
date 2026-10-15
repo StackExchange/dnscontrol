@@ -60,9 +60,6 @@ func init() {
 			"TLSA",
 			"LOC:Unimplemented",
 		},
-		CanConcur:           providers.Unimplemented(),
-		CanDualHost:         providers.Can(),
-		OfficiallySupported: providers.Cannot(),
 		CreateDomainsReason: "New domains require registration",
 	})
 }

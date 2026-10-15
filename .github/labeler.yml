@@ -127,6 +127,9 @@ provider-LUADNS:
 provider-MIKROTIK:
   - changed-files:
       - any-glob-to-any-file: providers/mikrotik/**
+provider-MISAKA:
+  - changed-files:
+      - any-glob-to-any-file: providers/misaka/**
 provider-MITTWALD:
   - changed-files:
       - any-glob-to-any-file: providers/mittwald/**
