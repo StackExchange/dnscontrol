@@ -30,3 +30,41 @@ func TestDomainConfig_LabelFromFQDNNoDot(t *testing.T) {
 		})
 	}
 }
+
+func TestDomainConfig_LabelFromDnsconfigjs(t *testing.T) {
+	const ip6Zone = "8.b.d.0.1.0.0.2.ip6.arpa"
+	const ip6Sub = "d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
+	const nibbleSub = "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0"
+
+	tests := []struct {
+		tname      string
+		domainname string
+		subdomain  string
+		label      string
+		want       string
+	}{
+		{"ip6 apex", ip6Zone, ip6Sub, "@", ip6Sub},
+		{"ip6 bare address is left alone", ip6Zone, ip6Sub, "2001:db8::abcd", "2001:db8::abcd"},
+		{"ip6 two addresses do not collide", ip6Zone, ip6Sub, "2001:db8::abce", "2001:db8::abce"},
+		{"ip6 other label joins the subdomain", ip6Zone, nibbleSub, "www", "www." + nibbleSub},
+		{"in-addr apex", "3.2.1.in-addr.arpa", "1", "@", "1"},
+		{"in-addr short label joins the subdomain", "3.2.1.in-addr.arpa", "1", "4", "4.1"},
+		{"in-addr dotted quad is left alone", "3.2.1.in-addr.arpa", "1", "1.2.3.4", "1.2.3.4"},
+		{"forward zone label joins the subdomain", "example.com", "sub", "www", "www.sub"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.tname, func(t *testing.T) {
+			dc, err := models.NewDomainConfig(tt.domainname)
+			if err != nil {
+				t.Fatalf("could not construct receiver type: %v", err)
+			}
+			got, err := dc.LabelFromDnsconfigjs(tt.label, tt.subdomain)
+			if err != nil {
+				t.Fatalf("LabelFromDnsconfigjs(%q, %q) returned error: %v", tt.label, tt.subdomain, err)
+			}
+			if got != tt.want {
+				t.Errorf("LabelFromDnsconfigjs(%q, %q) = %v, want %v", tt.label, tt.subdomain, got, tt.want)
+			}
+		})
+	}
+}

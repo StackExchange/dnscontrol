@@ -12,5 +12,6 @@ D(REV("2001:db8::/32"), REG_NONE, DnsProvider(DSP_BIND),
 );
 
 D_EXTEND("d.c.b.a.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa",
-    PTR("2001:db8::abcd", "abcd.example.com.")
+    PTR("2001:db8::abcd", "abcd.example.com."),
+    PTR("2001:db8::abce", "abce.example.com.")
 );
