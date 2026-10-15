@@ -52,7 +52,7 @@ fi
 go install github.com/oligot/go-mod-upgrade@latest
 go-mod-upgrade
 go mod tidy
-git commit -m "chore: Update dependencies" go.sum go.mod
+git commit -m "chore: update dependencies" go.sum go.mod
 
 # Regenerate
 bin/generate-all.sh
