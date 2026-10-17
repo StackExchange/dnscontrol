@@ -1864,9 +1864,9 @@ function DMARC_BUILDER(value) {
     }
 
     if (
-        !value.policy === "none" ||
-        !value.policy === "quarantine" ||
-        !value.policy === "reject"
+        value.policy !== "none" &&
+        value.policy !== "quarantine" &&
+        value.policy !== "reject"
     ) {
         throw "Invalid DMARC policy";
     }
@@ -1877,9 +1877,10 @@ function DMARC_BUILDER(value) {
 
     // Subdomain policy
     if (
-        !value.subdomainPolicy === "none" ||
-        !value.subdomainPolicy === "quarantine" ||
-        !value.subdomainPolicy === "reject"
+        value.subdomainPolicy &&
+        value.subdomainPolicy !== "none" &&
+        value.subdomainPolicy !== "quarantine" &&
+        value.subdomainPolicy !== "reject"
     ) {
         throw "Invalid DMARC subdomain policy";
     }
@@ -1889,9 +1890,10 @@ function DMARC_BUILDER(value) {
 
     // Nonexistent-Subdomain policy
     if (
-        !value.nonexistentSubdomainPolicy === "none" ||
-        !value.nonexistentSubdomainPolicy === "quarantine" ||
-        !value.nonexistentSubdomainPolicy === "reject"
+        value.nonexistentSubdomainPolicy &&
+        value.nonexistentSubdomainPolicy !== "none" &&
+        value.nonexistentSubdomainPolicy !== "quarantine" &&
+        value.nonexistentSubdomainPolicy !== "reject"
     ) {
         throw "Invalid DMARC nonexistent-subdomain policy";
     }
@@ -1992,9 +1994,9 @@ function DMARC_BUILDER(value) {
     // Public Suffix Domain
     if (value.publicSuffixDomain) {
         if (
-            !value.publicSuffixDomain === "u" ||
-            !value.publicSuffixDomain === "y" ||
-            !value.publicSuffixDomain === "n"
+            value.publicSuffixDomain !== "u" &&
+            value.publicSuffixDomain !== "y" &&
+            value.publicSuffixDomain !== "n"
         ) {
             throw "Invalid public-suffix-domain tag";
         }
@@ -2005,7 +2007,7 @@ function DMARC_BUILDER(value) {
     // Test mode
 
     if (value.testMode) {
-        if (!value.testMode === "y" || !value.testMode === "n") {
+        if (value.testMode !== "y" && value.testMode !== "n") {
             throw "Invalid test-mode tag";
         }
 
