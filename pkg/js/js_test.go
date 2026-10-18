@@ -200,3 +200,30 @@ func TestErrors(t *testing.T) {
 		})
 	}
 }
+
+// TestDMARCBuilderValues runs the script text itself with
+// ExecuteJavascriptString, because TestErrors passes text to
+// ExecuteJavaScript, which expects a file name.
+func TestDMARCBuilderValues(t *testing.T) {
+	tests := []struct{ desc, opts, wantErr string }{
+		{"policy only", `{policy:"reject"}`, ""},
+		{"every option valid", `{policy:"quarantine",subdomainPolicy:"none",nonexistentSubdomainPolicy:"reject",publicSuffixDomain:"u",testMode:"y"}`, ""},
+		{"bad policy", `{policy:"rejct"}`, "Invalid DMARC policy"},
+		{"bad subdomainPolicy", `{policy:"reject",subdomainPolicy:"quarentine"}`, "Invalid DMARC subdomain policy"},
+		{"bad nonexistentSubdomainPolicy", `{policy:"reject",nonexistentSubdomainPolicy:"quarentine"}`, "Invalid DMARC nonexistent-subdomain policy"},
+		{"bad publicSuffixDomain", `{policy:"reject",publicSuffixDomain:"yes"}`, "Invalid public-suffix-domain tag"},
+		{"bad testMode", `{policy:"reject",testMode:"yes"}`, "Invalid test-mode tag"},
+	}
+	for _, tst := range tests {
+		t.Run(tst.desc, func(t *testing.T) {
+			script := `D("foo.com","none",DMARC_BUILDER(` + tst.opts + `))`
+			_, err := ExecuteJavascriptString([]byte(script), true, nil)
+			switch {
+			case tst.wantErr == "" && err != nil:
+				t.Fatalf("Expected no error but found: %v", err)
+			case tst.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tst.wantErr)):
+				t.Fatalf("Expected error %q but found: %v", tst.wantErr, err)
+			}
+		})
+	}
+}
