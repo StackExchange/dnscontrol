@@ -218,12 +218,11 @@ records.
 
 Assume the builder is named "robert" and appears in `dnsconfig.js` as `ROBERT(label, data)`
 
-- Create the builder in `models/b_robert.go`
-. Register the builder:
+- Create the builder in `models/b_robert.go` and register it:
 
 ```go
 func init() {
-        RegisterBuilder("LOC", BuilderLOC)
+        RegisterBuilder("ROBERT", BuilderROBERT)
 }
 ```
 
@@ -249,11 +248,35 @@ func BuilderROBERT(dc *DomainConfig, ttl uint32, args []any, subdomain string) (
 A builder does not receive the `{foo: "foo"}` (Javascript objects) passed to the
 function in `dnsconfig.js`: `RecordBuilderFn` has no metadata parameter. A
 builder that needs an object has to move it into `args` in `pkg/js/helpers.js`
-(see `m365Options()`).
+(see `m365Options()` and `forsaleOptions()`).
 
 The builder function can do basically anything and generate as many records as it wants. `SPF_BUILDER()` returns many records. `LOC()` returns just one record.
 
-All builders must have unit tests.
+- Make the function available in `dnsconfig.js`
+
+Add it to the alphabetical list of `rawrecordBuilder()` calls in
+`pkg/js/helpers.js`, for example `var ROBERT = rawrecordBuilder("ROBERT");`.
+The name must be the one passed to `RegisterBuilder()`.
+
+- Document it
+
+Create `documentation/language-reference/domain-modifiers/ROBERT.md`. Its front
+matter (`parameters` and `parameter_types`) is what `go generate` turns into
+the TypeScript declaration in `commands/types/dnscontrol.d.ts`, so run
+`bin/generate-all.sh` afterwards. Add the page to `documentation/SUMMARY.md`
+and to the list of builders in `documentation/advanced-features/code-tricks.md`.
+
+- Test it
+
+All builders must have unit tests:
+
+- `models/b_robert_test.go` calls `BuilderROBERT()` directly, which is the
+  easiest place to test every option and every error message.
+- A test in `pkg/js/parse_tests/` (a `.js` file and the `.json` it is expected
+  to produce, optionally with a zone file per domain in a directory of the same
+  name) checks that `dnsconfig.js` reaches the builder, including `TTL()` and
+  `D_EXTEND()`. See `073-forsalebuilder.js`.
+- Calls that must fail can be added to `TestErrors` in `pkg/js/js_test.go`.
 
 ## How to manipulate domain/zone names
 
