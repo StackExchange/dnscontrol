@@ -12,7 +12,7 @@ name: "RELEASE: Make release candidate"
 #    GoReleaser directly, exactly as before.
 #
 # Either way, GoReleaser produces a DRAFT release; the release job then
-# cosign-signs checksums.txt (keyless) and uploads the signature/certificate/
+# cosign-signs checksums.txt (keyless, one Sigstore bundle) and uploads the
 # bundle alongside the artifacts, and the "provenance" job attaches SLSA
 # provenance (multiple.intoto.jsonl) to the same draft. You edit the notes and
 # click publish.
@@ -294,26 +294,46 @@ jobs:
       # there are no signing keys to manage. checksums.txt covers every
       # release artifact transitively, so signing it alone is sufficient and
       # keeps the release page tidy.
+      #
+      # cosign v3 (what cosign-installer v4.1.2 installs) writes the new
+      # Sigstore bundle format when --bundle is passed and silently ignores
+      # --output-signature / --output-certificate in that mode, so we pass
+      # --bundle only. See https://goreleaser.com/blog/cosign-v3/
       - name: Sign checksums.txt with cosign (keyless)
         run: |
           set -eu
           cd dist
           cosign sign-blob --yes checksums.txt \
-            --output-signature checksums.txt.sig \
-            --output-certificate checksums.txt.pem \
-            --bundle checksums.txt.bundle
+            --bundle checksums.txt.sigstore.json
+
+      # Run the exact verification the release notes document (see the
+      # "Verify downloads" footer in .goreleaser.yml) before anything is
+      # uploaded: a signature that cannot be verified fails the release
+      # instead of shipping. The regexp covers both entry paths (tag pushes
+      # sign with a refs/tags/ identity, dispatches with refs/heads/).
+      - name: Verify checksums.txt signature
+        run: |
+          set -eu
+          cd dist
+          test -f checksums.txt.sigstore.json
+          cosign verify-blob checksums.txt \
+            --bundle checksums.txt.sigstore.json \
+            --certificate-identity-regexp 'https://github\.com/DNSControl/dnscontrol/\.github/workflows/release_draft\.yml@refs/(tags|heads)/' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
       # gh resolves draft releases by pending tag name (the REST by-tag
       # endpoint cannot), so this attaches to the DRAFT release; --clobber
-      # makes re-runs idempotent.
-      - name: Upload cosign signature, certificate, and bundle
+      # makes re-runs idempotent. The verify step above already asserted the
+      # bundle exists, so this cannot fail on a missing file after GoReleaser
+      # has already published anything.
+      - name: Upload cosign bundle
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           cd dist
           gh release upload "$RELEASE_TAG" \
-            checksums.txt.sig checksums.txt.pem checksums.txt.bundle \
+            checksums.txt.sigstore.json \
             --clobber
 
   # Generate SLSA Build Level 3 provenance for the release artifacts and
@@ -326,6 +346,14 @@ jobs:
   provenance:
     name: SLSA provenance
     needs: release
+    # Run whenever the release job itself succeeded, on every entry path.
+    # Without this, the implicit success() makes GitHub skip this job when
+    # any job in the transitive needs chain was skipped -- which is exactly
+    # what happens on a manual tag push (preflight and verify are skipped)
+    # or a dispatch with skip_longtest=true (verify is skipped), even though
+    # release runs via its always() condition. See
+    # https://github.com/actions/runner/issues/2205
+    if: always() && needs.release.result == 'success'
     permissions:
       actions: read
       id-token: write
