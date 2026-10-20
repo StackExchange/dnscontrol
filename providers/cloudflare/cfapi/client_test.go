@@ -61,8 +61,7 @@ func TestMissingEntrypointRuleset(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = client.GetEntrypointRuleset(context.Background(), "zone-id", "http_request_dynamic_redirect")
-	var notFound *NotFoundError
-	if !errors.As(err, &notFound) {
+	if _, ok := errors.AsType[*NotFoundError](err); !ok {
 		t.Fatalf("expected NotFoundError, got %v", err)
 	}
 }
