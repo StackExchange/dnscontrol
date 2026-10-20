@@ -2051,6 +2051,22 @@ function M365_BUILDER() {
     return [m365Record.apply(null, arguments)];
 }
 
+// RFC 10023 "_for-sale" records. The builder itself is models.BuilderFORSALE;
+// forsaleOptions moves the options object into the argument list for the same
+// reason as m365Options().
+function forsaleOptions(record, processedArgs, processedMetas) {
+    if (processedMetas.length > 1) {
+        throw (
+            "FORSALE_BUILDER takes one options object; record modifiers that are objects, such as CF_PROXY_OFF, are not supported: " +
+            processedArgs[0]
+        );
+    }
+    var args = processedArgs.concat(processedMetas);
+    // The options object is an argument, not metadata.
+    processedMetas.length = 0;
+    return args;
+}
+
 // This is a no-op.  Long TXT records are handled natively now.
 function DKIM(arr) {
     return arr;
@@ -2275,6 +2291,11 @@ var DHCID = rawrecordBuilder("DHCID");
 var DNAME = rawrecordBuilder("DNAME");
 var DNSKEY = rawrecordBuilder("DNSKEY");
 var DS = rawrecordBuilder("DS");
+var FORSALE_BUILDER = rawrecordBuilder(
+    "FORSALE_BUILDER",
+    false,
+    forsaleOptions
+);
 var FRAME = rawrecordBuilder("FRAME");
 var HTTPS = rawrecordBuilder("HTTPS");
 var LOC = rawrecordBuilder("LOC");

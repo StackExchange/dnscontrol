@@ -49,6 +49,7 @@
     * [DS](language-reference/domain-modifiers/DS.md)
     * [DefaultTTL](language-reference/domain-modifiers/DefaultTTL.md)
     * [DnsProvider](language-reference/domain-modifiers/DnsProvider.md)
+    * [FORSALE_BUILDER](language-reference/domain-modifiers/FORSALE_BUILDER.md)
     * [FRAME](language-reference/domain-modifiers/FRAME.md)
     * [HTTPS](language-reference/domain-modifiers/HTTPS.md)
     * [IGNORE](language-reference/domain-modifiers/IGNORE.md)

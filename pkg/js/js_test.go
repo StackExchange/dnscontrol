@@ -191,6 +191,10 @@ func TestErrors(t *testing.T) {
 		{"M365_BUILDER unknown option", `D("foo.com","reg",M365_BUILDER("foo.com",{initialDomain:"contoso.onmicrosoft.com",zzz:1}))`},
 		{"M365_BUILDER name does not match the zone", `D("foo.com","reg",M365_BUILDER("other.com",{initialDomain:"contoso.onmicrosoft.com"}))`},
 		{"M365_BUILDER with a record modifier", `D("foo.com","reg",M365_BUILDER("foo.com",{initialDomain:"contoso.onmicrosoft.com"},CF_PROXY_OFF))`},
+		{"FORSALE_BUILDER without a label", `D("foo.com","reg",FORSALE_BUILDER({furi:"https://foo.com/buy"}))`},
+		{"FORSALE_BUILDER unknown option", `D("foo.com","reg",FORSALE_BUILDER("@",{uri:"https://foo.com/buy"}))`},
+		{"FORSALE_BUILDER bad price", `D("foo.com","reg",FORSALE_BUILDER("@",{fval:"999 EUR"}))`},
+		{"FORSALE_BUILDER with a record modifier", `D("foo.com","reg",FORSALE_BUILDER("@",{fval:"EUR999"},CF_PROXY_OFF))`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {
