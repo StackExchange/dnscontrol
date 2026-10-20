@@ -13,10 +13,14 @@ parameter_types:
 `D` adds a domain for DNSControl to manage. The first argument is the domain name
 (fully qualified `example.com` without a trailing dot). Follow it with
 [REGISTRAR](../domain-modifiers/REGISTRAR.md) unless a registrar is supplied by
-[DEFAULTS](DEFAULTS.md). An explicit registrar must immediately follow the name.
+[DEFAULTS](DEFAULTS.md) or a subsequent [D_EXTEND](D_EXTEND.md).
+In `D()`, an explicit registrar must immediately follow the name.
 Additional modifiers select DNS services with [SERVICE](../domain-modifiers/SERVICE.md),
 add records with [A](../domain-modifiers/A.md) and [CNAME](../domain-modifiers/CNAME.md),
 or add domain metadata.
+
+Registrar selection is finalized after the script and its asynchronous callbacks
+finish. `D_EXTEND()` can set or replace the registrar before that point.
 
 The legacy `D(name, registrarName, ...)` form remains supported with
 [NewRegistrar](NewRegistrar.md). See the

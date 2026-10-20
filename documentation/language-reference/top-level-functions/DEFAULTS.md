@@ -10,7 +10,8 @@ parameter_types:
 arguments passed as if they were the first modifiers in the argument list.
 
 A [REGISTRAR](../domain-modifiers/REGISTRAR.md) default supplies the registrar
-when a domain has no explicit selection. An explicit registrar overrides it.
+when a domain has no explicit selection. An explicit registrar in `D()` or
+`D_EXTEND()` overrides it for that domain.
 [SERVICE](../domain-modifiers/SERVICE.md) defaults supply DNS services and may
 include configuration metadata. Repeating metadata for the same domain and
 entry in `D()` or `D_EXTEND()` is an error, even when the values match.

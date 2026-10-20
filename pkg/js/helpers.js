@@ -130,24 +130,31 @@ function REGISTRAR(name) {
     }
     var modifier = function (d) {
         var state = d._registrarState;
-        if (state.inExtension) {
-            throw "REGISTRAR cannot be used in D_EXTEND().";
-        }
-        if (!state.applyingDefaults && !state.allowRegistrar) {
+        if (
+            !state.extension &&
+            !state.applyingDefaults &&
+            !state.allowRegistrar
+        ) {
             throw "REGISTRAR must immediately follow the domain name in D().";
         }
-        var key = state.applyingDefaults ? "defaultName" : "explicitName";
-        if (typeof state[key] !== "undefined" && state[key] !== name) {
+        var key =
+            !state.extension && state.applyingDefaults
+                ? "defaultName"
+                : "explicitName";
+        // Extensions replace earlier selections, but must agree within one call.
+        var assignments = state.extension || state;
+        if (typeof assignments[key] !== "undefined" && assignments[key] !== name) {
             throw (
                 'Conflicting registrars for domain "' +
                 d.name +
                 '": "' +
-                state[key] +
+                assignments[key] +
                 '" and "' +
                 name +
                 '".'
             );
         }
+        assignments[key] = name;
         state[key] = name;
         state[key + "IsModifier"] = true;
         state.requireRegistrar = true;
@@ -354,14 +361,14 @@ function D_EXTEND(name) {
     );
 
     var state = domain.obj._registrarState;
-    state.inExtension = true;
+    var previousExtension = state.extension;
+    state.extension = {};
     try {
         for (var i = 1; i < arguments.length; i++) {
             processDargs(arguments[i], domain.obj);
         }
     } finally {
-        state.inExtension = false;
-        state.allowRegistrar = false;
+        state.extension = previousExtension;
     }
     conf.domains[domain.id] = domain.obj; // let's overwrite the object.
 }

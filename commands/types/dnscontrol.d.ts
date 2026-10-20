@@ -761,10 +761,14 @@ declare function CSYNC(name: string, serial: number, flags: number, types: strin
  * `D` adds a domain for DNSControl to manage. The first argument is the domain name
  * (fully qualified `example.com` without a trailing dot). Follow it with
  * [REGISTRAR](../domain-modifiers/REGISTRAR.md) unless a registrar is supplied by
- * [DEFAULTS](DEFAULTS.md). An explicit registrar must immediately follow the name.
+ * [DEFAULTS](DEFAULTS.md) or a subsequent [D_EXTEND](D_EXTEND.md).
+ * In `D()`, an explicit registrar must immediately follow the name.
  * Additional modifiers select DNS services with [SERVICE](../domain-modifiers/SERVICE.md),
  * add records with [A](../domain-modifiers/A.md) and [CNAME](../domain-modifiers/CNAME.md),
  * or add domain metadata.
+ *
+ * Registrar selection is finalized after the script and its asynchronous callbacks
+ * finish. `D_EXTEND()` can set or replace the registrar before that point.
  *
  * The legacy `D(name, registrarName, ...)` form remains supported with
  * [NewRegistrar](NewRegistrar.md). See the
@@ -871,7 +875,8 @@ declare function D(name: string, registrarOrModifier?: (string | DomainModifier)
  * arguments passed as if they were the first modifiers in the argument list.
  *
  * A [REGISTRAR](../domain-modifiers/REGISTRAR.md) default supplies the registrar
- * when a domain has no explicit selection. An explicit registrar overrides it.
+ * when a domain has no explicit selection. An explicit registrar in `D()` or
+ * `D_EXTEND()` overrides it for that domain.
  * [SERVICE](../domain-modifiers/SERVICE.md) defaults supply DNS services and may
  * include configuration metadata. Repeating metadata for the same domain and
  * entry in `D()` or `D_EXTEND()` is an error, even when the values match.
@@ -1243,15 +1248,22 @@ declare function DS(name: string, keytag: number, algorithm: number, digesttype:
  *
  * [SERVICE](../domain-modifiers/SERVICE.md) can add a DNS service or its metadata.
  * Metadata may be supplied only once per domain and credential entry, including
- * across defaults, `D()`, and extensions. An explicit
- * [REGISTRAR](../domain-modifiers/REGISTRAR.md) must immediately follow the name;
- * it may override a default registrar but cannot conflict with an explicit one.
+ * across defaults, `D()`, and extensions.
  *
- * The first argument is a domain name. If it exactly matches a previously defined domain, `D_EXTEND()` behaves the same as [`D()`](D.md), simply adding records as if they had been specified in the original [`D()`](D.md).
+ * [REGISTRAR](../domain-modifiers/REGISTRAR.md) can set or replace the domain's
+ * registrar. It may appear anywhere among the modifiers, including in nested arrays.
+ * It overrides defaults and earlier selections; the last assignment executed wins.
+ * Different registrar selections within one `D_EXTEND()` call are an error.
+ * `REGISTRAR()` with no arguments disables registrar management.
+ *
+ * The first argument is a domain name. If it exactly matches a previously defined domain, `D_EXTEND()` adds its records and DNS-service modifiers to that domain.
  *
  * If the domain name does not match an existing domain, but could be a (non-delegated) subdomain of an existing domain, the new records (and metadata) are added with the subdomain part appended to all record names (labels), and targets (as appropriate). See the examples below.
  *
  * Matching the domain name to previously-defined domains is done using a `longest match` algorithm. If `domain.tld` and `sub.domain.tld` are defined as separate domains via separate [`D()`](D.md) statements, then `D_EXTEND("sub.sub.domain.tld", ...)` would match `sub.domain.tld`, not `domain.tld`.
+ *
+ * When extending a subdomain, `REGISTRAR()` changes the registrar for the entire
+ * matched domain. It does not create a separate domain or registrar for the subdomain.
  *
  * Some operators only act on an apex domain (e.g. [`CF_SINGLE_REDIRECT`](../domain-modifiers/CF_SINGLE_REDIRECT.md), [`CF_REDIRECT`](../domain-modifiers/CF_REDIRECT.md), and [`CF_TEMP_REDIRECT`](../domain-modifiers/CF_TEMP_REDIRECT.md)). Using them in a `D_EXTEND` subdomain may not be what you expect.
  *
@@ -3597,28 +3609,61 @@ declare function R53_ZONE(zone_id: string): DomainModifier & RecordModifier;
 
 /**
  * `REGISTRAR(credEntry)` selects the registrar using an entry name from creds.json.
- * The entry's `TYPE` determines the provider. No `NewRegistrar()` declaration is
- * needed. Omit `credEntry` to select `"none"`; `REGISTRAR()` disables registrar
- * management. An empty string is an error.
  *
- * An explicit `REGISTRAR()` must immediately follow the domain name in `D()` or
- * `D_EXTEND()`. It accepts no configuration metadata.
+ * No `NewRegistrar()` declaration is needed.
+ *
+ * `REGISTRAR()` is an alias for `REGISTRAR("none")`, which disables registrar management.
+ *
+ * In `D()`, `REGISTRAR()` must immediately follow the domain name.
  *
  * ```javascript
- * D("example.com", REGISTRAR("gandi_main"), SERVICE("gandi_main"),
+ * D("example.com", REGISTRAR("gandi_main"),
+ *     SERVICE("gandi_main"),
+ *     A("@", "192.0.2.1"),
+ * );
+ *
+ * D("example.net", REGISTRAR(),
+ *     SERVICE("gandi_main"),
  *     A("@", "192.0.2.1"),
  * );
  * ```
  *
- * It may also appear in `DEFAULTS()`. A domain's explicit registrar overrides the
- * default; conflicting explicit selections are errors. A domain needs an explicit
- * registrar or a default, even when the DNS service uses the same credential entry.
+ * `REGISTRAR()` may appear in `DEFAULTS()`, but setting a `REGISTRAR()` in `D()` or
+ * `D_EXTEND()` will override it for that domain.
  *
  * ```javascript
- * DEFAULTS(REGISTRAR(), SERVICE("bind", 0));
+ * DEFAULTS(
+ *     REGISTRAR(),
+ *     SERVICE("bind", 0),
+ * );
+ *
  * D("example.com", A("@", "192.0.2.1"));
  * D("example.net", REGISTRAR("gandi_main"), A("@", "192.0.2.2"));
  * ```
+ *
+ * `REGISTRAR()` may appear anywhere among the modifiers in
+ * [`D_EXTEND()`](../top-level-functions/D_EXTEND.md), including inside nested arrays.
+ * It replaces the registrar previously selected by defaults, `D()` (including the
+ * legacy positional form), or an earlier extension. The last registrar assignment
+ * executed wins. Different registrar selections within a single `D_EXTEND()` call
+ * are an error; repeating the same selection is allowed.
+ *
+ * ```javascript
+ * D("example.org", REGISTRAR("old_registrar"), SERVICE("dns_main"));
+ * D_EXTEND("example.org",
+ *     A("@", "192.0.2.3"),
+ *     REGISTRAR("new_registrar"),
+ * );
+ *
+ * // A later extension can disable registrar management.
+ * D_EXTEND("example.org", REGISTRAR());
+ * ```
+ *
+ * A domain may also receive its first registrar selection through `D_EXTEND()`.
+ * Registrar selection is finalized after the script and its asynchronous callbacks
+ * finish. A domain still missing a required registrar at that point is an error.
+ * Registrar changes leave DNS services and their metadata unchanged.
+ * `REGISTRAR()` does not accept configuration metadata.
  *
  * The legacy [NewRegistrar](../top-level-functions/NewRegistrar.md) helper remains
  * supported. See the [conversion guide](../../getting-started/converting-dnsconfig.md).

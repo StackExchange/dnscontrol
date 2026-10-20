@@ -77,6 +77,84 @@ func TestProviderSyntaxCompatibility(t *testing.T) {
 				D("example.com"); D_EXTEND("example.com", SERVICE("dns", 0));`,
 		},
 		{
+			name:   "extension supplies missing registrar",
+			legacy: `NewRegistrar("reg"); NewDnsProvider("dns"); D("example.com", "reg", DnsProvider("dns", 0), {flag: "value"}, A("@", "192.0.2.1"));`,
+			modern: `D("example.com", SERVICE("dns", 0), {flag: "value"});
+				D_EXTEND("example.com", A("@", "192.0.2.1"), REGISTRAR("reg"));`,
+		},
+		{
+			name:   "extension overrides default for one domain",
+			legacy: `NewRegistrar("chosen"); NewRegistrar("default"); D("example.com", "chosen"); D("example.net", "default");`,
+			modern: `DEFAULTS(REGISTRAR("default")); D("example.com"); D("example.net");
+				D_EXTEND("example.com", REGISTRAR("chosen"));`,
+		},
+		{
+			name:   "extension overrides explicit registrar",
+			legacy: `NewRegistrar("chosen"); D("example.com", "chosen");`,
+			modern: `D("example.com", REGISTRAR("unused"));
+				D_EXTEND("example.com", REGISTRAR("chosen"));`,
+		},
+		{
+			name: "extension overrides legacy positional registrar and preserves declarations",
+			legacy: `NewRegistrar("old", "OLD", {role: "old"}); NewRegistrar("chosen", "NEW", {role: "chosen"});
+				D("example.com", "chosen");`,
+			modern: `NewRegistrar("old", "OLD", {role: "old"}); NewRegistrar("chosen", "NEW", {role: "chosen"});
+				D("example.com", "old"); D_EXTEND("example.com", REGISTRAR("chosen"));`,
+		},
+		{
+			name:   "last extension registrar wins",
+			legacy: `NewRegistrar("last"); D("example.com", "last", A("@", "192.0.2.1"));`,
+			modern: `D("example.com", REGISTRAR("first"));
+				D_EXTEND("example.com", REGISTRAR("second"));
+				D_EXTEND("example.com", REGISTRAR("last"));
+				D_EXTEND("example.com", A("@", "192.0.2.1"));`,
+		},
+		{
+			name:   "nested arrays and repeated extension registrar",
+			legacy: `NewRegistrar("reg"); D("example.com", "reg", A("@", "192.0.2.1"));`,
+			modern: `D("example.com", REGISTRAR("unused"));
+				D_EXTEND("example.com", A("@", "192.0.2.1"), [REGISTRAR("reg"), [REGISTRAR("reg")]]);`,
+		},
+		{
+			name:   "extension disables registrar management",
+			legacy: `NewRegistrar("none"); D("example.com", "none");`,
+			modern: `D("example.com", REGISTRAR("unused")); D_EXTEND("example.com", REGISTRAR());`,
+		},
+		{
+			name:   "asynchronous extension supplies registrar",
+			legacy: `NewRegistrar("reg"); D("example.com", "reg");`,
+			modern: `D("example.com");
+				setTimeout(function () { D_EXTEND("example.com", REGISTRAR("reg")); }, 1);`,
+		},
+		{
+			name:   "asynchronous extension overrides registrar",
+			legacy: `NewRegistrar("reg"); D("example.com", "reg");`,
+			modern: `D("example.com", REGISTRAR("unused"));
+				setTimeout(function () { D_EXTEND("example.com", REGISTRAR("reg")); }, 1);`,
+		},
+		{
+			name:   "subdomain extension selects registrar for matched domain",
+			legacy: `NewRegistrar("parent"); NewRegistrar("child"); D("example.com", "parent"); D("sub.example.com", "child");`,
+			modern: `D("example.com", REGISTRAR("parent")); D("sub.example.com", REGISTRAR("unused"));
+				D_EXTEND("www.sub.example.com", REGISTRAR("child"));`,
+		},
+		{
+			name:   "nested extension calls have independent registrar assignments",
+			legacy: `NewRegistrar("inner"); D("example.com", "inner");`,
+			modern: `D("example.com");
+				D_EXTEND("example.com", REGISTRAR("outer"), function () {
+					D_EXTEND("example.com", REGISTRAR("inner"));
+				});`,
+		},
+		{
+			name:   "nested extension restores outer registrar scope",
+			legacy: `NewRegistrar("outer"); D("example.com", "outer");`,
+			modern: `D("example.com");
+				D_EXTEND("example.com", REGISTRAR("outer"), function () {
+					D_EXTEND("example.com", REGISTRAR("inner"));
+				}, REGISTRAR("outer"));`,
+		},
+		{
 			name:   "asynchronous finalization",
 			legacy: `NewRegistrar("reg"); NewDnsProvider("dns"); D("example.com", "reg", DnsProvider("dns"));`,
 			modern: `D("example.com", REGISTRAR("reg"));
@@ -142,10 +220,12 @@ func TestProviderSyntaxErrors(t *testing.T) {
 		{"registrar in array", `D("example.com", [REGISTRAR("reg")]);`, "must immediately follow"},
 		{"second registrar", `D("example.com", REGISTRAR("one"), REGISTRAR("two"));`, "must immediately follow"},
 		{"positional conflict", `D("example.com", "one", REGISTRAR("two"));`, "must immediately follow"},
-		{"extension registrar", `D("example.com", REGISTRAR("one")); D_EXTEND("example.com", REGISTRAR("two"));`, "cannot be used in D_EXTEND"},
-		{"late extension registrar", `D("example.com", REGISTRAR("reg")); D_EXTEND("example.com", A("@","192.0.2.1"), REGISTRAR("reg"));`, "cannot be used in D_EXTEND"},
-		{"nested extension registrar", `D("example.com", REGISTRAR()); D_EXTEND("example.com", [REGISTRAR()]);`, "cannot be used in D_EXTEND"},
-		{"async extension registrar", `D("example.com", REGISTRAR("one")); setTimeout(function() {D_EXTEND("example.com", REGISTRAR("two"));},1);`, "cannot be used in D_EXTEND"},
+		{"conflicting extension registrars", `D("example.com", REGISTRAR("old")); D_EXTEND("example.com", REGISTRAR("one"), REGISTRAR("two"));`, "Conflicting registrars"},
+		{"conflicting nested array registrars", `D("example.com"); D_EXTEND("example.com", [REGISTRAR("one"), [REGISTRAR("two")]]);`, "Conflicting registrars"},
+		{"nested extension restores conflict tracking", `D("example.com"); D_EXTEND("example.com", REGISTRAR("one"), function () { D_EXTEND("example.com", REGISTRAR("two")); }, REGISTRAR("two"));`, "Conflicting registrars"},
+		{"conflicting async extension registrars", `D("example.com"); setTimeout(function () { D_EXTEND("example.com", REGISTRAR("one"), REGISTRAR("two")); }, 1);`, "Conflicting registrars"},
+		{"extension still missing registrar", `D("example.com"); D_EXTEND("example.com", SERVICE("dns"));`, "requires a registrar"},
+		{"extension requires existing domain", `D_EXTEND("example.com", REGISTRAR("reg"));`, "was not declared yet"},
 		{"conflicting defaults", `DEFAULTS(REGISTRAR("one"), REGISTRAR("two")); D("example.com");`, "Conflicting registrars"},
 		{"empty registrar", `REGISTRAR("");`, "nonempty credential entry name"},
 		{"registrar metadata", `REGISTRAR("reg", {});`, "configMetadata is not supported"},
