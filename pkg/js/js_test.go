@@ -231,3 +231,25 @@ func TestDMARCBuilderValues(t *testing.T) {
 		})
 	}
 }
+
+// TestDKIMBuilderNote checks that a non-ASCII note is written as UTF-8 octets.
+func TestDKIMBuilderNote(t *testing.T) {
+	tests := []struct{ desc, note, want string }{
+		{"ascii", "a note", "v=DKIM1; n=a=20note; p=abc"},
+		{"two-octet character", "café", "v=DKIM1; n=caf=C3=A9; p=abc"},
+		{"three-octet character", "€5", "v=DKIM1; n==E2=82=AC5; p=abc"},
+		{"four-octet character", "\U0001F600", "v=DKIM1; n==F0=9F=98=80; p=abc"},
+	}
+	for _, tst := range tests {
+		t.Run(tst.desc, func(t *testing.T) {
+			script := `D("foo.com","none",DKIM_BUILDER({selector:"s1",pubkey:"abc",note:"` + tst.note + `"}))`
+			conf, err := ExecuteJavascriptString([]byte(script), true, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := conf.Domains[0].Records[0].GetTargetTXTJoined(); got != tst.want {
+				t.Fatalf("Expected %q but found %q", tst.want, got)
+			}
+		})
+	}
+}
