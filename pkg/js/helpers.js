@@ -1864,9 +1864,9 @@ function DMARC_BUILDER(value) {
     }
 
     if (
-        !value.policy === "none" ||
-        !value.policy === "quarantine" ||
-        !value.policy === "reject"
+        value.policy !== "none" &&
+        value.policy !== "quarantine" &&
+        value.policy !== "reject"
     ) {
         throw "Invalid DMARC policy";
     }
@@ -1877,9 +1877,10 @@ function DMARC_BUILDER(value) {
 
     // Subdomain policy
     if (
-        !value.subdomainPolicy === "none" ||
-        !value.subdomainPolicy === "quarantine" ||
-        !value.subdomainPolicy === "reject"
+        value.subdomainPolicy &&
+        value.subdomainPolicy !== "none" &&
+        value.subdomainPolicy !== "quarantine" &&
+        value.subdomainPolicy !== "reject"
     ) {
         throw "Invalid DMARC subdomain policy";
     }
@@ -1889,9 +1890,10 @@ function DMARC_BUILDER(value) {
 
     // Nonexistent-Subdomain policy
     if (
-        !value.nonexistentSubdomainPolicy === "none" ||
-        !value.nonexistentSubdomainPolicy === "quarantine" ||
-        !value.nonexistentSubdomainPolicy === "reject"
+        value.nonexistentSubdomainPolicy &&
+        value.nonexistentSubdomainPolicy !== "none" &&
+        value.nonexistentSubdomainPolicy !== "quarantine" &&
+        value.nonexistentSubdomainPolicy !== "reject"
     ) {
         throw "Invalid DMARC nonexistent-subdomain policy";
     }
@@ -1992,9 +1994,9 @@ function DMARC_BUILDER(value) {
     // Public Suffix Domain
     if (value.publicSuffixDomain) {
         if (
-            !value.publicSuffixDomain === "u" ||
-            !value.publicSuffixDomain === "y" ||
-            !value.publicSuffixDomain === "n"
+            value.publicSuffixDomain !== "u" &&
+            value.publicSuffixDomain !== "y" &&
+            value.publicSuffixDomain !== "n"
         ) {
             throw "Invalid public-suffix-domain tag";
         }
@@ -2005,7 +2007,7 @@ function DMARC_BUILDER(value) {
     // Test mode
 
     if (value.testMode) {
-        if (!value.testMode === "y" || !value.testMode === "n") {
+        if (value.testMode !== "y" && value.testMode !== "n") {
             throw "Invalid test-mode tag";
         }
 
@@ -2047,6 +2049,22 @@ var m365Record = rawrecordBuilder("M365_BUILDER", false, m365Options);
 // returning the modifier in one keeps those calls working.
 function M365_BUILDER() {
     return [m365Record.apply(null, arguments)];
+}
+
+// RFC 10023 "_for-sale" records. The builder itself is models.BuilderFORSALE;
+// forsaleOptions moves the options object into the argument list for the same
+// reason as m365Options().
+function forsaleOptions(record, processedArgs, processedMetas) {
+    if (processedMetas.length > 1) {
+        throw (
+            "FORSALE_BUILDER takes one options object; record modifiers that are objects, such as CF_PROXY_OFF, are not supported: " +
+            processedArgs[0]
+        );
+    }
+    var args = processedArgs.concat(processedMetas);
+    // The options object is an argument, not metadata.
+    processedMetas.length = 0;
+    return args;
 }
 
 // This is a no-op.  Long TXT records are handled natively now.
@@ -2273,6 +2291,11 @@ var DHCID = rawrecordBuilder("DHCID");
 var DNAME = rawrecordBuilder("DNAME");
 var DNSKEY = rawrecordBuilder("DNSKEY");
 var DS = rawrecordBuilder("DS");
+var FORSALE_BUILDER = rawrecordBuilder(
+    "FORSALE_BUILDER",
+    false,
+    forsaleOptions
+);
 var FRAME = rawrecordBuilder("FRAME");
 var HTTPS = rawrecordBuilder("HTTPS");
 var LOC = rawrecordBuilder("LOC");

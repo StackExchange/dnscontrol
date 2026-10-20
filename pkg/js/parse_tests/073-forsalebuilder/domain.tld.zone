@@ -1,0 +1,8 @@
+$TTL 300
+_for-sale        IN TXT   "v=FORSALE1;"
+_for-sale.exco 3600 IN TXT "v=FORSALE1;fcod=EXCO-ZGVhZGJlZWYx"
+           3600  IN TXT   "v=FORSALE1;fcod=XYZ1-MTExLTIyMi0zMzMtNDQ0"
+           3600  IN TXT   "v=FORSALE1;ftxt=This domain name is for sale"
+           3600  IN TXT   "v=FORSALE1;furi=https://fs.example.com/"
+           3600  IN TXT   "v=FORSALE1;fval=EUR500"
+_for-sale.sub    IN TXT   "v=FORSALE1;furi=mailto:hq@example.com?subject=foo"
