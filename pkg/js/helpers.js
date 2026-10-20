@@ -1632,6 +1632,8 @@ function _encodeDKIMQuotedPrintable(str) {
     var hexChars = "0123456789ABCDEF".split("");
     var result = "";
 
+    // Encode the UTF-8 octets, not the UTF-16 code units.
+    str = unescape(encodeURIComponent(str));
     for (var i = 0; i < str.length; i++) {
         var charCode = str.charCodeAt(i);
         if (
