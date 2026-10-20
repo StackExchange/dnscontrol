@@ -729,6 +729,9 @@ func (c *cloudflareProvider) Initialize(m map[string]string, metadata json.RawMe
 	}
 
 	optRP := cloudflare.UsingRetryPolicy(20, 1, 120)
+	// UsingRetryPolicy is documented here:
+	// https://pkg.go.dev/github.com/cloudflare/cloudflare-go#UsingRetryPolicy
+	// The defaults are UsingRetryPolicy(3, 1, 30)
 
 	var err error
 	if m["apitoken"] != "" {
