@@ -1280,7 +1280,7 @@ function GIDINET_PREMIUM_NS() {
 // ttl: The time for TTL, integer or string. (default: not defined, using DefaultTTL)
 
 function LOC_BUILDER_DD(value) {
-    if (!value.x && !value.y) {
+    if (value.x === undefined || value.y === undefined) {
         throw "LOC_BUILDER_DD requires x and y elements";
     }
 
