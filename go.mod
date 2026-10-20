@@ -19,12 +19,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.9
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.70.4
-	github.com/aws/aws-sdk-go-v2/service/route53domains v1.45.0
+	github.com/aws/aws-sdk-go-v2/service/route53domains v1.45.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.4
 	github.com/babolivier/go-doh-client v0.0.0-20201028162107-a76cff4cb8b6
-	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.23
+	github.com/centralnicgroup-opensource/rtldev-middleware-go-sdk/v5 v5.0.24
 	github.com/cloudflare/cloudflare-go v0.119.0
-	github.com/digitalocean/godo v1.225.0
+	github.com/digitalocean/godo v1.229.0
 	github.com/ditashi/jsbeautifier-go v0.0.0-20141206144643-2520a8026a9c
 	github.com/dnsimple/dnsimple-go/v8 v8.3.1
 	github.com/dustin/go-humanize v1.1.0
@@ -42,7 +42,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0
 	github.com/luadns/luadns-go v0.3.0
 	github.com/mattn/go-isatty v0.0.24
-	github.com/mittwald/api-client-go v0.2.248
+	github.com/mittwald/api-client-go v0.2.251
 	github.com/mittwald/go-powerdns v0.6.7
 	github.com/namecheap/go-spaceship-sdk v0.2.2
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
@@ -60,8 +60,8 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.39.0
 	github.com/softlayer/softlayer-go v1.2.1
 	github.com/stretchr/testify v1.12.1
-	github.com/tencentcloud/tencentcloud-sdk-go-intl-en v3.0.1503+incompatible
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.193
+	github.com/tencentcloud/tencentcloud-sdk-go-intl-en v3.0.1505+incompatible
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.195
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.3.131
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/domain v1.3.66
 	github.com/transip/gotransip/v6 v6.28.0
@@ -74,7 +74,7 @@ require (
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/text v0.43.0
 	golang.org/x/time v0.16.0
-	google.golang.org/api v0.304.0
+	google.golang.org/api v0.305.0
 	gopkg.in/ns1/ns1-go.v2 v2.18.0
 	gopkg.in/yaml.v3 v3.0.1
 )
