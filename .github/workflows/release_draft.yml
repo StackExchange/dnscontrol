@@ -13,9 +13,9 @@ name: "RELEASE: Make release candidate"
 #
 # Either way, GoReleaser produces a DRAFT release; the release job then
 # cosign-signs checksums.txt (keyless, one Sigstore bundle) and uploads the
-# bundle alongside the artifacts, and the "provenance" job attaches SLSA
-# provenance (multiple.intoto.jsonl) to the same draft. You edit the notes and
-# click publish.
+# bundle alongside the artifacts, the "provenance" job generates SLSA
+# provenance (multiple.intoto.jsonl), and the "upload-provenance" job
+# attaches it to the same draft. You edit the notes and click publish.
 
 on:
   push:
@@ -120,6 +120,9 @@ jobs:
     outputs:
       # Subject digests (base64 sha256sum) handed to the SLSA provenance job.
       hashes: ${{ steps.hash.outputs.hashes }}
+      # The tag identifying the draft release; handed to the
+      # upload-provenance job (gh resolves drafts by pending tag name).
+      tag: ${{ steps.resolve-tag.outputs.tag }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -263,7 +266,9 @@ jobs:
       # Resolve the tag that identifies the draft release GoReleaser just
       # created. Dispatch runs pass the version as an input (the workflow
       # itself runs on a branch ref); tag pushes have the tag in GITHUB_REF.
+      # Exported as a job output so the upload-provenance job can reuse it.
       - name: Resolve release tag
+        id: resolve-tag
         env:
           EVENT: ${{ github.event_name }}
           INPUT_VERSION: ${{ inputs.version }}
@@ -276,6 +281,7 @@ jobs:
             tag="$REF_NAME"
           fi
           echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       # Subject digests for the SLSA provenance generator: everything that
       # lands on the release page (archives, rpm/deb packages, checksums.txt).
@@ -336,9 +342,26 @@ jobs:
             checksums.txt.sigstore.json \
             --clobber
 
-  # Generate SLSA Build Level 3 provenance for the release artifacts and
-  # attach it to the (draft) release as multiple.intoto.jsonl. This is what
-  # OpenSSF Scorecard's Signed-Releases check recognizes; see also issue #3468.
+  # Generate SLSA Build Level 3 provenance for the release artifacts as
+  # multiple.intoto.jsonl. This is what OpenSSF Scorecard's Signed-Releases
+  # check recognizes; see also issue #3468.
+  #
+  # upload-assets MUST be false: the generator's built-in uploader cannot
+  # attach to the GoReleaser draft in this repo. It uploads via
+  # softprops/action-gh-release v2.2.1 (pinned by generator v2.1.0), whose
+  # draft lookup paginates through ALL releases and reassigns its
+  # found-release variable on every page -- only the LAST (oldest) page's
+  # match survives. This repo has more than 100 releases, so the draft
+  # (newest, page 1) is found and then overwritten by the last page, and the
+  # action falls back to CREATING A SECOND DRAFT RELEASE for the same tag
+  # instead of attaching to ours. Confirmed live in the first dry-run (run
+  # 39435368847: two v5.5.99-rc1 drafts); the repo where this pattern was
+  # validated has only 45 releases, so the buggy path never triggered there.
+  # Tracked upstream as slsa-framework/slsa-github-generator#4000 (c-ares
+  # hit the same thing and adopted this same workaround). The
+  # upload-provenance job below attaches the provenance instead, using
+  # "gh release upload", which resolves drafts by pending tag name -- the
+  # same mechanism the cosign bundle upload already uses.
   #
   # The generator MUST be referenced by tag, not SHA: its internal builder
   # checkout fails with "Invalid ref" when pinned to a commit, hence the
@@ -355,17 +378,43 @@ jobs:
     # https://github.com/actions/runner/issues/2205
     if: always() && needs.release.result == 'success'
     permissions:
-      actions: read
-      id-token: write
-      contents: write
+      # What the generator's internal jobs declare, minus the contents:write
+      # its (now-bypassed) uploader needed. upload-provenance grants itself
+      # contents:write instead.
+      actions: read # generator reads the workflow path
+      id-token: write # generator signs the provenance with OIDC
+      contents: read # generator declares this; it no longer uploads anything
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0 # zizmor: ignore[unpinned-uses]
     with:
       base64-subjects: "${{ needs.release.outputs.hashes }}"
-      upload-assets: true
-      # Tag-push runs carry the tag in github.ref; dispatch runs run on the
-      # branch ref instead, so the generator needs the tag passed explicitly.
-      upload-tag-name: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '' }}
-      # GoReleaser leaves the release in DRAFT. "true" is required for the
-      # generator's uploader to find it (GET releases/tags/{tag} cannot see
-      # drafts) and to keep it a draft; publishing remains a human step.
-      draft-release: "true"
+      upload-assets: false
+
+  # Attach the signed provenance to the DRAFT release ourselves (see the
+  # provenance job comment for why the generator's uploader can't).
+  # The generator uploads the signed provenance as a run artifact named
+  # after its provenance-name output; download it and attach it with
+  # "gh release upload --clobber", which resolves the draft by pending tag
+  # name and is idempotent across re-runs. "test -f" first so a missing
+  # artifact fails loudly instead of uploading nothing.
+  upload-provenance:
+    name: Attach provenance to draft release
+    needs: [release, provenance]
+    if: always() && needs.release.result == 'success' && needs.provenance.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach the provenance asset to the draft release
+    steps:
+      - name: Download the signed provenance
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0, same major as the generator's upload-artifact v4.6.0
+        with:
+          name: ${{ needs.provenance.outputs.provenance-name }}
+
+      - name: Upload provenance to the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_NAME: ${{ needs.provenance.outputs.provenance-name }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          set -eu
+          test -f "$PROVENANCE_NAME"
+          gh release upload "$RELEASE_TAG" "$PROVENANCE_NAME" --clobber
