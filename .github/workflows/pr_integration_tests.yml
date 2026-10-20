@@ -95,7 +95,7 @@ jobs:
   warm-gomod-cache:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.27
+      image: golang:1.27.3
     needs:
       - integration-test-providers
     outputs:
@@ -140,7 +140,7 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     container:
-      image: golang:1.27
+      image: golang:1.27.3
     needs:
       - integration-test-providers
       - warm-gomod-cache
