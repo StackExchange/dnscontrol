@@ -55,8 +55,8 @@ func BaseURL(s string) Option {
 func HTTPClient(c *http.Client) Option {
 	return func(a *API) error { a.options = append(a.options, option.WithHTTPClient(c)); a.reset(); return nil }
 }
-func UsingRetryPolicy(max int, _, _ int) Option {
-	return func(a *API) error { a.options = append(a.options, option.WithMaxRetries(max)); a.reset(); return nil }
+func UsingRetryPolicy(m int, _, _ int) Option {
+	return func(a *API) error { a.options = append(a.options, option.WithMaxRetries(m)); a.reset(); return nil }
 }
 
 type envelope[T any] struct {
@@ -78,7 +78,7 @@ func (a *API) request(ctx context.Context, method, path string, body any, result
 		return err
 	}
 	if !response.Success {
-		return fmt.Errorf("Cloudflare API rejected %s %s: %s", method, path, response.Errors)
+		return fmt.Errorf("cloudflare API rejected %s %s: %s", method, path, response.Errors)
 	}
 	if result != nil && len(response.Result) > 0 {
 		return json.Unmarshal(response.Result, result)
@@ -114,7 +114,7 @@ type DNSRecord struct {
 	Proxiable bool              `json:"proxiable,omitempty"`
 	Comment   string            `json:"comment,omitempty"`
 	Tags      []string          `json:"tags,omitempty"`
-	Settings  DNSRecordSettings `json:"settings,omitempty"`
+	Settings  DNSRecordSettings `json:"settings"`
 }
 type CreateDNSRecordParams DNSRecord
 type UpdateDNSRecordParams struct {
@@ -128,7 +128,7 @@ type UpdateDNSRecordParams struct {
 	Proxied  *bool             `json:"proxied,omitempty"`
 	Comment  *string           `json:"comment,omitempty"`
 	Tags     []string          `json:"tags"`
-	Settings DNSRecordSettings `json:"settings,omitempty"`
+	Settings DNSRecordSettings `json:"settings"`
 }
 type ListDNSRecordsParams struct{}
 type WorkerRoute struct {
@@ -199,7 +199,7 @@ func (a *API) ListZones(ctx context.Context) ([]Zone, error) {
 			return nil, err
 		}
 		if !response.Success {
-			return nil, fmt.Errorf("Cloudflare API rejected GET %s: %s", path, response.Errors)
+			return nil, fmt.Errorf("cloudflare API rejected GET %s: %s", path, response.Errors)
 		}
 		all = append(all, response.Result...)
 		if response.ResultInfo.TotalPages <= page {
@@ -228,7 +228,7 @@ func (a *API) ListDNSRecords(ctx context.Context, zone string, _ ListDNSRecordsP
 			return nil, nil, err
 		}
 		if !response.Success {
-			return nil, nil, fmt.Errorf("Cloudflare API rejected GET %s: %s", path, response.Errors)
+			return nil, nil, fmt.Errorf("cloudflare API rejected GET %s: %s", path, response.Errors)
 		}
 		all = append(all, response.Result...)
 		if response.ResultInfo.TotalPages <= page {
@@ -309,8 +309,7 @@ func (a *API) UploadWorker(ctx context.Context, account string, params CreateWor
 }
 
 func statusCode(err error) int {
-	var apiErr *cloudflare.Error
-	if errors.As(err, &apiErr) {
+	if apiErr, ok := errors.AsType[*cloudflare.Error](err); ok {
 		return apiErr.StatusCode
 	}
 	return 0
