@@ -45,12 +45,12 @@ require (
 	github.com/mittwald/api-client-go v0.2.251
 	github.com/mittwald/go-powerdns v0.6.7
 	github.com/namecheap/go-spaceship-sdk v0.2.2
-	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
+	github.com/namedotcom/go/v4 v4.0.2
 	github.com/netnod/netnod-primary-dns-client v1.1.1
 	github.com/nicholas-fedor/shoutrrr v0.22.0
 	github.com/nozzle/throttler v0.0.0-20180817012639-2ea982251481
 	github.com/nrdcg/goinwx v0.12.0
-	github.com/oracle/oci-go-sdk/v65 v65.127.0
+	github.com/oracle/oci-go-sdk/v65 v65.128.0
 	github.com/ovh/go-ovh v1.9.0
 	github.com/philhug/opensrs-go v0.0.0-20171126225031-9dfa7433020d
 	github.com/pkg/errors v0.9.1
