@@ -321,8 +321,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/namecheap/go-spaceship-sdk v0.2.2 h1:I9Frbo0HBrsed0icTShnD4QvIjG8CBdUcT1DR8Wu6tU=
 github.com/namecheap/go-spaceship-sdk v0.2.2/go.mod h1:1L0EfLzpfx9DR0OEfTkN68PjzxFgqb2DPNwsiyt985A=
-github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04 h1:o6uBwrhM5C8Ll3MAAxrQxRHEu7FkapwTuI2WmL1rw4g=
-github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04/go.mod h1:5sN+Lt1CaY4wsPvgQH/jsuJi4XO2ssZbdsIizr4CVC8=
+github.com/namedotcom/go/v4 v4.0.2 h1:4gNkPaPRG/2tqFNUUof7jAVsA6vDutFutEOd7ivnDwA=
+github.com/namedotcom/go/v4 v4.0.2/go.mod h1:J6sVueHMb0qbarPgdhrzEVhEaYp+R1SCaTGl2s6/J1Q=
 github.com/netnod/netnod-primary-dns-client v1.1.1 h1:hGZIMTNmsSLicgMOJ7yneLvbQiSmBDBMkko8ndE7i1Q=
 github.com/netnod/netnod-primary-dns-client v1.1.1/go.mod h1:MLvJf4UhbAB8WQdypLqYv9rwtOGD+3cZlAVXMwgad3c=
 github.com/nicholas-fedor/shoutrrr v0.22.0 h1:hfMU3ayuK0tm68iT5YsdQL+Y6skCF6NDEKBBtmXLZlM=
