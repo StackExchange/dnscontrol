@@ -502,6 +502,13 @@ func formatDsl(rec *models.RecordConfig, defaultTTL uint32) string {
 				target += ", {" + strings.Join(fwdParts, ", ") + "}"
 			}
 		}
+	case "DNSKEY":
+		// The last field is the key tag, which is not an argument of DNSKEY().
+		target = strings.Join(fj[:4], ", ")
+	case "HTTPS", "SVCB":
+		// The params are a single string such as "alpn=h2,h3 port=8443".
+		f := rec.AsSVCB()
+		target = fmt.Sprintf("%d, %s, %s", f.Priority, jsonQuoted(f.Target), jsonQuoted(models.Svcbv2ValueToString(f.Value)))
 	case "R53_ALIAS":
 		return makeR53alias(rec, ttl)
 	case "UNKNOWN":

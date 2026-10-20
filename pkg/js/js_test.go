@@ -191,11 +191,42 @@ func TestErrors(t *testing.T) {
 		{"M365_BUILDER unknown option", `D("foo.com","reg",M365_BUILDER("foo.com",{initialDomain:"contoso.onmicrosoft.com",zzz:1}))`},
 		{"M365_BUILDER name does not match the zone", `D("foo.com","reg",M365_BUILDER("other.com",{initialDomain:"contoso.onmicrosoft.com"}))`},
 		{"M365_BUILDER with a record modifier", `D("foo.com","reg",M365_BUILDER("foo.com",{initialDomain:"contoso.onmicrosoft.com"},CF_PROXY_OFF))`},
+		{"FORSALE_BUILDER without a label", `D("foo.com","reg",FORSALE_BUILDER({furi:"https://foo.com/buy"}))`},
+		{"FORSALE_BUILDER unknown option", `D("foo.com","reg",FORSALE_BUILDER("@",{uri:"https://foo.com/buy"}))`},
+		{"FORSALE_BUILDER bad price", `D("foo.com","reg",FORSALE_BUILDER("@",{fval:"999 EUR"}))`},
+		{"FORSALE_BUILDER with a record modifier", `D("foo.com","reg",FORSALE_BUILDER("@",{fval:"EUR999"},CF_PROXY_OFF))`},
 	}
 	for _, tst := range tests {
 		t.Run(tst.desc, func(t *testing.T) {
 			if _, err := ExecuteJavaScript(tst.text, true, nil); err == nil {
 				t.Fatal("Expected error but found none")
+			}
+		})
+	}
+}
+
+// TestDMARCBuilderValues runs the script text itself with
+// ExecuteJavascriptString, because TestErrors passes text to
+// ExecuteJavaScript, which expects a file name.
+func TestDMARCBuilderValues(t *testing.T) {
+	tests := []struct{ desc, opts, wantErr string }{
+		{"policy only", `{policy:"reject"}`, ""},
+		{"every option valid", `{policy:"quarantine",subdomainPolicy:"none",nonexistentSubdomainPolicy:"reject",publicSuffixDomain:"u",testMode:"y"}`, ""},
+		{"bad policy", `{policy:"rejct"}`, "Invalid DMARC policy"},
+		{"bad subdomainPolicy", `{policy:"reject",subdomainPolicy:"quarentine"}`, "Invalid DMARC subdomain policy"},
+		{"bad nonexistentSubdomainPolicy", `{policy:"reject",nonexistentSubdomainPolicy:"quarentine"}`, "Invalid DMARC nonexistent-subdomain policy"},
+		{"bad publicSuffixDomain", `{policy:"reject",publicSuffixDomain:"yes"}`, "Invalid public-suffix-domain tag"},
+		{"bad testMode", `{policy:"reject",testMode:"yes"}`, "Invalid test-mode tag"},
+	}
+	for _, tst := range tests {
+		t.Run(tst.desc, func(t *testing.T) {
+			script := `D("foo.com","none",DMARC_BUILDER(` + tst.opts + `))`
+			_, err := ExecuteJavascriptString([]byte(script), true, nil)
+			switch {
+			case tst.wantErr == "" && err != nil:
+				t.Fatalf("Expected no error but found: %v", err)
+			case tst.wantErr != "" && (err == nil || !strings.Contains(err.Error(), tst.wantErr)):
+				t.Fatalf("Expected error %q but found: %v", tst.wantErr, err)
 			}
 		})
 	}
