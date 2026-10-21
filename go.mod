@@ -66,7 +66,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/domain v1.3.66
 	github.com/transip/gotransip/v6 v6.28.0
 	github.com/urfave/cli/v3 v3.14.0
-	github.com/vercel/terraform-provider-vercel v1.14.1
+	github.com/vercel/terraform-provider-vercel/v5 v5.22.1
 	github.com/vultr/govultr/v3 v3.33.2
 	github.com/willpower232/go-namecheap v0.0.0-20260720171816-b13495139f3c
 	github.com/xddxdd/ottoext v0.0.0-20221109171055-210517fa4419

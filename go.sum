@@ -448,8 +448,8 @@ github.com/uber/jaeger-lib v2.4.1+incompatible h1:td4jdvLcExb4cBISKIpHuGoVXh+dVK
 github.com/uber/jaeger-lib v2.4.1+incompatible/go.mod h1:ComeNDZlWwrWnDv8aPp0Ba6+uUTzImX/AauajbLI56U=
 github.com/urfave/cli/v3 v3.14.0 h1:a8414NQlHJs0c/iBsulKLzlES0n/lEAskbL2LKpU4/s=
 github.com/urfave/cli/v3 v3.14.0/go.mod h1:vXn6HxPNccJSzQr2QvwVncOKrgYGIHU0HY5h8B2nQj4=
-github.com/vercel/terraform-provider-vercel v1.14.1 h1:ghAjFkMMzka4XuoBYdu1OXM/K7FQEj8wUd+xMPPOGrg=
-github.com/vercel/terraform-provider-vercel v1.14.1/go.mod h1:AdFCiUD0XP8XOi6tnhaCh7I0vyq2TAPmI+GcIp3+7SI=
+github.com/vercel/terraform-provider-vercel/v5 v5.22.1 h1:uUqYkCrrGrjWBJCS282i+4YtHhj2cRLgyTeacG7k5co=
+github.com/vercel/terraform-provider-vercel/v5 v5.22.1/go.mod h1:Ezh28mnqeeCED00GfWnqjuSOXg1z7VmQX+knjz7L97o=
 github.com/vultr/govultr/v3 v3.33.2 h1:cgQk4rDLwKMk3FwXL73Rf/aZDnps8N29VPo000E1eBQ=
 github.com/vultr/govultr/v3 v3.33.2/go.mod h1:2zyUw9yADQaGwKnwDesmIOlBNLrm7edsCfWHFJpWKf8=
 github.com/willpower232/go-namecheap v0.0.0-20260720171816-b13495139f3c h1:crbR1KcJIrVWMm1rNmKwrTFO8LwcC/O9J3ZSQK0Fwm0=
