@@ -342,10 +342,10 @@ function D_EXTEND(name) {
         name = name.substring(name.indexOf(".") + 1);
     }
 
-    domain.obj.subdomain = name.substr(
-        0,
-        name.length - domain.obj.name.length - 1
-    );
+    // The empty tag is not part of the name: "example.com!" is "example.com".
+    name = _removeEmptyTag(name)[0];
+    var domainName = _removeEmptyTag(domain.obj.name)[0];
+    domain.obj.subdomain = name.substr(0, name.length - domainName.length - 1);
 
     for (var i = 1; i < arguments.length; i++) {
         var m = arguments[i];
